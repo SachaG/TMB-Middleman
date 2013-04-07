@@ -5,57 +5,57 @@ test: Hello World
 
 - content_for(:title, "Learn Meteor with The Meteor Book - Getting Started Tutorials & Articles")
 
-/ %section.about
-/   .block
-/     %h3 What's this Meteor thing?
-/     / %img.clock{:src => "/images/clock.png"}
-/     %p <a href="http://meteor.com">Meteor</a> is a Javascript framework for creating <strong>real-time apps</strong>. This means your app automatically gets updated live without the need to ever refresh the browser. 
 
-/   .block
-/     %h3 Why are we writing this book? {{title}}
-/     .telescope
-/       %a{:href => "http://telesc.pe"}
-/         %img{:src => "/images/telescope-browser.png"}
-/       %span.caption Telescope
-/     %p A while back we launched <a href="http://telesc.pe">Telescope</a>, an open-source social news app (think <a href="http://news.ycombinator.com">Hacker News</a> or <a href="http://reddit.com">Reddit</a>, but real-time). 
-/     %p Telescope has since become <a href="https://github.com/SachaG/Telescope">one of the most popular</a> open-source apps built with Meteor. We learned a lot creating it, and we now have a pretty good idea of what it takes to build a solid Meteor app.
-/   .block
-/     %h3 What’s inside the book?
-/     %p The book will take you through every step needed to build a full-featured Meteor app, using a simplified version of Telescope as an example. We'll cover things such as:
-/     %ul
-/       %li Why use Meteor
-/       %li How to install and set up the Meteor system
-/       %li Building a basic app
-/       %li Working with real-time data
-/       %li Managing user accounts, authentifications, and authorization
-/       %li Real-time UX patterns
-/   .block
-/     %h3 Who's writing it?
-/     .bio.tom
-/       %img.portrait{:src => "/images/tom-photo.jpg"}
-/       %p <a href="http://tom.thesnail.org">Tom Coleman</a> is one part of Percolate Studio, a web development shop with a focus on quality and user experience. He's also the co-creator of <a href="https://github.com/oortcloud/meteorite">Meteorite</a> and the <a href="http://atmosphere.meteor.com">Atmosphere</a> package repository.
-/     .bio.sacha
-/       %img.portrait{:src => "/images/sacha-photo.jpg"}
-/       %p <a href="http://sachagreif.com">Sacha Greif</a> has worked with startups such as Hipmunk and RubyMotion as a product and web designer. He's also the creator of <a href="http://folyo.me">Folyo</a>, and <a href="http://sidebar.io">Sidebar</a>, which is based on Telescope.
-%section.packages
-  .packages-list
+%section.about
+  .block
+    %h3 What's this Meteor thing?
+    / %img.clock{:src => "/images/clock.png"}
+    %p <a href="http://meteor.com">Meteor</a> is a Javascript framework for creating <strong>real-time apps</strong>. This means your app automatically gets updated live without the need to ever refresh the browser. 
+
+  .block
+    %h3 Why are we writing this book?
+    .telescope
+      %a{:href => "http://telesc.pe"}
+        %img{:src => "/images/telescope-browser.png"}
+      %span.caption Telescope
+    %p A while back we launched <a href="http://telesc.pe">Telescope</a>, an open-source social news app (think <a href="http://news.ycombinator.com">Hacker News</a> or <a href="http://reddit.com">Reddit</a>, but real-time). 
+    %p Telescope has since become <a href="https://github.com/SachaG/Telescope">one of the most popular</a> open-source apps built with Meteor. We learned a lot creating it, and we now have a pretty good idea of what it takes to build a solid Meteor app.
+  .block
+    %h3 What’s inside the book?
+    %p The book will take you through every step needed to build a full-featured Meteor app, using a simplified version of Telescope as an example. We'll cover things such as:
     %ul
-      %li Full Edition
-      %li Premium Edition
-      %li Starter Edition
-  .packages-content
-    .package.large
-      %h3 Full Edition
-      - data.packages.large.each do |item|
-        =partial("partials/package_item", :locals=>{item:item})
-%section.blog
-  %h2 Articles
-  %h3 Lorem ipsum dolor
+      %li Why use Meteor
+      %li How to install and set up the Meteor system
+      %li Building a basic app
+      %li Working with real-time data
+      %li Managing user accounts, authentifications, and authorization
+      %li Real-time UX patterns
+  .block
+    %h3 Who's writing it?
+    .bio.tom
+      %img.portrait{:src => "/images/tom-photo.jpg"}
+      %p <a href="http://tom.thesnail.org">Tom Coleman</a> is one part of Percolate Studio, a web development shop with a focus on quality and user experience. He's also the co-creator of <a href="https://github.com/oortcloud/meteorite">Meteorite</a> and the <a href="http://atmosphere.meteor.com">Atmosphere</a> package repository.
+    .bio.sacha
+      %img.portrait{:src => "/images/sacha-photo.jpg"}
+      %p <a href="http://sachagreif.com">Sacha Greif</a> has worked with startups such as Hipmunk and RubyMotion as a product and web designer. He's also the creator of <a href="http://folyo.me">Folyo</a>, and <a href="http://sidebar.io">Sidebar</a>, which is based on Telescope.
+%section.sidebar
+  %h2 The blog
   - blog.articles.each do |post|
     %article
       %p.date
-        =post.date
+        =post.date.strftime('%b %e %Y')
       %h3
         %a{:href => "#{post.url}"}
           =post.title
-  / %a{:href => "articles.html"} More articles...
+
+/ %section.packages
+/   .packages-list
+/     %ul
+/       %li Full Edition
+/       %li Premium Edition
+/       %li Starter Edition
+/   .packages-content
+/     .package.large
+/       %h3 Full Edition
+/       - data.packages.large.each do |item|
+/         =partial("partials/package_item", :locals=>{item:item})
