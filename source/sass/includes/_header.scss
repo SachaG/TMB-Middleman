@@ -1,0 +1,41 @@
+header{
+	@include background(linear-gradient(top, 
+		#161224 0%, 	#161224 12.5%, 
+		#1e1a2c 12.5%, 	#1e1a2c 25%,
+		#252134 25%, 	#252134 37.5%, 
+		#2b273c 37.5%, 	#2b273c 50%,
+		#322d44 50%, 	#322d44 62.5%, 
+		#3f3a52 62.5%, 	#3f3a52 75%,
+		#4e4862 75%, 	#4e4862 87.5%, 
+		#5e5873 87.5%, 	#5e5873 100%						
+	));
+	min-height:160px;
+	text-align:center;
+	padding-top:29px;
+	text-shadow:0px 2px 5px black(0.65);
+	h1{
+		margin:0;
+		font-size:22px;
+		a, a:link, a:visited, a:active, a:hover{
+			font-weight:normal;
+			color:#968eb0;
+		}
+		strong{
+			font-weight:bold;
+		}
+	}
+	h2{
+		a, a:link, a:visited, a:active, a:hover{
+			color:#fff;
+			font-weight:700;
+		}
+		margin:0 0 5px 0;
+		font-size:46px;
+	}
+	h3{
+		font-size:18px;
+		color:white(0.85);
+		font-weight:100;
+		margin:0;
+	}
+}

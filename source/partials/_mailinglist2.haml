@@ -1,0 +1,9 @@
+.mailinglist.bottom
+  .row
+    .form
+      %h3 Subscribe to get Meteor <strong>getting-started tips</strong> and a special <strong>launch discount</strong>:
+      %form{:action => "http://sachagreif.us2.list-manage.com/subscribe/post?u=b5af47765edbd2fc173dbf27a&id=ed0fb4ac61", :method => "post", :name => "mc-embedded-subscribe-form", :novalidate => "", :target => "_blank"}
+        %input.email{:name => "EMAIL", :placeholder => "Your email", :type => "email"}
+        %input#landing{:type=>"hidden", :name=>"LANDING", :value=>"The Meteor Book"}
+        %input#origin{:type=>"hidden", :name=>"ORIGIN"}
+        %button.submit.button{:name => "subscribe", :type => "submit"} Subscribe

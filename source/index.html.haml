@@ -1,0 +1,91 @@
+---
+title: Learn Meteor with The Meteor Book - Getting Started Tutorials & Articles
+test: Hello World
+package_large:
+  - name: "The Book"
+    image: book.svg
+    description: "Get the book in PDF, ePub, Mobi, or HTML formats"
+  - name: "The Code"
+    image: code.svg
+    description: "Access the app's git repository, with a commit for each step of the way."
+  - name: "Live Instances"
+    image: console.svg
+    description: "The code's git repository, with a commit for each step."
+  - name: "Interview: Matt Debergalis"
+    image: matt.jpg
+    description: "Meteor founder Matt Debergalis lorem ipsum dolor sit amet."
+  - name: "Interview: Matt Debergalis"
+    image: matt.jpg
+    description: "Meteor founder Matt Debergalis lorem ipsum dolor sit amet."
+  - name: "Interview: Matt Debergalis"
+    image: matt.jpg
+    description: "Meteor founder Matt Debergalis lorem ipsum dolor sit amet."            
+  - name: "Extra Chapter: Animations"
+    image: files.svg
+    description: "Learn how to animate data change for a smoother real-time user experience."      
+  - name: "Extra Chapter: Advanced Publications"
+    image: files.svg
+    description: "Discover advanced publications techniques such as merging and linking subscriptions."
+---
+
+
+/ %section.about
+/   .block
+/     %h3 What's this Meteor thing?
+/     / %img.clock{:src => "/images/clock.png"}
+/     %p <a href="http://meteor.com">Meteor</a> is a Javascript framework for creating <strong>real-time apps</strong>. This means your app automatically gets updated live without the need to ever refresh the browser. 
+
+/   .block
+/     %h3 Why are we writing this book? {{title}}
+/     .telescope
+/       %a{:href => "http://telesc.pe"}
+/         %img{:src => "/images/telescope-browser.png"}
+/       %span.caption Telescope
+/     %p A while back we launched <a href="http://telesc.pe">Telescope</a>, an open-source social news app (think <a href="http://news.ycombinator.com">Hacker News</a> or <a href="http://reddit.com">Reddit</a>, but real-time). 
+/     %p Telescope has since become <a href="https://github.com/SachaG/Telescope">one of the most popular</a> open-source apps built with Meteor. We learned a lot creating it, and we now have a pretty good idea of what it takes to build a solid Meteor app.
+/   .block
+/     %h3 What’s inside the book?
+/     %p The book will take you through every step needed to build a full-featured Meteor app, using a simplified version of Telescope as an example. We'll cover things such as:
+/     %ul
+/       %li Why use Meteor
+/       %li How to install and set up the Meteor system
+/       %li Building a basic app
+/       %li Working with real-time data
+/       %li Managing user accounts, authentifications, and authorization
+/       %li Real-time UX patterns
+/   .block
+/     %h3 Who's writing it?
+/     .bio.tom
+/       %img.portrait{:src => "/images/tom-photo.jpg"}
+/       %p <a href="http://tom.thesnail.org">Tom Coleman</a> is one part of Percolate Studio, a web development shop with a focus on quality and user experience. He's also the co-creator of <a href="https://github.com/oortcloud/meteorite">Meteorite</a> and the <a href="http://atmosphere.meteor.com">Atmosphere</a> package repository.
+/     .bio.sacha
+/       %img.portrait{:src => "/images/sacha-photo.jpg"}
+/       %p <a href="http://sachagreif.com">Sacha Greif</a> has worked with startups such as Hipmunk and RubyMotion as a product and web designer. He's also the creator of <a href="http://folyo.me">Folyo</a>, and <a href="http://sidebar.io">Sidebar</a>, which is based on Telescope.
+%section.packages
+  .packages-list
+    %ul
+      %li Full Edition
+      %li Premium Edition
+      %li Starter Edition
+  .packages-content
+    .package.large
+      %h3 Full Edition
+      - current_page.data.package_large.each do |item|
+        %li
+          %span
+            %img{:src => "/images/#{item.image}"}
+          %h4
+            =item.name
+          %p
+            =item.description
+%section.blog
+  %h2 Articles
+  %h3 Lorem ipsum dolor
+  - blog.articles[0...5].each do |post|
+    %article
+      %p.date
+        =post.date
+      %h3
+        %a{:href => "#{post.url}"}
+          =post.title
+  / %a{:href => "articles.html"} More articles...
