@@ -111,7 +111,7 @@ end
 
 activate :directory_indexes
 
-activate :syntax
+activate :syntax#,:linenos => 'table'
 
 set :markdown_engine, :redcarpet
 set :markdown, :fenced_code_blocks => true, :smartypants => true
