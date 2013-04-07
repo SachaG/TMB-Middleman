@@ -7,4 +7,6 @@ use ::Rack::TryStatic,
   :urls => ["/"],
   :try  => [".html", "index.html", "/index.html"]
  
+use Rack::StaticCache, :urls => ["/images", "/stylesheets", "/javascripts"], :root => "build"
+
 run lambda { [404, {"Content-Type" => "text/plain"}, ["File not found!"]] }
