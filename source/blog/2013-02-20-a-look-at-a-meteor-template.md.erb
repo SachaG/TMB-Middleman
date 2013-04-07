@@ -18,7 +18,7 @@ Telescope is an open-source social news app built with Meteor. Think your own [R
 The code we'll look at is a simplified version of the `post_edit` [template](https://github.com/SachaG/Telescope/blob/master/client/views/posts/post_edit.html) and its [controller](https://github.com/SachaG/Telescope/blob/master/client/views/posts/post_edit.js). At its name indicates, this template's role is providing a simple form for editing an existing post. A post has a title, URL, body, and one or more categories. The actual form has a few more extra field, but we won't worry about them today:
 
 <div class="image"><img src="/images/telescope-post-edit.png"/></div>
-<%= div("caption","Telescope's post edit form, with a few extra fields") %>
+<%= caption("Telescope's post edit form, with a few extra fields") %>
 
 The goal of this article is giving you a basic overview of how Meteor templates work. This will already be familiar if you've used templating systems in other environment, but if not then let's get started!
 
@@ -110,7 +110,7 @@ Template.post_edit.events = {
   }
 };
 ```
-{% caption post_edit.js controller %}
+<%=caption("post_edit.js controller")%>
 
 That might seem like a lot to take in, but once we break it down you'll see that it's actually very easy to understand even if you've never laid eyes on Meteor code before. 
 
@@ -118,7 +118,7 @@ That might seem like a lot to take in, but once we break it down you'll see that
 
 Let's take a quick look at the HTML. You've probably noticed the weird-looking tags. Those are [Handlebars](http://handlebarsjs.com/) tags and let us display dynamic data. 
 
-The first handlebars tag is {% raw %}<code>{{#with post}}</code>{% endraw %}: 
+The first handlebars tag is `{{#with post}}`: 
 
 ```html
 <template name="post_edit">
@@ -129,20 +129,20 @@ The first handlebars tag is {% raw %}<code>{{#with post}}</code>{% endraw %}:
 ```
 <%=caption('The "with" block helper')%>
 
-This [block helper](http://handlebarsjs.com/block_helpers.html) is a shortcut to tell our template what object we want to be working on. Inside that {% raw %}<code>{{#with}}</code>{% endraw %} block, our app will understand that `this` means `post`. That `this` is know as the "data context" of the method. 
+This [block helper](http://handlebarsjs.com/block_helpers.html) is a shortcut to tell our template what object we want to be working on. Inside that `{{#with}}` block, our app will understand that `this` means `post`. That `this` is know as the "data context" of the method. 
 
 ## Template Helpers
 
 You might be wondering where we're getting that `post` from. Let's take a look at your controller to find out:
 
-{% highlight js %}
+```js
 Template.post_edit.helpers({
   post: function() {
     return Posts.findOne(Session.get('selectedPostId'));
   }
 });
-{% endhighlight %}
-{% caption The "post" template helper %}
+```
+<%=caption('The "post" template helper')%>
 
 What we're doing here is adding a `post` [template helper](http://docs.meteor.com/#template_helpers) to our `post_edit` template. Template helpers are simply Javascript methods that are you make available to the Handlebars template. 
 
@@ -150,25 +150,25 @@ In this case, whenever our Handlebars template calls `post` we'll look for the c
 
 ## Object Properties
 
-Moving on, the second tag we encounter is {% raw %}<code>{{title}}</code>{% endraw %}:
+Moving on, the second tag we encounter is `{{title}}`:
 
-{% handlebars %}
+```html
 <div>
   <label>Title</label>
   <input id="title" type="text" value="{{title}}" />
 </div>
-{% endhandlebars %}
-{% caption The "title" template helper %}
+```
+<%=caption('The "title" template helper')%>
 
-Although you have no way to tell just by the syntax, this {% raw %}<code>{{title}}</code>{% endraw %} tag is not a template helper but simply one of our `post` object's properties, which Meteor magically makes available to us for use without any extra work. 
+Although you have no way to tell just by the syntax, this `{{title}}` tag is not a template helper but simply one of our `post` object's properties, which Meteor magically makes available to us for use without any extra work. 
 
 ## Nested Objects
 
 The URL and Body form fields follow the same pattern, but our Category field is a little different. Here, we want to display a list of checkboxes for all of the site's pre-defined categories with the correct categories checked off.
 
-The first part of the job is laying out a list of categories, and we do this using the handy {% raw %}<code>{{#each categories}}</code>{% endraw %} block helper:
+The first part of the job is laying out a list of categories, and we do this using the handy `{{#each categories}}` block helper:
 
-{% handlebars %}
+```html
 <div>
   <label>Category</label>
   {{#each categories}}
@@ -177,35 +177,35 @@ The first part of the job is laying out a list of categories, and we do this usi
     </label>
   {{/each}}
 </div>
-{% endhandlebars %}
-{% caption Looping over categories with the "each" helper %}
+```
+<%=caption('Looping over categories with the "each" helper')%>
 
 This helper does two things: it iterates over the `categories` object, and it tells the template to use the resulting iterated element as `this` inside the block. 
 
 As you guessed, `categories` is a template helper just like `post` was. In this case we're just returning a list of all our categories from the database:
 
-{% highlight js %}
+```js
   categories: function() {
     return Categories.find();
   }
-{% endhighlight %}
-{% caption The "categories" template helper %}
+```
+<%=caption('The "categories" template helper')%>
 
-Remember when I said that the block helper changed the value of `this`? That's why we can use {% raw %}<code>{{_id}}</code>{% endraw %} here without fear of confusion. We're inside the block helper so we're dealing with the category's ID, not the post's.
+Remember when I said that the block helper changed the value of `this`? That's why we can use `{{_id}}` here without fear of confusion. We're inside the block helper so we're dealing with the category's ID, not the post's.
 
 ## More Helpers
 
-Up to now our helpers have simply been querying our collections and returning data. But helpers are not limited to this by any means. Let's take a look at the {% raw %}<code>{{hasCategory}}</code>{% endraw %} helper:
+Up to now our helpers have simply been querying our collections and returning data. But helpers are not limited to this by any means. Let's take a look at the `{{hasCategory}}` helper:
 
-{% highlight js %}
+```js
 hasCategory: function() {
   var post = Posts.findOne(Session.get('selectedPostId'));
   return _.contains(post.categories, this.name) ? 'checked' : '';
 }
-{% endhighlight %}
-{% caption The "hasCategory" template helper %}
+```
+<%=caption('The "hasCategory" template helper')%>
 
-Remember that we're calling this helper from within the {% raw %}<code>{{#each categories}}</code>{% endraw %} block, which means that `this` represents a category.
+Remember that we're calling this helper from within the `{{#each categories}}` block, which means that `this` represents a category.
 
 So we're first getting our current post object, and then checking to see if the current category is contained in the post's categories. If it is, we simply return the "checked" string to mark our checkbox as checked. 
 
@@ -215,7 +215,7 @@ You might have noticed that `_.contains()` is an [Underscore](http://underscorej
 
 We now have enough code to load a post's title, URL, body, and categories. But we still need a way to save our edit form. This is where template events come in:
 
-{% highlight js %}
+```js
 Template.post_edit.events = {
   'click input[type=submit]': function(e) {
     // do something when the users clicks input[type=submit]
@@ -224,14 +224,14 @@ Template.post_edit.events = {
     // do something when the users clicks .delete-link
   }
 };
-{% endhighlight %}
-{% caption Template events %}
+```
+<%=caption('Template events')%>
 
 As you can see, defining template events is as simple as putting an event and a CSS selector together. We have two event handlers here, one for submitting the form and one for deleting our post. 
 
 Let's first take a look at the form submission handler:
 
-{% highlight js %}
+```js
 'click input[type=submit]': function(e) {
   e.preventDefault();
 
@@ -252,8 +252,8 @@ Let's first take a look at the form submission handler:
 
   Posts.update(selectedPostId, {$set: properties});
 },
-{% endhighlight %}
-{% caption Our form submit handler %}
+```
+<%=caption('Our form submit handler')%>
 
 The handler method takes two arguments, the event and the template instance. We can ignore the template instance for now, but it's a good idea to start off your handler with `e.preventDefault();` to prevent the browser from executing the event's default behavior.
 
@@ -265,7 +265,7 @@ We can then build our `properties` object and simply use Meteor's [update()](htt
 
 Deleting a post is even easier:
 
-{% highlight js %}
+```js
 'click .delete-link': function(e) {
   e.preventDefault();
   if(confirm("Are you sure?")) {
@@ -273,8 +273,8 @@ Deleting a post is even easier:
     Posts.remove(selectedPostId);
   }
 }
-{% endhighlight %}
-{% caption Our post delete handler %}
+```
+<%=caption('Our post delete handler')%>
 
 We simply pass the correct ID to Meteor's [remove()](http://docs.meteor.com/#remove) method and we're done!
 

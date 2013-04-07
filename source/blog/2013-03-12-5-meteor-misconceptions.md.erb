@@ -36,7 +36,7 @@ The downside of this approach is that with JavaScript disabled, your site will b
 You might think this would confuse search engines, but thankfully Meteor includes a workaround in the form of the [Spiderable](http://docs.meteor.com/#spiderable) package.
 
 <div class="image"><img src="/images/phantomjs.png"/></div>
-{% caption PhantomJS %}
+<%=caption("PhantomJS %}
 
 This package uses [PhantomJS](http://phantomjs.org) to pre-render pages server-side and serve them to crawlers, in effect showing them the same site that your visitors would see. 
 
@@ -57,7 +57,7 @@ Why use custom packages in the first place when thousands of Node packages are a
 Firstly, it's important to realize that it _is_ possible to use arbitrary node packages with Meteor. There are some rough edges in doing so right now, but many of those should be smoothed over due to the addition of [NPM support](https://groups.google.com/forum/?fromgroups=#!topic/meteor-talk/b6zQrgk8lYo) in the upcoming `engine` release.
 
 <div class="image"><img src="/images/npm.png"/></div>
-{% caption NPM %}
+<%=caption("NPM %}
 
 Secondly, Meteor is not just a Node.js framework, but a whole new way of conceiving and developing web apps. The reason a lot of packages are Meteor-only is simply that they only make sense in the context of Meteor. 
 

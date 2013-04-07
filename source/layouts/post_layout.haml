@@ -7,23 +7,28 @@
           :plain
             <a href="https://twitter.com/share" class="twitter-share-button" data-via="TheMeteorBook">Tweet</a>
             <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
-        .date {{ page.date | date_to_string }}
+        .date=current_article.date.strftime('%b %e %Y')
 
     .post-content=yield
 
-    {% assign author = site.authors[page.author] %}
+    - author = data.authors[current_page.data.author]
     .post-author
-      %img.portrait{:src => "/images/{{author.avatar}}"}
-      %p {{author.bio}}
+      %img.portrait{:src => "/images/#{author.avatar}"}
+      %p=author.bio
 
     .post-nav
-      {% if page.previous.url %}
-      %a.prev{:href => "{{page.previous.url}}", :title => "Previous Post: "} « {{page.previous.title}}
-      {% endif %}
 
-      {% if page.next.url %}
-      %a.next{:href => "{{page.next.url}}", :title => "next Post: "}  {{page.next.title}} »
-      {% endif %}
+      - prev_article = current_article.previous_article
+      - if prev_article
+        %a.prev{:href => "#{prev_article.url}", :title => "Previous Post: #{prev_article.title}"}
+          «
+          =prev_article.title
+
+      - next_article = current_article.next_article
+      - if next_article
+        %a.next{:href => "#{next_article.url}", :title => "next Post: #{next_article.title}"}
+          =next_article.title
+          »
 
   .comments
     :plain

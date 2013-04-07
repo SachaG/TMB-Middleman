@@ -1,31 +1,6 @@
 ---
 title: Learn Meteor with The Meteor Book - Getting Started Tutorials & Articles
 test: Hello World
-package_large:
-  - name: "The Book"
-    image: book.svg
-    description: "Get the book in PDF, ePub, Mobi, or HTML formats"
-  - name: "The Code"
-    image: code.svg
-    description: "Access the app's git repository, with a commit for each step of the way."
-  - name: "Live Instances"
-    image: console.svg
-    description: "The code's git repository, with a commit for each step."
-  - name: "Interview: Matt Debergalis"
-    image: matt.jpg
-    description: "Meteor founder Matt Debergalis lorem ipsum dolor sit amet."
-  - name: "Interview: Matt Debergalis"
-    image: matt.jpg
-    description: "Meteor founder Matt Debergalis lorem ipsum dolor sit amet."
-  - name: "Interview: Matt Debergalis"
-    image: matt.jpg
-    description: "Meteor founder Matt Debergalis lorem ipsum dolor sit amet."            
-  - name: "Extra Chapter: Animations"
-    image: files.svg
-    description: "Learn how to animate data change for a smoother real-time user experience."      
-  - name: "Extra Chapter: Advanced Publications"
-    image: files.svg
-    description: "Discover advanced publications techniques such as merging and linking subscriptions."
 ---
 
 - content_for(:title, "Learn Meteor with The Meteor Book - Getting Started Tutorials & Articles")
@@ -71,16 +46,12 @@ package_large:
   .packages-content
     .package.large
       %h3 Full Edition
-      - current_page.data.package_large.each do |item|
-        %li
-          %span
-            %img{:src => "/images/#{item.image}"}
-          %h4=item.name
-          %p=item.description
+      - data.packages.large.each do |item|
+        =partial("partials/package_item", :locals=>{item:item})
 %section.blog
   %h2 Articles
   %h3 Lorem ipsum dolor
-  - blog.articles[0...5].each do |post|
+  - blog.articles.each do |post|
     %article
       %p.date
         =post.date

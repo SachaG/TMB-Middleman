@@ -20,7 +20,7 @@ activate :blog do |blog|
   blog.tag_template = "tag.html"
   blog.calendar_template = "calendar.html"
 
-  # blog.paginate = true
+  blog.paginate = true
   # blog.per_page = 10
   # blog.page_link = "page/:num"
 end
@@ -108,6 +108,8 @@ configure :build do
   # set :http_path, "/Content/images/"
 end
 
+activate :directory_indexes
+
 activate :syntax
 
 set :markdown_engine, :redcarpet
@@ -119,5 +121,8 @@ helpers do
   end
   def caption(content)
     %Q{<div class="caption">#{content}</div>}
+  end
+  def image(css_class, src, caption)
+    %Q{<figure class="#{css_class}"><img src="#{src}" alt="#{caption}"/><figcaption>#{caption}</figcaption></figure>}
   end
 end
