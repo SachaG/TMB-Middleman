@@ -1,5 +1,4 @@
 ---
-layout: post
 title: Useful Meteor Resources
 published: true
 author: tom

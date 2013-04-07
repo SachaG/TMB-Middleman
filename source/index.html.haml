@@ -28,6 +28,7 @@ package_large:
     description: "Discover advanced publications techniques such as merging and linking subscriptions."
 ---
 
+- content_for(:title, "Learn Meteor with The Meteor Book - Getting Started Tutorials & Articles")
 
 / %section.about
 /   .block
@@ -74,10 +75,8 @@ package_large:
         %li
           %span
             %img{:src => "/images/#{item.image}"}
-          %h4
-            =item.name
-          %p
-            =item.description
+          %h4=item.name
+          %p=item.description
 %section.blog
   %h2 Articles
   %h3 Lorem ipsum dolor

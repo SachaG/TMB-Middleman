@@ -1,5 +1,4 @@
 ---
-layout: post
 title: Publications and Subscriptions
 published: false
 author: tom

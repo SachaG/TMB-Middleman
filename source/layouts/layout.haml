@@ -8,7 +8,7 @@
     %meta{:charset => "utf-8"}/
     / Set the viewport width to device width for mobile
     %meta{:content => "width=device-width, initial-scale=1.0", :name => "viewport"}/
-    %title {{ page.title }}
+    %title=yield_content(:title)
     / Included CSS Files
     %link{:href => "/stylesheets/app.css", :rel => "stylesheet"}
     %link{:href => "http://fonts.googleapis.com/css?family=Source+Sans+Pro:200,400,700,400italic", :rel => "stylesheet"}

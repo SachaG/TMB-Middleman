@@ -1,5 +1,4 @@
 ---
-layout: post
 title: Getting Started with Meteor
 published: true
 author: tom
