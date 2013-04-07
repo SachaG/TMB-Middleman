@@ -43,11 +43,11 @@ For this reason, autopublish is only appropriate when you are starting out, and 
 
 Once you remove autopublish, you'll quickly realize that all your data has vanished from the client. An easy way to get it back is to simply duplicate what autopublish does, and publish a collection in its entirety. For example:
 
-{% highlight js %} 
+```js
 Meteor.publish('allPosts',function(){
   return Posts.find();
 });
-{% endhighlight %}
+```
 
 {% image pullcenter /images/book/fullcollection@2x.png "Publishing a full collection" %}
 
@@ -57,11 +57,11 @@ We're still publishing full collections, but at least we now have control over w
 
 The next level of fine-grained control is publishing only _part_ of a collection, for example only the posts that belong to a certain author:
 
-{% highlight js %} 
+```js
 Meteor.publish('somePosts',function(){
   return Posts.find({'author':'Tom'});
 });
-{% endhighlight %}
+```
 
 {% image pullcenter /images/book/partialcollection@2x.png "Publishing a partial collection" %}
 
@@ -87,23 +87,23 @@ We've seen how to only publish some of our posts, but we can keep slicing thinne
 
 Just like before, we'll use `find()` to return a cursor, but this time we'll exclude certain fields:
 
-{% highlight js %}
+```js
 Meteor.publish('allPosts',function(){
   return Posts.find({}, {fields: {
     author: false
   }});
 });
-{% endhighlight %}
+```
 
 Of course, we can also combine both techniques. For example, if we wanted to return all posts by Tom while leaving aside their date, we would write:
 
-{% highlight js %}
+```js
 Meteor.publish('allPosts',function(){
   return Posts.find({'author':'Tom'}, {fields: {
     author: false
   }});
 });
-{% endhighlight %}
+```
 
 ## Summing Up
 

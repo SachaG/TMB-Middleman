@@ -1,5 +1,4 @@
 ---
-layout: post
 title: 5 Meteor Misconceptions
 published: true
 author: sacha

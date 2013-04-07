@@ -108,3 +108,16 @@ configure :build do
   # set :http_path, "/Content/images/"
 end
 
+activate :syntax
+
+set :markdown_engine, :redcarpet
+set :markdown, :fenced_code_blocks => true, :smartypants => true
+
+helpers do
+  def div(css_class, content)
+    %Q{<div class="#{css_class}">#{content}</div>}
+  end
+  def caption(content)
+    %Q{<div class="caption">#{content}</div>}
+  end
+end

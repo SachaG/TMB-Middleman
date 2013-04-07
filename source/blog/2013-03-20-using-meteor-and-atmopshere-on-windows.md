@@ -1,5 +1,4 @@
 ---
-layout: post
 title: Using Meteor and Atmosphere on Windows
 published: true
 author: tom

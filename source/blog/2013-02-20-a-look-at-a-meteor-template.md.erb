@@ -1,5 +1,4 @@
 ---
-layout: post
 title: A Look at a Meteor Template
 author: sacha
 published: true
@@ -8,6 +7,7 @@ published: true
 # A Look at a Meteor Template
 
 ##### Level: Beginner
+
 
 Building a simple app from scratch is one of the best ways to learn a new language or framework. 
 
@@ -18,7 +18,7 @@ Telescope is an open-source social news app built with Meteor. Think your own [R
 The code we'll look at is a simplified version of the `post_edit` [template](https://github.com/SachaG/Telescope/blob/master/client/views/posts/post_edit.html) and its [controller](https://github.com/SachaG/Telescope/blob/master/client/views/posts/post_edit.js). At its name indicates, this template's role is providing a simple form for editing an existing post. A post has a title, URL, body, and one or more categories. The actual form has a few more extra field, but we won't worry about them today:
 
 <div class="image"><img src="/images/telescope-post-edit.png"/></div>
-{% caption Telescope's post edit form, with a few extra fields %}
+<%= div("caption","Telescope's post edit form, with a few extra fields") %>
 
 The goal of this article is giving you a basic overview of how Meteor templates work. This will already be familiar if you've used templating systems in other environment, but if not then let's get started!
 
@@ -28,7 +28,7 @@ Meteor templates have two parts: the HTML template and Javascript controller. Th
 
 By the way, Meteor gets the name of a template from the name attribute (`<template name="post_edit">`), and I recommend you adopt the convention of naming both files after the template itself, which in this case gives us `post_edit.html` and `post_edit.js`. 
 
-{% handlebars %}
+```html
 <template name="post_edit">
   {{#with post}}
     <form>
@@ -59,10 +59,10 @@ By the way, Meteor gets the name of a template from the name attribute (`<templa
     </form>
   {{/with}}
 </template>
-{% endhandlebars %}
-{% caption post_edit.html template %}
+```
 
-{% highlight js %}
+
+```js
 Template.post_edit.helpers({
   post: function() {
     return Posts.findOne(Session.get('selectedPostId'));
@@ -109,7 +109,7 @@ Template.post_edit.events = {
     }
   }
 };
-{% endhighlight %}
+```
 {% caption post_edit.js controller %}
 
 That might seem like a lot to take in, but once we break it down you'll see that it's actually very easy to understand even if you've never laid eyes on Meteor code before. 
@@ -120,14 +120,14 @@ Let's take a quick look at the HTML. You've probably noticed the weird-looking t
 
 The first handlebars tag is {% raw %}<code>{{#with post}}</code>{% endraw %}: 
 
-{% handlebars %}
+```html
 <template name="post_edit">
   {{#with post}}
     <!-- do something with "post" -->
   {{/with}}
 </template>
-{% endhandlebars %}
-{% caption The "with" block helper %}
+```
+<%=caption('The "with" block helper')%>
 
 This [block helper](http://handlebarsjs.com/block_helpers.html) is a shortcut to tell our template what object we want to be working on. Inside that {% raw %}<code>{{#with}}</code>{% endraw %} block, our app will understand that `this` means `post`. That `this` is know as the "data context" of the method. 
 

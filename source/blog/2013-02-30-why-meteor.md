@@ -1,5 +1,4 @@
 ---
-layout: post
 title: Why Meteor?
 published: false
 author: sacha
