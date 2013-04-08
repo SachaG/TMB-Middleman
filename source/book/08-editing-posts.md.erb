@@ -1,0 +1,139 @@
+---
+
+title: Editing Posts
+complete: 100
+date: 0008/01/01
+---
+
+## Editing posts
+
+Now that we can create posts, the next step is being able to edit and delete them. While the UI code to do so is fairly simple, it's a good occasion to talk about how Meteor manages user permissions. 
+
+### Template & Controller
+
+Our `postEdit.html` template will be a fairly standard form:
+
+{% handlebars %}
+<template name="postEdit">
+  {{#with post}}
+    <form class="main">
+      <div class="control-group">
+          <label class="control-label" for="url">URL</label>
+          <div class="controls">
+              <input name="url" type="text" value="{{url}}" placeholder="Your URL"/>
+          </div>
+      </div>
+
+      <div class="control-group">
+          <label class="control-label" for="title">Title</label>
+          <div class="controls">
+              <input name="title" type="text" value="{{title}}" placeholder="Name your post"/>
+          </div>
+      </div>
+
+      <div class="control-group">
+          <label class="control-label" for="message">Message</label>
+          <div class="controls">
+              <textarea name="message" type="text" >{{message}}</textarea>
+          </div>
+      </div> 
+
+      <div class="control-group">
+          <div class="controls">
+              <input type="submit" value="Submit" class="btn btn-primary submit"/>
+          </div>
+      </div>
+      <hr/>
+      <div class="control-group">
+          <div class="controls">
+              <a class="btn btn-danger delete" href="#">Delete post</a>
+          </div>
+      </div>
+    </form>
+  {{/with}}
+</template>
+{% endhandlebars %}
+
+And here's the `postEdit.js` controller that goes with it:
+
+{% highlight js %}
+Template.postEdit.helpers({
+  post: function() {
+    return Posts.findOne(Session.get('currentPostId'));
+  }
+});
+
+Template.postEdit.events({
+  'submit form': function(e) {
+    e.preventDefault();
+    
+    var currentPostId = Session.get('currentPostId');
+
+    var postProperties = {
+      url: $(e.target).find('[name=url]').val(),
+      title: $(e.target).find('[name=title]').val(),
+      message: $(e.target).find('[name=message]').val()
+    }
+
+    Posts.update(currentPostId, {$set: postProperties}, function(error){
+      if (error) {
+        // display the error to the user
+        throwError(error.reason);
+      } else {
+        Meteor.Router.to("/posts/"+currentPostId);
+      }
+    });
+
+  },
+  'click .delete': function(e) {
+    e.preventDefault();
+
+    if(confirm("Delete this post?")){
+      var currentPostId = Session.get('selectedPostId');
+      Posts.remove(currentPostId);
+      Meteor.Router.to("/");
+    }
+  }
+})
+```
+
+By now most of that code should be familiar. First, we have our template helper that fetches the current post and passes it on to the template. 
+
+We then have two template event callbacks: one for the form's `submit` event, and one for the delete link's `click` event. 
+
+The delete callback is extremely simple: suppress the default click event, then ask for confirmation. If you get it, obtain the current post ID from the Session variable, delete it, and finally redirect the user to the homepage. 
+
+The update callback is a little longer, but not much more complicated. After suppressing the default event and getting the current post, we get the new form field values from the page and store them in a `postProperties` object. 
+
+We then pass this object to Meteor's `Collection.update()` method, and with a callback that either displays an error (if the update failed) or sends the user back to the post's page (if the update succeeded). 
+
+### Limiting Permissions
+
+This will be the extent of our client-side code, and it works well.
+
+There's just one problem: nothing is preventing users from modifying or even deleting other people's posts.
+
+We can't have that, so we'll go back to our `allow()` and set up some more ground rules. 
+
+{% highlight js %}
+// check that the userId specified owns the documents
+var ownsDocument = function(userId, doc) {
+  return doc.userId === userId;
+}
+
+// note you can only insert via the method
+Posts.allow({
+  update: ownsDocument,
+  remove: ownsDocument
+});
+```
+{% caption lib/collections.js %}
+
+{% div note %}
+#### Method calls vs direct database manipulation client side
+
+To create posts, we are using a `post` method, whereas to edit them, whereas to edit and delete them, we are calling `update` and `remove` directly on the client, and limiting access via `allow` and `deny`. When it is appropriate to do one and not the other?
+
+The answer is that it's when things are relatively straightforward and you can adequately express your rules via `allow` and `deny`, it's usually simpler to do things directly. However, as soon as you start relying on your client side code to do the right thing (for example timestamp the new post), it's probably time to start thinking about a method!
+{% enddiv %}
+

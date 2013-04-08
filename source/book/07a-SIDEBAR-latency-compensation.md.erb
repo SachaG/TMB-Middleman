@@ -1,0 +1,108 @@
+---
+
+title: SIDEBAR - Latency Compensation
+complete: 90
+published: false
+date: 0007/01/02
+---
+
+## Methods and Latency Compensation
+
+In the last chapter, we introduced a new concept in the Meteor world: **Methods**. 
+
+A Meteor Method is a way of executing a series of commands on the server in a structured way. In our example, we used a method because we wanted to make sure that new posts were tagged with their author's name and id, as well as the current server time. 
+
+However, if Meteor executed Methods in the naive way that you might think of, there'd be a problem. Consider the following workflow (note: the timestamps are random values picked for illustrative purpose only):
+
+{% image pullright /images/book/latency1@2x.png "Without latency compensation" %}
+
+- *+0ms:* The user clicks a submit button and the browser fires a method call.
+- *+200ms:* The server makes changes to the Mongo database.
+- *+500ms:* The client receives these changes, and updates the UI to reflect them.
+
+
+If this was the way Meteor operated, then there'd be a short lag between performing such actions and seeing the results (more or less noticeable depending on how close you were to the server). We can't have that in a modern web application!
+
+### Latency Compensation
+
+To avoid this problem, Meteor introduces a concept called **Latency Compensation**. When we defined our `post` method, we placed it within a file in the `lib/` directory. This means it is avaliable to both the server *and the client* -- and it will run on both!
+
+When you make a method call the client sends of the call to the server, but also simultaneously *simulates* the action of the method on its local collections. So our workflow becomes:
+
+{% image pullright /images/book/latency2@2x.png "With latency compensation" %}
+
+- *+0ms:* The user clicks a submit button and the browser fires a method call.
+- *+0ms:*  The client simulates the action of the method call on the local collections and changes the UI to reflect this
+- *+200ms:*  The server makes changes to the Mongo database.
+- *+500ms:*  The client receives those changes and undoes it's simulated changes, replacing them with the servers changes (which are generally the same). The UI changes to reflect this.
+
+
+So, the user sees changes instantly, and when the server returns a few moments later, there may or may not be noticable changes as the server's "true" documents come down the wire. Obviously we should aim to write our methods in such a way as to make this as difficult to notice as possible!
+
+### Observing Latency Compensation
+
+Let's make a little change to the `post` method call so we can see this in action. To do so, we'll be doing some advanced coding with the `futures` npm package to delay the insertion of objects in our method:
+
+
+{% highlight js %}
+Meteor.methods({
+  post: function(post) {
+    // .. existing validation code
+    
+    // pick out the whitelisted keys, but display in the title where it was inserted
+    post = _.extend(_.pick(post, 'url', 'message'), {
+      title: post.title + (this.isSimulation ? '(client)' : '(server)'),
+      userId: user._id, 
+      author: user.username, 
+      submitted: new Date().getTime()
+    });
+    
+    // wait for 1 second
+    var Future = __meteor_bootstrap__.require('fibers/future');
+    var future = new Future();
+    Meteor.setTimeout(function() {
+      future.ret();
+    }, 1000);
+    future.wait();
+    
+    return Posts.insert(post);
+  }
+})
+```
+{% caption lib/collections.js %}
+
+Exactly how futures work is outside of the scope of this book, but we've basically told Meteor to wait for one second before doing the insert on the server collection. 
+
+If we use create a post now, we see latency compensation clearly. First, a post is inserted with `(client)` in the title:
+>>SS
+
+Then, a second later, it's cleanly replaced with the real document that was inserted by the server:
+>>SS
+
+### Local Collection Methods
+
+You might think that methods are complicated after all this talk, but in fact, they can be quite simple. In fact, we've seen three very simple methods already: the collection mutation methods, `insert`, `update` and `remove`.
+
+When you define a server collection called `'posts'`, you are implicitly defining three methods: `posts/insert`, `posts/update` and `posts/delete`. When you call `Posts.insert()` on your local collection, you are simply calling a latency compensated method that does two things: 
+
+1. Checks to see if we can make the mutation by calling `allow` and `deny` callbacks.
+2. Actually makes the modification to the underlying data store.
+  
+### Methods Calling Methods
+
+If you are keeping up, you might have just realized that our `post` method is calling another method when we insert our post! How does this work?
+
+Well, the answer is refreshingly simple. When the simulation (client-side version of the method) is being run, we run `insert`'s simulation (so we insert into our local collection), but we *do not* call the real, server side `insert`, as we assume that the server side version of `post` will do this.
+
+So, indeed, when the server side `post` method calls `insert`, there's no need to worry about simulation, and the insertion goes ahead smoothly. If you think about it, the simplest way is the best!
+
+
+
+
+
+
+
+
+
+
+

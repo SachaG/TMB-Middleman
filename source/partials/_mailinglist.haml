@@ -1,0 +1,20 @@
+.mailinglist
+  .row
+    %a{:href => '/'}
+      %img.book{:src => '/images/meteor_book_illustration.png'}
+    .form
+      %h3 Receive Meteor <strong>getting-started tips</strong> and get a special <strong>launch discount</strong>:
+      %form{:action => "http://sachagreif.us2.list-manage.com/subscribe/post?u=b5af47765edbd2fc173dbf27a&id=ed0fb4ac61", :method => "post", :name => "mc-embedded-subscribe-form", :novalidate => "", :target => "_blank"}
+        %input.email{:name => "EMAIL", :placeholder => "Your email", :type => "email"}
+        %input#landing{:type=>"hidden", :name=>"LANDING", :value=>"The Meteor Book"}
+        %input#origin{:type=>"hidden", :name=>"ORIGIN"}
+        %button.submit.button{:name => "subscribe", :type => "submit"} Subscribe
+    .share
+      %h4 Share the news!
+      %ul
+        %li
+          %a.ss-icon{:href => "https://twitter.com/intent/tweet?original_referer=https%3A%2F%2Ftwitter.com%2Fabout%2Fresources%2Fbuttons&text=The%20Meteor%20Book%3A%20learn%20to%20build%20a%20Meteor%20app%20from%20scratch&tw_p=tweetbutton&url=http%3A%2F%2Fthemeteorbook.com&via=TheMeteorBook", :target => "_blank"} twitter
+        %li
+          %a.ss-icon{:href => "http://www.facebook.com/sharer/sharer.php?src=bm&v=4&i=1359253178&u=http%3A%2F%2Fthemeteorbook.com", :target => "_blank"} facebook  
+        %li
+          %a.ss-icon{:href => "https://plus.google.com/share?url=http://themeteorbook.com", :target => "_blank"} googleplus  

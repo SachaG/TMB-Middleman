@@ -1,0 +1,224 @@
+---
+
+title: Pagination
+complete: 80
+date: 0012/01/01
+---
+
+## Pagination and Subscriptions
+
+{% div chapter %}
+#### In this chapter, we'll:
+
+- Learn more about Meteor's subscriptions, and how we can use them to control data.
+- Use the `paginated-subscription` package to step through a list of posts, without publishing them all at once.
+- Create a special subscription to deal with direct links to post discussions.
+- Be more careful with monitoring when our data is loading and keeping the user updated of what's happening.
+{% enddiv %}
+
+
+Things are looking pretty great with Miniscope, and we can expect a hit reception when it's released to the world. We should probably think a little about the performance implication of the rash of new posts that are going to entered into the site as it takes off!
+
+We've spoken before about how a client side collection should contain a subset of the data on the server, and we've even managed to achieve that for our notification and comments collections. But we are still publishing all of our posts in one go to all connected users. Eventually, if we expect thousands of links to be posted, this is going to become extremely problematic. 
+
+So it's better to paginate our posts.
+
+### Getting more posts
+
+First off, let's quickly write some simple code to load up a bunch of posts in our fixture data, so we've got enough that pagination makes sense.
+
+{% highlight js %}
+// Fixture data 
+if (Posts.find().count() === 0) {
+  var now = new Date().getTime();
+  
+  for (var i = 0; i < 10; i++)
+  Posts.insert({
+    title: 'Test post #' + i,
+    author: 'Sacha Greif',
+    authorId: sachaId,
+    url: 'http://google.com/?q=test-' + i,
+    submitted: now - i * 3600 * 1000
+  });
+}
+```
+{% caption server/fixtures.js %}
+
+
+### Using the Paginated Subscription package
+
+To achieve pagination, we'll use the `paginated-subscription` package, which can be used to take an ordinary subscription, and paginate it in with an "Infinite Scroll"-type user experience.
+
+```bash
+mrt add paginated-subscription
+```
+{% caption command line %}
+
+Using the package is easy--we just augment our calls to `publish` and `subscribe` with numeric arguments indicating the number of posts we'd like per page. So in `miniscope.js`, we do:
+
+{% highlight js %}
+var postsHandle = Meteor.subscribeWithPagination('posts', 10);
+```
+{% caption client/miniscope.js %}
+
+This tells the package to setup a subscription with `10` posts coming up each time we head to a new page. `postsHandle` is the method that we'll use to increase the amount of posts to load, as we'll soon see.
+
+At the server end, we just need to modify our `'posts'` subscription to take a final argument indicating how many posts we want to send down at this moment. So we change it to:
+
+{% highlight js %}
+Meteor.publish('posts', function(limit) {
+  return Posts.find({}, {sort: {submitted: -1}, limit: limit});
+});
+```
+{% caption server/publish.js %}
+
+As we are no longer publishing all the posts, we need to be careful about the order that we choose them out of the database in. Here, we are publishing the latest `limit` posts, in order of submission date. The package will take care of increasing the `limit` variable as the user asks to see more posts (once we've wired it into our user interface of course!).
+
+### Using the subscription handle
+
+The paginated subscription handle has three useful (reactive) functions that we can use in our helpers to figure out what's happening with the subscription:
+
+ - `handle.limit()` -- this is the number of documents that the subscription has asked the server for.
+ - `handle.loaded()` -- this is the amount of documents that the server claims to have returned. It's a simple counter that gets incremented by `n` (in our case, 10) each time we click "load more", so the actual number of documents could be less if we've reached the end.
+ - `handle.loading()` -- is a shorthand to check if the two above are the same, which tells us that the subscription is "ready".
+
+We can use the combination of those three helpers to manufacture our "infinite scroll" solution. To begin with, we'll add a few elements to our post list template:
+
+{% handlebars %}
+<template name="postsList">
+  <div class="posts">
+    {{#each posts}}
+      {{> postItem}}
+    {{/each}}
+    
+    {{#if postsReady}}
+    	<div class="grid more-button {{#if allPostsLoaded}} hidden {{/if}}">
+    		<a class="more-link" href="#">Load more</a>
+    	</div>
+    {{else}}
+      <div>Loading...</div>
+    {{/if}}
+  </div>
+</template>
+{% endhandlebars %}
+{% caption client/views/posts/posts_list.html %}
+
+We've added at the bottom of our list either a button saying "Load more", or a spinner indicating if we are waiting on the server to do so.
+
+In order to implement this, we need to set up the right helpers on the `postsList` collection, which we can do using the paginated subscription handle functions:
+
+{% highlight js %}
+Template.postsList.helpers({
+  posts: function() {
+    return Posts.find({}, {sort: {submitted: -1}, limit: postsHandle.limit()})
+  },
+  postsReady: function() {
+    return ! postsHandle.loading();
+  },
+  allPostsLoaded: function() {
+    return ! postsHandle.loading() && 
+      Posts.find().count() < postsHandle.loaded();
+  }
+});
+```
+{% caption client/views/posts/posts_lists.js %}
+
+Working out if the current list of posts are ready is easy enough, as we can just ask the handle if it's still loading. Working out if all the posts are loaded is a little more tricky. We need to make sure that we aren't still waiting for more posts, and then see if the total number of posts we do have is less that how many the subscription thinks we should have. If it's less, that's a sign that there are no posts left to load.
+
+<img src="/images/book/pagination_diagram@2x.png"/>
+{% caption Comparing Posts.find().count() and postsHandle.loaded()%}
+
+You'll notice also that we changed the `posts` function to return the posts in the correct order, and limited it to show only as many we are currently supposed to show, according to the handle. This is because there may be other posts in the collection, as we'll see later.
+
+### Hooking up the "Show more" button
+
+Finally, we need to make the show more button work. Luckily, the paginated subscription makes this easy for us. It provides a `handle.loadNextPage()` function which does exactly that. So we just need to call it:
+
+{% highlight js %}
+Template.postsList.events({
+  'click .more-link': function(event) {
+    event.preventDefault();
+    postsHandle.loadNextPage();
+  }
+});
+```
+{% caption client/views/posts/posts_lists.js %}
+
+It's simple enough, and we can see the post loading in action:
+>> Screenshots
+
+### Direct links to old posts
+
+It's all very well just loading the 10 newest post by default, but what if someone browses to the permalink of a post which is older? Let's try visiting the URL of the 11th post and seeing what happens.
+
+We can get there by making sure we have at least eleven post loaded on the post list page, and then opening the eleventh:
+
+>> SS
+
+If we refresh the page, we reset all our subscriptions, and our paginated subscription reverts to just loading the first ten posts. So now we see:
+
+>> SS
+
+You'll see that we are looking at an empty post with no data. If you think about it, it makes sense--we are loading up the ten newest posts into our local Posts collection, but we've never loaded the post we wanted!
+
+What are we to do? Do we need to alter our `posts` publication to also factor in the single post we are interested in? We don't. We'll let you in on a little secret here: you can have more than one publication for each collection! 
+
+A couple chapters back, we simply named our "X newest posts" publication `'posts'`. But that name was just a convenience because it was the only publication involving posts (also at that point it published all the posts too!).
+
+Now we've limited it , we should really call that publication `'newPosts'`, and in fact we'll do that now. At the same time, let's make a _new_ publication, for a single post, identified by `id`:
+{% highlight js %}
+Meteor.publish('newPosts', function(limit) {
+  return Posts.find({}, {sort: {submitted: -1}, limit: limit});
+});
+
+Meteor.publish('singlePost', function(id) {
+  return id && Posts.find(id);
+});
+```
+{% caption server/publications.js %}
+
+Now, let's subscribe to the right posts on the client side:
+{% highlight js %}
+var postsHandle = Meteor.subscribeWithPagination('posts', 10);
+
+Meteor.autorun(function() {
+  Meteor.subscribe('singlePost', Session.get('currentPostId'));
+});
+```
+{% caption client/miniscope.js %}
+
+So we can see that we subscribe to *both* publications on the client side, and the correct data is loaded. The single post that we want to load is in the `currentPostId` session variable (as we've seen before), and we just need to pass it through to the `singlePost` subscription.
+
+{% div note %}
+What does `Meteor.autorun` do and why do we need to wrap our subscription in it? 
+
+Remember that the Session is a *reactive data source*. When we use the Session in template helpers, we are implicitly using them in reactive *computations* as a template contains such a context. What does this mean? It means that if the reactive source changes, the computation will know to re-run itself, with the net result of the template re-rendering itself, which is exactly what we want.
+
+Here, we want the subscription to reset itself whenever the `currentPostId` session variable changes. To do so, we need to set up a similiar reactive computation. `Meteor.autorun` does this--as the name implies, the code inside the autorun will automatically run and keep running each and every time the reactive data sources used inside it change.
+{% enddiv %}
+
+
+### A flash of unloaded data
+
+If you look really carefully, you might notice that we can still see the "unloaded" state on our a single post page. If you are running Meteor locally, it's only there for a split second, but on a server with a reasonable latency, it's quite noticable.
+
+This is because it takes some time for Meteor to fetch the data for the post from the server. Even though the amounts of data involved are very small, the nature of the internet is that it will still take a few hundred milliseconds at the very least for this to happen. 
+
+Ideally we wouldn't show this unloaded state, as it looks a little sloppy and unprofessional. Instead, we should show the user a loading spinner in that time period. 
+
+XXX: not going to finish this as I might find a good way to do this with the router...
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

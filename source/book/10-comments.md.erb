@@ -1,0 +1,181 @@
+---
+
+title: Comments
+complete: 100
+date: 0010/01/01
+---
+
+## Commenting
+
+The point of a social news site is creating a community of users, and there's no way we can do that with letting people talk to each other. So let's make some comments!
+
+### Getting started
+
+We'll begin by creating a new collection to store comments in, and adding some basic fixture data into that collection.
+
+{% highlight js %}
+var Comments = new Meteor.Collection('comments');
+```
+{% caption lib/collections.js %}
+
+{% highlight js %}
+// Fixture data 
+if (Posts.find().count() === 0) {
+  var now = new Date().getTime();
+  
+  // create two users
+  var tomId = Meteor.users.insert({
+    profile: { name: 'Tom Coleman' }
+  });
+  var tom = Meteor.users.findOne(tomId);
+  var sachaId = Meteor.users.insert({
+    profile: { name: 'Sacha Greif' }
+  });
+  var sacha = Meteor.users.findOne(sachaId);
+  
+  
+  var telescopeId = Posts.insert({
+    title: 'Introducing Telescope',
+    author: 'Sacha Greif',
+    authorId: sachaId,
+    url: 'http://sachagreif.com/introducing-telescope/'
+  });
+  
+  Comments.insert({
+    postId: telescopeId,
+    authorId: tom._id,
+    authorName: tom.profile.name,
+    submitted: now - 5 * 3600 * 1000,
+    body: 'Interesting project Sacha, can I get involved?'
+  });
+  
+  Comments.insert({
+    postId: telescopeId,
+    authorName: sacha.profile.name,
+    authorId: sacha._id,
+    submitted: now - 3 * 3600 * 1000,
+    body: 'You sure can Tom!'
+  });
+}
+```
+{% caption server/fixtures.js %}
+
+To make this code work, you'll need to `mrt reset`, and clear your database.
+
+First, we created a couple of (completely fake) users, inserting them into the database and using their `id`s to select them out of the database afterwards. Then we added a comment for each user on the first post, linking the comment to the post (with `postId`), and the user (with `userId`). We also added a submission date and body to each comment, along with a denormalized field: the `authorName`.
+
+### Displaying comments
+
+It's all very well putting comments into the database, but we also need to show them on the discussion page. Hopefully this process should be fairly familiar to you by now, and you already know what's coming next!
+
+{% handlebars %}
+<ul class="comments">
+  {{#each comments}}
+    {{> comment}}
+  {{/each}}
+</ul>
+{% endhandlebars %}
+{% caption client/views/posts/post.html %}
+
+{% highlight js %}
+Template.post.helpers({
+  comments: function() {
+    return Comments.find({postId: this._id}, {sort: {submitted: -1}});
+  }
+});
+```
+{% caption client/views/posts/post.js %}
+
+We've put the `{%raw%}{{#each comments}}{%endraw%}` block inside the post template, so `this` is a post within the `comments` helper. To find the relevant comments, we check those that have linked themselves to that post, with the `postId` attribute. Finally we sort the comments by the time of submission (which we've stored as a numeric timestamp).
+
+Rendering a comment is pretty straightforward, given what we've learnt about helpers and handlebars:
+
+{% handlebars %}
+<template name="comment">
+  <li>
+    <span class="author">{{authorName}}:</span>
+    {{body}}
+    <span class="date">{{submittedText}}</span>
+  </li>
+</template>
+{% endhandlebars %}
+{% caption client/views/comments/comment.html %}
+
+### Submitting comments
+
+Let's add a way for our users to create new comments. The process we'll follow will be pretty similar to how we've already allowed users to create new posts.
+
+We start by adding a submit box at the bottom of each post:
+
+{% handlebars %}
+{{#if currentUser}}
+  {{> newComment}}
+{{/if}}
+{% endhandlebars %}
+{% caption client/views/posts/post.html %}
+
+{% handlebars %}
+<template name="newComment">
+  <form name="comment">
+    <label for="body">Comment on this post</label>
+    <textarea name="body"></textarea>
+    <button type="submit">Add Comment</button>
+  </form>
+</template>
+{% endhandlebars %}
+{% caption client/views/comments/comment_submit.html %}
+
+To submit our comments, we call a `comment` method in the `newComment.js` controller, which works more or less the same way as our `postSubmit` controller.
+
+{% highlight js %}
+Template.newComment.events({
+  'submit form': function(event, template) {
+    event.preventDefault();
+    
+    var comment = {
+      body: $(event.target).find('[name=body]').val(),
+      postId: template.data._id
+    };
+    
+    Meteor.call('comment', comment, function(error, commentId) {
+      error && throwError(error.reason);
+    });
+  }
+});
+```
+{% caption client/views/comments/comment_submit.js %}
+
+Just like we had a `post` server-side method, we'll set up a `comment` Meteor method to create our comments, check that everything is legit, and finally insert the new comment into the comments collection.
+
+{% highlight js %}
+Meteor.methods({
+  comment: function(comment) {
+    var user = Meteor.user();
+    // ensure the user is logged in
+    if (!user)
+      throw new Meteor.Error(401, "You need to login to make comments");
+      
+    if (!comment.body)
+      throw new Meteor.Error(422, 'Please write some content');
+      
+    if (!comment.postId)
+      throw new Meteor.Error(422, 'You must comment on a post');
+    
+    comment = _.extend(_.pick(comment, 'postId', 'body'), {
+      userId: user._id,
+      // XXX: be consistent here
+      authorName: user.username,
+      submitted: new Date().getTime()
+    });
+    
+    return Comments.insert(comment);
+  }
+})
+```
+{% caption lib/collections.js %}
+
+
+
+
+
+

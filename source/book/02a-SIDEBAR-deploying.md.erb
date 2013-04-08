@@ -1,0 +1,91 @@
+---
+
+title: SIDEBAR - Deploying
+complete: 30
+published: false
+date: 0001/01/02
+---
+
+- Meteor
+- Heroku
+- EC2
+
+Some people like to work quietly on a project until it's perfect, while others can't wait to show the world as soon as possible. 
+
+If you're the first kind of person and would rather develop locally for now, feel free to skip this chapter. On the other hand, if you'd rather take the time to learn how to deploy your Meteor app online, we've got you covered. 
+
+In this chapter we'll cover 3 options for deploying: Meteor.com, Heroku, and EC2. 
+
+### Deploying on Meteor.com
+
+Deploying on Meteor.com couldn't be easier. Open the command line, navigate to your app's directory, and simply type:
+
+```bash
+meteor deploy myapp.meteor.com
+```
+
+Or in our case, since we're using Meteorite:
+
+```bash
+mrt deploy myapp.meteor.com
+```
+
+Or, if you want to use domain, set its CNAME to redirect to `origin.meteor.com` and then deploy with:
+
+```bash
+mrt deploy www.myapp..com
+```
+
+Hosting on Meteor is free, but is fairly limited since you don't have access to monitoring tools and can't control your resources.
+
+### Deploying on Heroku
+
+Deploying on [Heroku](http://heroku.com) is still free (as long as you only use one dyno, which is the only way to make Meteor work anyway), but gives you a little more control over your app. 
+
+We won't cover installing [Git](http://git-scm.com) and the Heroku command line here, but both can be done pretty easily with the [Heroku Toolber](https://toolbelt.herokuapp.com/).
+
+You'll need to use the [Heroku Buildpack for Meteorite](https://github.com/oortcloud/heroku-buildpack-meteorite.git). Buildpacks contains special instructions for Heroku, in this case to specify how to set up a server to run Meteor apps properly. When it comes time to create your new Heroku app, simply use this command:
+
+```bash
+heroku create --stack cedar --buildpack https://github.com/oortcloud/heroku-buildpack-meteorite.git
+```
+
+Or, you can also add a buildpack to an existing Heroku app:
+
+```bash
+heroku config:add BUILDPACK_URL=https://github.com/oortcloud/heroku-buildpack-meteorite.git
+```
+
+You'll also need to provide a MongoDB database for your app. We recommend the [MongoHQ](https://www.mongohq.com/home) Heroku add-on (it comes with a nice UI for browsing your data), which you can either add via their web admin, or via the following command:
+
+```bash
+heroku addons:add mongohq:small
+```
+
+Before our Heroku instance is ready, we also need to configure Meteor's `ROOT_URL` environment variable to tell the app where it's running:
+
+```bash
+heroku config:add ROOT_URL=http://www.domain.com
+```
+
+This is also a good time to add other config variables, such as `MAIL_URL`. For example, if you wanted to use [Mailgun](http://mailgun.com) to send emails from your app, you would type in something like this (after getting your own credentials from your Mailgun account):
+
+```bash
+heroku config:add MAIL_URL=smtp://postmaster%40YOUR_DOMAIN.mailgun.org:YOUR_PASSWORD@smtp.mailgun.org:587/
+```
+
+Now that our configuration is done, all that's left to do is to use Git to push to Heroku:
+
+```bash
+git push heroku
+```
+
+Congratulations, your app should now be up and running! And by the way, if you ever need to display your configuration variables (such as your MongoDB database's URL), just type:
+
+```bash
+heroku config
+```
+
+### Deploying on EC2
+
+Up to now, we've only talked about deploying on managed platforms like Meteor.com or Heroku. But let's see how to take it one step further and configure a server from scratch to run our app on a service like [EC2](http://aws.amazon.com/ec2/) or [Digital Ocean](digitalocean.com).

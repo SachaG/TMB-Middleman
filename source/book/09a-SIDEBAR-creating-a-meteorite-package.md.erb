@@ -1,0 +1,225 @@
+---
+
+title: SIDEBAR - Creating a Meteorite Package
+complete: 80
+published: false
+date: 0009/01/02
+---
+
+## SIDEBAR: Creating a Meteorite package
+
+We've built a re-usable pattern with our errors work, so why not package it up into a smart package and share it with the rest of the Meteor community?
+
+It's easier than you think!
+
+### Getting set up
+
+First we need to create some structure for our package to reside in.
+
+First, let's create a directory for the package to live in, heirarchically next to our `miniscope` application:
+
+```bash
+cd ..
+mkdir errors
+cd errors
+```
+{% caption bash console %}
+
+
+Next, we'll create the `package.js`, the file that's used to inform Meteor of how the package will be used.
+
+{% highlight js %}
+Package.describe({
+  summary: "A pattern to display application errors to the user"
+});
+
+Package.on_use(function (api, where) {
+  api.use('minimongo', 'client');
+  api.use('handlebars', 'client');
+  
+  api.add_files(['errors_client.js', 'errors.html', 'errors_controller.js'], 'client');
+});
+```
+{% caption package.js %}
+
+We've added three files to the package, which correspond to the three files that we'll create in the package directory, which are more or less pulled directly from miniscope, modulo some proper namespacing:
+
+{% highlight js %}
+// Local (client-only) collection
+Meteor.errors = new Meteor.Collection(null);
+
+
+Meteor.Errors = {
+  throw: function(message) {
+    Meteor.errors.insert({message: message, show: true, seen: false})
+  },
+
+  clear: function() {
+    Meteor.errors.update({}, {$set: {show: false}}, {multi:true});
+  },
+
+  clearSeenErrors: function() {
+    Meteor.errors.update({seen: true}, {$set: {show: false}}, {multi:true});
+  }
+};
+```
+{% caption errors_client.js %}
+
+{% handlebars %}
+<template name="meteorErrors">
+  {{#each errors}}
+    {{> meteorError}}
+  {{/each}}
+</template>
+
+<template name="meteorError">
+  <div class="alert alert-error">
+    <button type="button" class="close" data-dismiss="alert">&times;</button>
+    {{message}}
+  </div>
+</template>
+{% endhandlebars %}
+{% caption errors.html %}
+
+{% highlight js %}
+Template.meteorErrors.helpers({
+  errors: function() {
+    return Meteor.errors.find({show: true});
+  }
+});
+
+Template.meteorError.events({
+  'click .clear': function() {
+    Meteor.Errors.clearErrors();
+  }
+});
+
+Template.meteorError.rendered = function() {
+  var error = this.data;
+  Meteor.setTimeout(function() {
+    Meteor.errors.update(error._id, {$set: {seen: true}});
+  }, 500);
+};
+```
+{% caption errors_controller.js %}
+
+
+### Testing with miniscope
+
+Let's make sure that our changed code works, and test things locally with miniscope. To do so, we'll link to the development smart package in miniscope. We need to manually edit `smart.json`, and add to the `"packages"` section.
+
+{% highlight json %}
+{
+  "packages": {
+    "errors": {
+      "path": "../errors/"
+    }
+  }
+}
+```
+{% caption smart.json %}
+
+We've linked via `../errors/` as that's where the package we are developing is located relative to miniscope. 
+
+Now we can run `mrt add errors` to tell Meteor to use the package.
+
+Once that's done, we can stop and restart `mrt`, and it should start linking to the local package. Now any changes that we make to `errors` will be reflected in our app.
+
+Next we need to remove our `errors` code from miniscope (as we've put them into the package), and use our new API. Once that's done, we should regain our original functionality (and test out that it works properly!).
+
+### Writing tests
+
+The first step in developing a package is testing it against an application, but the next is to write an actual test suite that properly tests the package's behaviour. Meteor itself comes with a built in package tester that we can use to do so.
+
+First, we need to add a `smart.json`, to tell meteorite about the package so we can run `mrt` against it (and later so we can release it):
+
+{% highlight json %}
+{
+  "name": "errors",
+  "description": "A pattern to display application errors to the user",
+  "homepage": "https://github.com/tmeasday/meteor-errors",
+  "author": "Tom Coleman <tom@thesnail.org>",
+  "version": "0.1.0",
+  "git": "https://github.com/tmeasday/meteor-errors.git",
+  "packages": {
+  }
+}
+```
+{% caption smart.json %}
+
+Then we'll create a test file that uses tiny test to run some tests against the errors codebase:
+
+{% highlight js %}
+Tinytest.add("Errors collection works", function(test) {
+  test.equal(Meteor.errors.find({show: true}).count(), 0);
+  
+  Meteor.Errors.throw('A new error!');
+  test.equal(Meteor.errors.find({show: true}).count(), 1);
+  
+  Meteor.Errors.clear();
+  test.equal(Meteor.errors.find({show: true}).count(), 0);
+});
+
+Tinytest.addAsync("Errors template works", function(test, done) {  
+  Meteor.Errors.throw('A new error!');
+  test.equal(Meteor.errors.find({show: true, seen: false}).count(), 1);
+  
+  // render the template
+  OnscreenDiv(Spark.render(function() {
+    return Template.meteorErrors();
+  }));
+  
+  // wait a few seconds
+  Meteor.setTimeout(function() {
+    test.equal(Meteor.errors.find({show: true, seen: false}).count(), 0);
+    test.equal(Meteor.errors.find({show: true}).count(), 1);
+    Meteor.Errors.clearSeenErrors();
+    
+    test.equal(Meteor.errors.find({show: true}).count(), 0);
+    done();
+  }, 1000);
+})
+```
+{% caption errors_tests.js %}
+
+In these tests we're checking the basic `Meteor.Errors` functions work, as well as double checking that the template `rendered` code is still functioning.
+
+We need to tell Meteor how to run the tests in `package.js`:
+{% highlight js %}
+Package.on_test(function(api) {
+  api.use('errors', 'client');
+  api.use(['tinytest', 'test-helpers'], 'client');  
+  
+  api.add_files('errors_tests.js', 'client');
+});
+```
+{% caption package.js %}
+
+Then we can run the tests with `mrt` in the package directory, and we should see:
+>>SS
+
+### Releasing the package
+
+Earlier, we put in some basic metadata about the package, and what it's all about, including the git location where we are going to host it (on github), and an initial version that we'll start at. We set the `"packages"` config attribute to an empty object to indicate that this package doesn't rely on any other non-core Meteor packages.
+
+Once that's in place, releasing is easy! First we just need to push the code to github at that location, and then we can use the `mrt release` command to finish the job:
+
+```bash
+git push origin master
+mrt release .
+```
+{% caption bash console %}
+
+Done!
+
+Now that it's released, we no longer need to link to the local package (unless we want to continue developing it), so we can change our `smart.json`:
+{% highlight json %}
+{
+  "packages": {
+    "errors": {}
+  }
+}
+```
+{% caption smart.json %}
+
+Once we've restarted `mrt` (in the miniscope app), we should see Meteorite download our newly published package. Awesome!

@@ -1,0 +1,180 @@
+---
+
+title: Templates & Controllers
+complete: 100
+date: 0003/01/01
+---
+
+## Templates & Controllers
+
+
+{% div chapter %}
+#### In this chapter, you will:
+
+- Learn about Meteor's templating language, Handlebars
+- Create our first three templates
+- Learn how Meteor controllers work
+- Get a basic prototype working with static data
+{% enddiv %}
+
+### Our First Template
+
+To ease into Meteor development, we'll adopt an outside-in approach. In other words we'll build a static HTML outer shell first, and then hook it up to our app's inner workings.  
+
+This means that in this chapter we'll only concern ourselves with what's happening inside the `/client` directory. 
+
+Let's create a new file named `main.html` inside our `/client` directory, and fill it with the following code: 
+
+{% handlebars %}
+<head>
+  <title>Microscope</title>
+</head>
+<body>
+  <div class="container">
+  <header class="navbar">
+    <div class="navbar-inner">
+      <a class="brand" href="/">Microscope</a>
+    </div>
+  </header>
+  <div id="main" class="row-fluid">
+    {{> postsList}}
+  </div>
+  </div>
+</body>
+{% endhandlebars %}
+{% caption client/views/main.html %}
+
+This is going to be our main app template. As you can see it's all HTML except for a single `{%raw%}{{> postList}}{%endraw%}` tag, which we'll soon explain. But for now, let's create a couple more templates. 
+
+### More Templates
+
+At its core, a forum is made up of posts organized in lists. So that's exactly how we'll organize our templates, too. 
+
+Let's create a `/views` directory inside `/client`. This will be where we put all our templates. And to keep things tidy we'll also create `/posts` inside `/views` just for our post-related templates. 
+
+We're finally ready to create our second template. Inside `/posts`, create `postsList.html`:
+
+{% handlebars %}
+<template name="postsList">
+  <div class="posts">
+    {{#each posts}}
+      {{> postItem}}
+    {{/each}}
+  </div>
+</template>
+{% endhandlebars %}
+{% caption client/views/postsList.html %}
+
+And `postItem.html`: 
+
+{% handlebars %}
+<template name="postItem">
+  <div class="post">
+    <div class="post-content">
+    <h3><a href="{{url}}">{{title}}</a><span>{{domain}}</span></h3>
+    </div>
+  </div>
+</template>
+{% endhandlebars%}
+{% caption client/views/postsItem.html %}
+
+It's time to introduce Meteor's templating system, Handlebars. Handlebars is simply HTML, with the addition of three things: *includes*, *expressions* and *block helpers*.
+
+*Includes* use the `{%raw%}{{> templateName}}{%endraw%}` syntax, and simply tell Meteor to replace them with the template of the same name, in our case `postItem`.
+
+*Expressions* such as `{%raw%}{{title}}{%endraw%}` either call a property of the current object, or the return value of a template helper as defined in the current template's controller (more on this later). 
+
+Finally, *block helpers* are special tags that control the flow of the template, like `{%raw%}{{#each}}…{{/each}}{%endraw%}` or `{%raw%}{{#if}}…{{/if}}{%endraw%}`.
+
+Armed with this knowledge, we can understand what's going on here. 
+
+First, in the `postsList` template, we're iterating over a `post` object with the `{%raw%}{{#each}}…{{/each}}{%endraw%}` block helper. Then, for each iteration we're including the `postItem` template. 
+
+Where is this `post` object coming from by the way? Good question. It's actually a template helper too, and we'll define it later on when we look at template controllers. 
+
+The `postItem` template itself if fairly straightforward. It only uses three expressions, two of which (`{%raw%}{{url}}{%endraw%}` and `{%raw%}{{title}}{%endraw%}`) return the object's properties, and one of which (`{%raw%}{{domain}}{%endraw%}`) calls a template helper. 
+
+We've been mentioning "template helpers" a lot throughout this chapter without really mentioning what they do. But we can't really explain this without also introducing controllers, which coincidentally happens to be the topic of the next section!
+
+### Controllers
+
+Up to now we've been dealing with Handlebars, which is little more than HTML with a few tags sprinkled in. Unlike other languages like PHP (or even regular HTML pages, which can include JavaScript), Meteor keeps templates and their logic separated, and these templates don't do much by themselves. 
+
+In order to come to life, a template needs a **controller**. To keep things simple, we'll adopt the convention of naming the controller after the template, except with a **.js** extension. 
+
+So let's create `postList.js` inside `/client/views/posts` right away and start building our first controller:
+
+{% highlight js %}
+var postsData = [
+  {
+    title: 'Introducing Telescope',
+    author: 'Sacha Greif',
+    url: 'http://sachagreif.com/introducing-telescope/'
+  }, 
+  {
+    title: 'Meteor',
+    author: 'Tom Coleman',
+    url: 'http://meteor.com'
+  }, 
+  {
+    title: 'The Meteor Book',
+    author: 'Tom Coleman',
+    url: 'http://themeteorbook.com'
+  }
+];
+Template.postsList.helpers({
+  posts: postsData
+});
+```
+{% caption client/views/postsList.js %}
+
+We're doing two things here. First we're setting up some dummy prototype data in the `postsData` array. That data would normally come from the database, but since we haven't seen how to do that yet (wait for the next chapter) we're "cheating" by using static data. 
+
+Second, we're using Meteor's `Template.myTemplate.helpers()` function to define a template helper called `posts` that simply returns out `postsData` array.  
+
+Defining the `posts` helper means it will now be available for our template to use here:
+
+{% handlebars %}
+<template name="postsList">
+  <div class="posts">
+    {{#each posts}}
+      {{> postItem}}
+    {{/each}}
+  </div>
+</template>
+{% endhandlebars %}
+{% caption client/views/postsList.html %}
+
+So our template will now be able to iterate over our `postsData` array, and send each object contained within to the postItem template. 
+
+### The Value of "this"
+
+We'll follow the include tag and create the `postItem.js` controller:
+
+{% highlight js %}
+Template.postItem.helpers({
+  domain: function() {
+    var a = document.createElement('a');
+    a.href = this.url;
+    return a.hostname;
+  }
+});
+```
+{% caption client/views/postsItem.js %}
+
+This time our `domain` helper's value is not an array, but an anonymous function. This pattern is much more common (and more useful!) compared to our previous simplified dummy data examples. 
+
+The `domain` helper takes an url and return its domain via a bit of JavaScript magic. But where does it take that url from in the first place?
+
+To answer that question we need to go back to our `postList.html` template. The `{%raw%}{{#each}}{%endraw%}` block helper not only iterates over our array, it also **sets the value of `this` inside the block to the iterated object**. 
+
+This means that between both `{%raw%}{{#each}}{%endraw%}` tags, each post is assigned to `this` successively, and that extends all the way inside the included template's controller (`postItem.js`). 
+
+We now understand why `this.url` returns the current post's URL. And moreover, when if we use `{%raw%}{{title}}{%endraw%}` and `{%raw%}{{url}}{%endraw%}` inside our `postItem.html` template, Meteor knows that we mean `this.title` and `this.url` and returns the correct values. 
+
+### Putting it all together
+
+If you've followed along correctly, you should now be able to open up your browser to your app and see a list of posts!
+
+That list is just static data, so it doesn't take advantage of Meteor's real-time features just yet. But we'll show you how to change that in the next chapter. 
+

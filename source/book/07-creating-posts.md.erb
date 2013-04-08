@@ -1,0 +1,285 @@
+---
+
+title: Creating Posts
+complete: 95
+date: 0007/01/01
+---
+
+## Creating posts
+
+{% div chapter %}
+#### In this chapter, you will:
+
+- Learn how to submit a post client-side
+- Implement a simple security check
+- Restrict access to the post submit form
+- Learn to use a server-side method for added security
+{% enddiv %}
+
+We've seen how easy it is to create posts via the console, using the `Posts.insert` database call, but we can't expect our users to open the console to create a new post! Obviously we need to build some kind of user interface to let our users post new stories to our forum. 
+
+Thankfully, Meteor makes this easy too; so let's get started!
+
+### Building the new Post page.
+
+We start by defining a route for our new page:
+
+{% highlight js %}
+Meteor.Router.add({
+  ...
+  '/submit': 'postSubmit'
+});
+```
+{% caption client/lib/router.js %}
+
+This means if a user browses to the `/submit` URL, we'll display the `postSubmit` template. So we'd better write that template:
+
+{% handlebars %}
+<template name="postSubmit">
+  <form name="post_submit" class="span8 offset2">
+    <label for="url">URL</label>
+    <input name="url" type="text" value="" placeholder="Your URL"/>
+    
+    <label for="title">Title</label>
+    <input name="title" type="text" value="" placeholder="Name your post"/>
+    
+    <label for="message">Message</label>
+    <textarea name="message" type="text" value=""/>
+    
+    <input type="submit" value="Submit" class="btn btn-primary"/>
+  </form>
+</template>
+{% endhandlebars %}
+{% caption client/views/postSubmit.html %}
+
+This is a simple form. We don't need to worry about an action for it, as we'll be intercepting submit events on the form and updating data via javascript. (It doesn't make sens to provide a non-JS fallback when you consider that a Meteor app is completely non-functional with JavaScript disabled).
+
+We just set some straightforward `name` attributes on our form elements so we can easily grab their values out again in our event handler, as we'll see.
+
+### Creating posts
+
+Let's bind an event handler to the form `submit` event. It's best to use the `submit` event (rather than say a `click` event on the button), as we then cover all possible ways of submitting (such as hitting enter in URL field for instance). So we write:
+
+{% highlight js %}
+Template.post_submit.events({
+  'submit form': function(event) {
+    event.preventDefault();
+    
+    var post = {
+      url: $(e.target).find('[name=url]').val(),
+      title: $(e.target).find('[name=title]').val(),
+      message: $(e.target).find('[name=message]').val()
+    }
+    
+    var id = Posts.insert(post);
+    Meteor.Router.to(Meteor.Routes.post(id));
+  }
+})
+```
+{% caption client/views/postSubmit.js %}
+
+This function uses `jQuery` to parse out the values of our various form fields, and populate a new post object from the results. We need to ensure we `preventDefault` on the `event` argument to our handler to make sure the form doesn't go ahead and submit somewhere unexpected. 
+
+Finally, we can route to the show page for our new post! The `insert()` function on a collection returns the generated `id` for the object that has been inserted into the database. Luckily the `Meteor.Router.routes.post` function can handle either an object with an `_id` attribute or an id directly, so our code works well.
+
+The net result is the user hitting submit, a post being created, and the user instantly being taken to the discussion page for that new post.
+
+### Adding some security
+
+Creating posts is all very well, but we don't want to let any random visitor do it; we want them to be logged in to do so. Of course, we could hide the new post form for logged out users (and we will do that). Still, a user could conceivably create a post in the browser console without being logged in, and we can't have that.
+
+How do we control data security in Meteor? Well, data security is baked right into Meteor collections; it's just that it's turned off by default when you create a new project. This is so you can easily get started and start doing things without having to think about it.
+
+Our app no longer needs these training wheels, so let's take them off! We'll remove the `insecure` package:
+
+```bash
+mrt remove insecure
+```
+
+After doing so, you'll notice that the post form no longer works.
+
+>> SCREENSHOT
+
+This is because without the `insecure` package, client-side inserts into the posts collection _are no longer allowed_. We need to either give some explicit rules telling Meteor when it's OK for a client to insert posts, or else do our post inserting on server-side.
+
+### Allowing post inserts
+
+To begin with, we'll show how to allow client-side post inserts in order to get our form working again. As it turns out, we'll eventually settle on a different technique (for reasons that will become clear), but for now, we can get things working again easily enough.
+
+{% highlight js %}
+Posts.allow({
+  insert: function(userId, doc) {
+    // only allow posting if you are logged in
+    return !! userId;
+  }
+})
+```
+{% caption lib/collections.js %}
+
+We call `Posts.allow`, which tells Meteor "this is a set of circumstances under which clients are allowed to do things to the `Posts` collection". In this case, we are saying "clients are allow to insert posts as long as they have a `userId`". 
+
+`allow` and `deny` calls are passed the `userId` of the user doing the modification (`null` if there is no user), which is almost always useful.
+As user accounts is tied into the core of Meteor, we can rely on `userId` always being correct. 
+
+We've managed to ensure that you need to be logged in to create a post. Try logging out and creating a post; you should see this in your console:
+
+>> screenshot
+
+However, there are some problems with what we have so far, which we'll work on next.
+
+ - Logged out users can still reach the create post form.
+ - The post is not tied to the user in any way (and there's no code on the server to enforce this).
+ - Multiple posts can be created that point to the same URL.
+
+Let's fix this.
+
+### Securing access to the new post form
+
+Let's start by not letting logged out users see the new posts form. We'll do that at the router level, by defining a Routing filter.
+
+A routing filter is a function that takes a routing end point and, after checking the application's state, returns a new end point. Sounds complex? Well, as we'll see in this example, it's usually pretty straightforward.
+
+What we want to do is render an access denied page rather than the `postSubmit` page if the user is not logged in (the user's logged-in-ness is that application state we were talking about). So we write:
+
+{% highlight js %}
+Meteor.Router.filters({
+  'requireLogin': function(page) {
+    if (Meteor.user())
+      return page;
+    else
+      return 'accessDenied';
+  }
+});
+
+Meteor.Router.filter('requireLogin', {only: 'postSubmit'});
+```
+{% caption client/lib/router.js %}
+
+We also add the template for the access denied page, which is pretty simple:
+{% handlebars %}
+<template name="accessDenied">
+  You can't get here! Please log in
+</template>
+{% endhandlebars %}
+{% caption client/miniscope.html %}
+
+So if you head to http://localhost:3000/submit/ without being logged in, you should see this:
+>>screenshot
+
+The nice thing about routing filters is that they are _reactive_ too! So we can be declarative, and we don't need to think about callbacks when the user logs in or any such nonsense. When the 'logged-in-ness' of the user changes (for example, try logging in on the page above), the Router's page template instantly changes from `accessDenied` to `postSubmit` without us having to write any explict code to handle it. Simple huh?
+
+Login, then try refreshing the page. You might notice that the access denied template flashes up for a brief moment before the new post page settles in. The reason for this is that Meteor begins rendering templates as soon as possible, before it's talked to the server and checked that the user that the browser thinks you are logged in as even exists.
+
+To avoid this problem (which is a common class of problem that you'll see more of as you deal with the intricacies of latency between client and server), we'll just display a loading screen for the brief moment that we are waiting (if you think about it, as we don't know if the user will end up logged in or not, we can't show either of the `accessDenied` or `postSubmit` templates, without seeing flashing in one case).
+
+So we augment our routing filter a little, and add a loading template:
+
+{% highlight js %}
+Meteor.Router.filters({
+  'requireLogin': function(page) {
+    if (Meteor.user())
+      return page;
+    else if (Meteor.loggingIn())
+      return 'loading';
+    else
+      return 'accessDenied';
+  }
+});
+```
+{% caption client/lib/router.js %}
+
+{% handlebars %}
+<template name="loading">
+  Spinner!
+</template>
+{% endhandlebars %}
+
+### Hiding the link in the first place.
+
+OK, so now logged out users cannot access the new post page. We needed to do that in case someone accidentally entered the wrong URL into their browser. The easiest way to stop users from reaching this page when they are logged out is to just hide the link to it from them! We can do so easily enough:
+
+{% handlebars %}
+{{#if currentUser}}<a href="/submit">Submit Post</a>{{/if}}
+{% endhandlebars %}
+{% caption client/views/posts/postsTop.html %}
+
+The `currentUser` helper is provided to us by the `accounts` package and is the handlebars equivalent of `Meteor.user()`. Of course it is reactive, and the link will appear and disappear as you log in and out of the site.
+
+### A little more subtlety: using a method
+
+So we've managed to secure access to the new post page for logged out users, and deny such users from creating posts, even if they cheat and use the console. Still, there are a few more things we need to take care of, such as:
+
+- Timestamp the posts.
+- Ensure that the same URL isn't posted more than once.
+- Add details about the post author (ID, username, etc.).
+
+You might be be thinking we could do all of that in our `submit` event handler. Releastically, however, we would quickly run into a range of problems:
+
+- We'd have to rely on the user's computer's time being correct; which is not always going to be the case.
+- Clients dont't know _all_ of the URLs ever posted to the site. They'll only know about the posts that they can see (we'll see how exactly this works later). So there's no way to enforce uniquness client side.
+- Finally, although we _could_ add the user info on the client side, we wouldn't be enforcing it, which could open us up to exploitation by people using the browser console, or simple errors in our implementation.
+
+All in all, it's better to keep our event handlers simpler, and if we are doing more than the most basic inserts or updates to collections, to use a **Method**.
+
+A Meteor Method is a server side function that is called from the client side. We aren't totally unfamiliar with them -- in fact, behind the scenes, the `Collection`'s `insert`, `update` and `remove` functions are all methods. Let's see how to create one.
+
+First, rather than inserting directly into the `Posts` collection, we'll call a method named `post`:
+
+{% highlight js %}
+Meteor.call('post', post, function(error, id) {
+  if (error)
+    return alert(error.reason);
+        
+  Meteor.Router.to(Meteor.Routes.post(id));
+});
+```
+{% caption client/views/posts/postSubmit.js %}
+
+The `Meteor.call` function calls a method named by it's first argument. You can provide arguments to the call (in this case, the `post` object we constructed from the form), and finally attach a callback, which will execute when the server-side method is done. Here we just simply alert to the user if there's a problem, or redirect the user to the freshly created post's discussion page if not.
+
+We define the method in our `lib/collection.js` file:
+
+{% highlight js %}
+Meteor.methods({
+  post: function(post) {
+    var user = Meteor.user(),
+      postWithSameLink = Posts.findOne({url: post.url});
+    
+    // ensure the user is logged in
+    if (!user)
+      throw new Meteor.Error(401, 
+        "You need to login to post new stories");
+    
+    // ensure the post has a title
+    if (!post.title)
+      throw new Meteor.Error(422, 'Please fill in a headline');
+    
+    // check that there are no previous posts with the same link
+    if (post.url && postWithSameLink) {
+      throw new Meteor.Error(302, 
+        'This link has already been posted', 
+        postWithSameLink._id);
+    }
+    
+    // pick out the whitelisted keys
+    post = _.extend(_.pick(post, 'url', 'title', 'message'), {
+      userId: user._id, 
+      author: user.username, 
+      submitted: new Date().getTime()
+    });
+    
+    return Posts.insert(post);
+  }
+})
+```
+{% caption lib/collections.js %}
+
+This method is a little complicated, but hopefully you can follow along.
+
+First, we check to see that the user is logged in, throwing an error (which will eventually be `alert`-ed by the browser) if not. Then we do some simple validation of the post object (we need to make sure that our posts have titles). 
+
+Finally, we do the most complicated part--we search for another post with the same URL. If we do find one, we throw a `302`  error (which means redirect) telling the user that they should just go and look at that alternate post.
+
+If all those checks pass, we grab the fields that we want to insert (to ensure a user calling this method in browser console can't put spurious data into our database), and include some information about the submitting user, as well as the current time into to the post. 
+
+Finally, we insert the post, and return the new post's `id` to the user.

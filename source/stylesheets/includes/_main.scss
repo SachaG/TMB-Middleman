@@ -1,0 +1,125 @@
+
+*, html, body, h1, h2, h3, h4, h5, h6, form, textarea, input, p, strong, em{
+	font-family:'Source Sans Pro', 'Proxima Nova', "Helvetica Neue", sans-serif;
+}
+
+html, body{
+	margin:0;
+	padding:0;
+	color:$text;
+	font-size:16px;
+	background:white;
+}
+a{
+	font-weight:bold;
+	&:link{
+		color:$link;
+	}
+	&:visited{
+		color:$visited;
+	}
+	&:active, &:hover{
+		color:$hover;
+	}
+}
+p{
+	font-size:16px;
+	line-height:1.7;
+	margin-bottom:20px;
+}
+pre, code, pre span, code span{
+	font-family:Consolas, "Liberation Mono", 'PT Mono', Courier, monospace;
+	font-size:14px;
+	font-weight:normal;
+	line-height:1.5;
+}
+pre{
+	border-top:1px darken($light-bg, 10%) solid;
+	border-bottom:1px darken($light-bg, 10%) solid;
+	padding:20px;
+	background:lighten($light-bg, 5%);
+	overflow:auto;
+}
+code{
+	background:lighten($light-bg, 5%);
+}
+.caption{
+	padding:10px;
+	background:$light-bg;
+	font-size:14px;
+	color:darken($light-text, 25%);
+	margin-top:-20px;
+	margin-bottom:20px;
+}
+footer{
+	text-align:center;
+	margin-bottom:40px;
+	font-size:14px;
+}
+ul{
+	padding-left:40px;
+	li{
+		margin-bottom:10px;
+	}
+}
+h1, h2, h3, h4, h5, h6{
+	color:$text;	
+}
+h1{
+	font-size:48px;
+}
+h2{
+	font-size:30px;
+}
+h3{
+	font-size:18px;
+}
+h4{
+	font-size:16px
+}
+.footnotes{
+	li{
+		margin-bottom:20px;
+	}
+	p{
+		display:inline;
+	}
+}
+.bio, .post-author{
+	@include cf;
+	margin-bottom:20px;
+	p{
+		margin-left:120px;
+	}
+	.portrait{
+		@include border-radius(100px);
+		height:100px;
+		width:100px;
+		float:left;
+		display:block;
+	}
+}
+#lightbox{
+	width:100%;
+	height:100%;
+	background:black(0.4);
+	position:fixed;
+	top:0px;
+	right:0px;
+	cursor:pointer;
+	&.hide{
+		display:none;
+	}
+	.inner{
+		width:100%;
+		max-width:680px;
+		padding:40px;
+		background:white;
+		margin:40px auto 0 auto;
+		text-align:center;
+		img{
+			display:block;
+			width:100%;
+		}
+	}
+}

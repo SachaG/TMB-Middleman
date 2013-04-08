@@ -1,0 +1,44 @@
+---
+
+title: SIDEBAR - Denormalization
+complete: 90
+published: false
+date: 0010/01/02
+---
+
+## SIDEBAR: denormalizing and embedding
+
+*Denormalizing* data means not storing that data in a "normal form", in other words having multiple copies of the same piece of data hanging about. 
+
+For example, let's consider `posts` documents with a `userId` property, and `users` documents with a `name` property. Denormalizing this data structure would mean storing the `name` not only on users, but also on posts (in addition to `userId`).
+
+Denormalizing often means extra work involved for the developer. In our example, every time we change a user's name we'll have to update every one of their posts to make sure the data stays correct. This is why relational database in particular (such as MySQL) frown upon this approach.
+
+However, the normal approach also has its drawbacks: if the `name` property only lives in the `users` collection, this means we'll need to keep _all_ users loaded in memory at all time just in case we need to bring up one of their names. 
+
+On the other hand, denormalizing means that the post author name gets published as a property the post, removing the need to publish the `users` collection altogether. 
+
+{% div note %}
+
+It *would* be possible to create a special subscription that only sends down the names of the users that we are interested in (i.e. users that have created the posts we can currently see), but it's worth considering if the complexity of such code would not outweigh the difficulties created by denormalizing.
+
+{% enddiv %}
+
+Of course such considerations are very application specific: if you are writing code where data integrity is of paramount importance then the seriousness of potential problems caused by inconsistencies in the data probably means that your highest priority is avoiding such problems. 
+
+### Embedding documents or using multiple collections
+
+If you are experienced with Mongo, you might have been surprised that we created a second collection to store comments in. Why not just embed the comments in a list within the post document?
+
+The reason is that many of the tools Meteor gives us work a lot better when operating at the collection level. For instance:
+
+1. The `{%raw%}{{#each}}{%endraw%}` helper is very efficient when iterating over a cursor (the result of `collection.find()`). The same is not true when it iterates over an array of objects within a larger document.
+2. `allow` and `deny` operate at the document level, and thus make it easy to ensure that any modifications of individual comments are correct in a way that would be more complex if we operated at a post level.
+3. DDP operates at the level of attributes of a document--this would mean if `comments` was a property of a `post`, every time a comment was created on a post, the server would send the entire updated comment list of that post out to each connected client.
+4. Publications and subscriptions are a lot easier to control at the level of documents--so for instance if we wanted to paginate comments on a post, we would find it difficult to do so unless comments were in their own collection.
+
+The reason that Mongo suggests embedding documents is to reduce the number of expensive queries to fetch documents. However, this is less of an issue when we remember Meteor's architecture -- most of the time we are querying comments on the *client*, where database access is essentially free.
+
+Of course, there's an added complexity in publishing documents -- for instance to publish only the comments of the limited set of posts the user is looking at can be difficult, however there is a `publish-with-relations` atmosphere package that makes this a *lot* simpler.
+
+If, however you are doing a lot of queries on the server, or your publications become too complex, it may be better to embed comments or other sub documents. Certainly, it's not a problem, but it's good to go into it with an open mind.

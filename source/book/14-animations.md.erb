@@ -1,0 +1,249 @@
+---
+
+title: Animations
+complete: 100
+date: 0014/01/01
+---
+
+## Animations
+
+{% div chapter %}
+#### In this chapter, you will:
+
+- See what happens behind the scenes when Meteor swaps two DOM elements
+- Learn how to animate posts reordering
+- Learn how to animate new posts insertion
+{% enddiv %}
+
+We now have real-time voting, scoring, and ranking. But this leads to a jarring, hectic user experience as posts jump around on the homepage. So we'll use animations to smooth everything out.
+
+### Meteor & the DOM
+
+Before we can start the fun part of making things move around, we need to understand how Meteor interacts with the DOM (Document Object Model, i.e. the collection of HTML elements stat make up a page's contents).
+
+The crucial point to keep in mind is that elements *cannot be moved*. They can only be deleted and created (note that this is a limitation of the DOM itself, not of Meteor). So to give the illusion of elements A and B switching place, Meteor will actually delete element B and insert a brand new copy (B') before element A. 
+
+This makes animation a bit tricky. You can't just animate B as it moves to a new position, because B will be gone as soon as Meteor updates the page. Instead, you have to animate the newly created B' as it moves from B's old position to its new position before A. 
+
+So to switch posts A and B (respectively positioned in positions p1 and p2), we would go through the following steps:
+
+1. Delete B
+2. Create B' before A in the DOM
+3. Move A to p1
+4. Move B' to p2
+5. Animate A to p2
+6. Animate B' to p1
+
+The following diagram explains these steps in more detail:
+
+<img src="/images/book/animation_diagram@2x.png"/>
+
+Note that in steps 3 and 4 we're not *animating* A and B' to their positions but "teleporting" them there instantly. Since this is instantaneous, it will give the illusion that B was never deleted, and properly position both elements to be animated back to their new position.
+
+Thankfully, Meteor takes care of steps 1 & 2 for us, so we only need to worry about steps 3 through 6. 
+
+What's more, in steps 5 and 6 all we're doing is moving elements to their proper spot, which is easy enough. So all we really need to worry about is steps 3 and 4, i.e. sending the elements to the animation's starting point. 
+
+### Proper Timing
+
+Up to now we've talked about *how* to animate our posts but not *when* to animate them. 
+
+For steps 3 and 4, the answer is on Meteor's `rendered` template callback inside the `postItem.js` controller, which is fired any time a post's property (in our case, ranking) changes. 
+
+Steps 5 and 6 are a bit trickier. Think of it this way: if I tell you to run 100m towards the north, and then 100m towards the south, you'll probably conclude that you might as well not run at all since you'll end up in the same place no matter what. So if I want to ensure that you run all 200m, I have to *wait* until you've ran the first 100m, and *then* tell you to come back.
+
+The browser works the same way: if we just gave it both instructions simuleaneously, the new coordinates would simply replace the old ones and nothing would happen. In other words, the browser needs to register the position changes as separate points in time, otherwise it won't be able to animate them. 
+
+Meteor doesn't provide a `justAfterRendered` callback, but we can fake it using `Meteor.defer()`, which simply takes a function and defers its execution just enough to register as a different event. 
+
+### CSS Positioning
+
+To animate the posts getting reordered around the page, we'll have to venture into CSS territory. So a quick review of CSS positioning might be in order. 
+
+Elements on a page use **static** positioning by default. Statically positioned elements just fit within the flow of the page, and their coordinates on the screen cannot be changed or animated. 
+
+**Relative** positioning on the other hand means that the element also fits in the flow of the page, but can be positioned *relatively to its original position*. 
+
+**Absolute** positioning goes one step further and lets you give  the element specific x/y coordinates relative to the **document** or **the first absolutely or relatively-positioned parent element**. 
+
+We'll use relative positioning to animate our posts. If you needed to modify the stylesheet, all you would do is add this code to your CSS file:
+
+{% highlight css %}
+.post{
+  position:relative;
+  transition:all 300ms 0ms ease-in;
+}
+```
+
+But don't worry, we've already taken care of that for you!
+
+This makes steps 5 and 6 from earlier trivially easy: all we need to do is set `top` to `0px` (its default value) and our posts will slide back to their "normal" position. 
+
+This means our only challenge is figuring where to animate them *from* (steps 3 and 4) relative to their new position, in other words how much to offset them. But that's not very hard either: the correct offset is simply a post's previous position minus its new one. 
+
+{% div note %}
+#### Position:absolute
+
+We could also use `position:absolute` with a relative parent to position our elements. But a big downside of absolutely positioned elements is that they're completely removed from the flow of the page, causing their parent container to collapse as if it were empty. 
+
+This in turns means we'd need to artificially set the height of the container via JavaScript, instead of leaving the browser reflow elements naturally. So whenever possible, it's best to stick to relative positioning. 
+{% enddiv %}
+
+### Total Recall
+
+We do have one more problem though. While element A persists in the DOM and can thus "remember" its previous position, element B experiences a reincarnation and comes back to life as B' with its memory wiped clean. 
+
+Thankfully Meteor comes to the rescue by giving us access to the  **template instance** object in the `rendered` callback:
+
+> In the body of the callback, `this` is a template instance object that is unique to this occurrence of the template and persists across re-renderings. 
+
+So what we'll do is find out a post's current position in the page, and then store that position in the template instance object. This way, even when a post is deleted and recreated, we'll still be able to know where we're supposed to animate it from. 
+
+We can also access a template instance's collection data through the `data` property, which will come in handy to get a post's rank. 
+
+### Putting it together
+
+We can now put everything together by using the `postItem.js` controller's `rendered` Template callback for our animation logic:
+
+{% highlight js %}
+Template.postItem.rendered = function(){
+  // animate post from previous position to new position
+  var instance = this;
+  var rank = instance.data._rank;
+  var $this = $(this.firstNode);
+  var postHeight = 80;
+  var newPosition = rank * postHeight;
+
+ // if element has a currentPosition (i.e. it's not the first ever render)
+ if(instance.currentPosition){
+    var previousPosition = instance.currentPosition;
+    // calculate difference between old position and new position and send element there
+    var delta = previousPosition - newPosition;
+    $this.css("top", delta + "px");
+  }
+
+  Meteor.defer(function() {
+    instance.currentPosition = newPosition;
+    // bring element back to its new original position
+    $this.addClass('animate').css("top",  "0px");
+  }); 
+};
+```
+{% caption /client/views/posts/postItem.js %}
+
+Note that since we set the template instance's `currentPosition` property in the `defer` callback, this means it won't exist on the first ever render of the template fragment. But this is not a problem since we're not interested in animating that first render anyway. 
+
+Now open up your site and start upvoting. You should now see posts gently moving up and down with ballet-like grace!
+
+### Animating New Posts
+
+Our posts are now reordering properly, but we don't really have a "new post" animation yet. Instead of having a new post simply pop up at the top of our list, let's fade it in. 
+
+This is actually more complicated than it sounds. The problem is that Meteor's `rendered` callback actually gets triggered in two separate cases:
+
+1. When a new template is inserted into the DOM
+2. Whenever a template's underlying data changes
+
+What's more, we don't want the posts to fade in when the user first loads the page, so we have to distinguish between two sub-cases:
+
+1a. A template is inserted at page load
+1b. A template is inserted after page load
+
+Only case 1b should be animated, unless you want your user interface lighting up like a christmas tree every time your data changes. 
+
+First, let's make sure we only animate posts when they're actually new, and not just when they're re-rendered because their data changed. We're already testing for the presence of an instance variable (which is only set after the first render), so we just have to go back to our `rendered` callback and add an `else` block:
+
+{% highlight js %}
+Template.postItem.rendered = function(){
+  // animate post from previous position to new position
+  var instance = this;
+  var rank = instance.data._rank;
+  var $this = $(this.firstNode);
+  var postHeight = 80;
+  var newPosition = rank * postHeight;
+
+  if(instance.currentPosition){
+    // if element has a currentPosition (i.e. it's not the first ever render)
+    var previousPosition = instance.currentPosition;
+    // calculate difference between old position and new position and send element there
+    var delta = previousPosition - newPosition;
+    $this.css("top", delta + "px");
+  }else{
+    // it's the first ever render, so hide element
+    $this.addClass("hidden");
+  }
+
+  Meteor.defer(function() {
+    instance.currentPosition = newPosition;
+    // bring element back to its new original position and show it
+    $this.css("top",  "0px").removeClass("hidden");
+  }); 
+};
+```
+{% caption /client/views/posts/postItem.js %}
+
+Note that the `removeClass("hidden")` we added in the `defer()` function will run for every rendering. But it will only  do something if the `.hidden` class is actually present on the element, which will only be true the first time it's rendered. 
+
+{% div note %}
+#### CSS & JavaScript
+
+You might have noticed that we're using an `.invisible` CSS class to trigger the animation instead of animating the CSS `opacity` property directly like we did for `top`. This is because for `top`, we needed to animate the property to a specific value that depended from the instance data. 
+
+On the other hand, here we only want to show and hide an element independently of its data. Since it's a good idea to keep your CSS our of your JavaScript as much as possible, we'll only add and remove the class here, and specify the details of the animation over in our stylesheet. 
+
+{% enddiv %}
+
+If you switch from page to page now you'll see that all posts will fade in. While this looks nice, it's a little bit counter-productive since the goal of our animation is to highlight "new" posts (i.e. those who appear after page load). So we want to limit our animation to these newly inserted elements, but for that we first need to define what "new" means. 
+
+To do this, we'll use a Session variable to set a timestamp inside a router filter, and we'll then be able to declare that any template created after that timestamp is "new". 
+
+{% highlight js %}
+
+Meteor.Router.filters({
+  'requireLogin': function(page) {
+    if (Meteor.user())
+      return page;
+    else if (Meteor.loggingIn())
+      return 'loading';
+    else
+      return 'accessDenied';
+  },
+  'clearErrors': function(page) {
+    clearUnseenErrors();
+    return page;
+  },
+  'setTimestamp' : function(page) {
+    Session.set('pageLoadTimestamp', new Date());
+    return page;
+  }
+});
+
+Meteor.Router.filter('requireLogin', {only: 'postSubmit'});
+Meteor.Router.filter('clearErrors');
+Meteor.Router.filter('setTimestamp');
+```
+{% caption /client/lib/router.js %}
+
+We can now update our `rendered` callback to take that timestamp into account:
+
+{% highlight js %}
+ if(instance.currentPosition){
+    var previousPosition = instance.currentPosition;
+    // calculate difference between old position and new position and send element there
+    var delta = previousPosition - newPosition;
+    $this.css("top", delta + "px");
+  }else{
+    // it's the first ever render
+    var postTimestamp = instance.data.submitted;
+    var pageLoadTimeStamp = Session.get('pageLoadTimestamp');
+    if(postTimestamp > pageLoadTimeStamp){
+      // the post has been submitted after the initial page load, so we hide it
+      $this.addClass("invisible");
+    }
+  }
+```
+{% caption /client/views/posts/postItem.js %}
+
+In plain english, all we're saying is that if a post is created (`instance.data.submitted`) after the page has loaded, then we want to hide it. 
+
+We should finally have the animation behavior we wanted: posts will now fade in only when they're "fresh", and not when first appearing. Load up your app and give it a try! And you can also play around with the `.post` and `.post.invisible` classes to see if you can come up with other transitions. Hint: [CSS easing functions](http://matthewlein.com/ceaser/) are a good place to start!

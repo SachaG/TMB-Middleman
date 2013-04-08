@@ -1,0 +1,123 @@
+---
+
+title: Getting Started with Meteorite
+complete: 50
+date: 0002/01/01
+---
+
+## Getting Started
+
+Due to the fact that Meteor doesn't yet have support for 3rd party packages (so you can't use other folk's code), some members of the community created [Meteorite](http://oortcloud.github.com/meteorite/), a wrapper for meteor. Meteorite takes care of installing meteor for you and hooking it together with any packages you might find.
+
+### Installing Meteor via Meteorite
+
+So, let's install meteorite. To begin with, you'll need to ensure node and git are installed on your machine. Install them in the standard way for your OS, or try these links:
+ 
+- [Node download site](http://nodejs.org/download/)
+- [Git download site](http://git-scm.com/downloads)
+
+Now, let's install meteorite. It's a npm executable, so we install it with
+
+```bash
+npm install -g meteorite
+```
+
+That's it! Meteorite will handle things from here.
+
+Note: there is no Windows support for Meteorite yet, but you can take a look at [our windows tutorial](http://themeteorbook.com/2013/03/20/using-meteor-and-atmopshere-on-windows/) instead.
+
+### Creating a simple app
+
+Ok, first things first, let's create an app. We use meteorite's commandline tool `mrt`:
+
+```bash
+mrt create microscope
+```
+
+This command will download meteor, and set up a basic meteor project for you, ready to use. When it's done, you should see a directory, `microscope/`, containing:
+
+```bash
+microscope.css  
+microscope.html 
+microscope.js   
+smart.json 
+smart.lock
+```
+
+The app is a simple boilerplate application that meteor creates for you, demonstrating some simple parts. 
+
+Our app doesn't do much yet, but we can already run it! Just go back to your terminal and just type:
+
+```bash
+mrt
+```
+
+Now point your browser to `http://localhost:3000/` (or the equivalent `http://0.0.0.0:3000/`) and you should see something like this: 
+
+{% screenshot "2-1"|"Meteor's Hello World." %}
+
+{% commit "2-1"|"Created basic microscope project." %}
+
+Congrats! You've got your first Meteor app running!
+
+### Add some basic wireframing packages
+
+Let's use Meteorite to add an Atmosphere smart package that will come in handy later.
+
+```bash
+mrt add bootstrap-updated
+```
+
+{% commit "2-2"|"Added bootstrap-updated package." %}
+
+{% div note %}
+
+### A Note on Packages
+
+When speaking about packages in the context of Meteor, it pays to be specific. Meteor can use three basic types of packages:
+
+- The core Meteor smart packages are a group of about 15 packages that come bundled with Meteor. You can add them even when you're not using Meteorite, with `meteor add packagename`. 
+- Atmosphere smart packages the are third-party Meteor packages listed on [Atmosphere](http://atmosphere.meteor.com). You will need Meteorite to be able to import and use them. 
+- NPM (Node Package Manager) packages are Node.js packages. Although they don't work out of the box with Meteor, they *can* be used by the previous two types of packages. 
+
+{% enddiv %}
+
+### The Meteor File Structure
+
+Before we can start coding, let's take a minute to set up our project properly. Open up the `forum` directory and delete all the files. We're going to start clean! 
+
+When it comes to organizing files, Meteor has 4 main rules:
+
+- Code in the `/server` directory only runs on the server.
+- Code in the `/client` directory only runs on the client.
+- Everything else runs on both the client and server.
+- Your static assets (fonts, images, etc.) go in the `/public` directory. 
+
+{% div note %}
+
+CSS automatically gets loaded and minified by Meteor, so unlike other static assets it goes into `/client`, not `/public`.
+
+{% enddiv %}
+
+These four rules give us our four root directories: `/client`, `/server`, `/public`, and `/lib`. Go ahead and create them now. Note that `lib` is a special directory that will always be loaded first. And since it's nether `/client` or `/server`, it also means its contents will run in both environment.
+
+
+{% diagram "meteor_files"|"A typical Meteor app file structure" %}
+
+{% commit "2-3"|"Added bootstrap-updated package." %}
+
+You might also notice a hidden `.meteor` directory. This is where Meteor stores its own code, and modifying anything in there is a very bad idea. 
+
+Apart from this, Meteor doesn't really impose any file structure to your app. But the other directories and files you see in the diagram are common to most Meteor apps, which is why we included them. You can ignore them for now, but they'll soon come in handy. 
+
+{% div note %}
+
+### Underscores vs CamelCase
+
+The only thing we'll say about the age-old underscore (`my_variable`) vs camelCase (`myVariable`) debate is that it doesn't really matter which one you pick as long as you stick to it. 
+
+In this book, we're using camelCase because it's the usual JavaScript way of doing thing (after all it's JavaScript, not java_script!). 
+
+The only exceptions to this rule is file names, which will use underscores, and CSS classes, which use hyphens (`my-class`). The reason for this is that in the filesystem, underscores are most common, while the CSS syntax itself already uses hyphens (`font-family`, `text-align`, etc.).
+
+{% enddiv %}
