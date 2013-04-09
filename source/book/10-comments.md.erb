@@ -76,6 +76,25 @@ if (Posts.find().count() === 0) {
 ```
 <%= caption "server/fixtures.js" %>
 
+Let's not forget to also publish our new collection, and subscribe to it too:
+
+```js
+Meteor.subscribe('posts');
+Meteor.subscribe('comments');
+```
+<%= caption "client/main.js" %>
+
+```js
+Meteor.publish('posts', function() {
+  return Posts.find();
+});
+
+Meteor.publish('comments', function() {
+  return Comments.find();
+})
+```
+<%= caption "server/publications.js" %>
+
 <%= commit "10-1", "Added comments collection, pub/sub and fixtures." %>
 
 Note that to trigger this fixture code, you'll need to `mrt reset` to clear your database. After resetting, don't forget to create a new account and log back in!
@@ -140,6 +159,45 @@ Template.comment.helpers({
 });
 ```
 <%= caption "client/views/comments/comment.js" %>
+
+Finally, we'll also show the number of comments on each post:
+
+```html
+<template name="postItem">
+  <div class="post">
+    <div class="post-content">
+      <h3><a href="{{url}}">{{title}}</a><span>{{domain}}</span></h3>
+      <p>
+        submitted by {{author}},
+        <a href="{{postPagePath this}}">{{commentsCount}} comments</a>
+        {{#if ownPost}}<a href="{{postEditPath this}}">Edit</a>{{/if}}
+      </p>
+    </div>
+    <a href="{{postPagePath this}}" class="discuss btn">Discuss</a>
+  </div>
+</template>
+```
+<%= caption "client/views/posts/post_item.html" %>
+
+And add the `commentsCount` helper to our `postItem` controller:
+
+```js
+Template.postItem.helpers({
+  ownPost: function() {
+    return this.userId == Meteor.userId();
+  },
+  domain: function() {
+    var a = document.createElement('a');
+    a.href = this.url;
+    return a.hostname;
+  },
+  commentsCount: function() {
+    return Comments.find({postId: this._id}).count();
+  }
+});
+```
+<%= caption "client/views/posts/post_item.js" %>
+
 
 <%= commit "10-2", "Display comments on `postPage`." %>
 
@@ -246,8 +304,13 @@ Meteor.methods({
 ```
 <%= caption "collections/comments.js" %>
 
+<%= commit "10-3", "Created a form to submit comments." %>
+
 We're not doing anything too fancy. We'll simply check that the user is logged in, that the comment has a body, and that it's linked to a post. 
 
+### Denormalizin' Like a Pro
 
+We're not quite done with comments though. 
 
+<%= commit "10-4", "Denormalized the number of comments into the post." %>
 
