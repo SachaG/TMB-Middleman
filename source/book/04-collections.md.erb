@@ -30,14 +30,16 @@ So, although a user's browser may contain some kind of state (for instance which
 
 The place that this data lives in Meteor is the **Collection**. A collection is a special store of data that (along with publications) takes care of the job of synchronising data to and from each connected user's browser, and into the Mongo database. In *realtime*. Let's see how.
 
-Seeing as we want our posts to be permanent and shared between users, we start by creating a Posts collection:
+Seeing as we want our posts to be permanent and shared between users, we start by creating a Posts collection.
+
+If you haven't done so already, create a `collections` folder at the root of your app, and a `posts.js` file inside that:
 
 ```js
-var Posts = new Meteor.Collection('posts');
+Posts = new Meteor.Collection('posts');
 ```
-{% caption lib/posts.js %}
+{% caption collections/posts.js %}
 
-This code is in the `lib/posts.js` file, which gets run on both the client and the server. So the `Posts` collection is avaliable in both contexts. However, what the collection does on either side is very different.
+Code inside folders that are not `client/` or `server/` which will run in *both* contexts. So the `Posts` collection is avaliable to both client and server. However, what the collection does on either side is very different.
 
 On the server, the collection has the job of talking to the mongo database, and reading and writing any changes. In this sense, it can be compared to a standard database library. On the client however, the collection is a *secure* copy of a *subset* of the real, canonical collection. The client-side collection is constantly and (mostly) transparently kept up to date with the that subset in realtime.
 
@@ -45,7 +47,7 @@ On the server, the collection has the job of talking to the mongo database, and 
 
 On the server, the collection acts as an API into to your Mongo database. So in your server-side code, you can write Mongo commands like `Posts.insert()` or `Posts.update`, and they will, as you might expect, make changes to the `posts` collection stored inside the Mongo database.
 
-You can take a look inside the Mongo database easily enough. In a second terminal window (whilst `mrt` is still running in your first), run the command `mrt mongo`. This will initiate a mongo shell, into which you can type standard mongo commands:
+You can take a look inside the Mongo database easily enough. Open up a second terminal window (while `mrt` is still running in your first), go to your app's directory, and run the command `mrt mongo`. This will initiate a mongo shell, into which you can type standard mongo commands:
 
 ```js
 db.posts.insert({title: "A new post"});
@@ -53,13 +55,13 @@ db.posts.insert({title: "A new post"});
 db.posts.find();
 {title: "A new post", _id: 'xxx'};
 ```
-{% caption mongo console %}
+<% caption "the Mongo console" %>
 
 Of course the database starts empty, but Mongo's syntax is familiar, as it uses a JavaScript interface. However, we won't be doing any data manipulation in the Mongo console, although we may take a peek inside from time to time, just to make sure about what's in there.
 
 ### What a collection does on the client
 
-Collections gets more interesting client-side. When you declare `var Posts = new Meteor.Collection('posts');` on the client, what you are creating is a _local, in-browser cache_ of the real Mongo collection. When we say cache here, we mean in the sense that it contains a *subset* of the data, and that it's very *quick* to access data.
+Collections gets more interesting client-side. When you declare `Posts = new Meteor.Collection('posts');` on the client, what you are creating is a _local, in-browser cache_ of the real Mongo collection. When we say cache here, we mean in the sense that it contains a *subset* of the data, and that it's very *quick* to access data.
 
 It's important to understand this point as it's fundamental to the way Meteor works. So to be clear: in general, a client side collection consists of some portion of all the documents stored in the Mongo collection. Secondly, those documents are stored *in browser memory*, which means that accessing them is basically instant.
 
