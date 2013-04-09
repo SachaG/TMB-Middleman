@@ -9,7 +9,7 @@ date: 0004/01/03
 
 If collections are Meteor's core feature, then *reactivity* is the shell that makes that core useful. Consider how you might use the power of constantly updating collections. We've seen in the last chapter how, by using `.observe()`, we can keep track of changes to our collections. We *could* then imperatively make changes to the DOM (the rendered HTML of our webpage). For instance, we could write code that goes much like this:
 
-{% highlight js %}
+```js
 Posts.observe({
   added: function(post) {
     $('ul').append('<li>' + post.title + '</li>');
@@ -36,7 +36,7 @@ When that code executes, it may call a *reactive function*. Such a function is s
 
 Most computations are setup to simply re-evaluate when they are invalidated (and this is what happens to the template computations). There's a simple way to create such a computation; the `Meteor.autorun` function:
 
-{% highlight js %}
+```js
   Meteor.autorun(function() {
     console.log('Session val is: ' + Session.get('a-session-value'));
   });
@@ -44,7 +44,7 @@ Most computations are setup to simply re-evaluate when they are invalidated (and
 
 Here we've setup a very simple computation that simply logs a session variable. However, remember that the session is a *reactive data source*, so in calling `Session.get`, we've added the computation to the Session's list of dependencies on the variable `a-session-value`. What this means is if that' value changes, the session will tell our computation it's invalidated, and it'll auto-re-run itself:
 
-{% highlight js %}
+```js
 Session.set('a-session-value', 'awesome new session value');
 ```
 
@@ -60,7 +60,7 @@ In Angular, reactivity is mediated by the `scope` object. A scope can be thought
 
 When you want to reactively depend on a value in a scope, you call `scope.$watch`, providing the expression that you are interested in (i.e. which parts of the scope you care about), and a listener function that will run every time that expression changes. So you explicitly state exactly what you want to do every time the value of the expression changes.
 
-Of course, when you are using Angular, you don't often call `$watch` explicitly, as `ng-model` directives and `{%raw%}{{expressions}}{%endraw%}` set up watches automatically that take care of re-rendering on changes.
+Of course, when you are using Angular, you don't often call `$watch` explicitly, as `ng-model` directives and `{{expressions}}` set up watches automatically that take care of re-rendering on changes.
 
 Then, when such a reactive value has changed, `scope.$apply` must be called. This re-evaluates every watcher of the scope, but only calls the listener function of any watcher who's expression's value has *changed*. So `scope.$apply` is similar to `dependency.changed`, except that it acts at the level of the scope, rather than giving you the control to say precisely which listeners should be re-evaluated. However, this slight lack of control gives Angular the ability to be very smart and efficient in how it can determine precisely which listeners need to be re-evaluated.
 

@@ -20,7 +20,7 @@ Now, although that Session variable has been set by the browser, it is an indepe
 
 For instance, if we want to change the displayed post, we can simply do:
 
-{% highlight js %}
+```js
   otherPostId = Posts.findOne({title: 'Meteor'})._id;
   Session.set('currentPostId', otherPostId);
 ```
@@ -30,13 +30,13 @@ and we should now see the post entitled "Meteor" displayed.
 
 If we refresh the page, the router will re-run, overriding this variable, but otherwise, there's nothing stopping such changes being made anywhere in the application. This gives us a lot of power, but is also a bit of a trap if used too much.
 
-{% div note %}
+<% note do %>
 
 ### Plus ça change…
 
 If you modify a Session variable with `Session.set()` but set it to an identical value, Meteor is smart enough to to trigger the reactive chain, and avoid superfluous method calls. 
 
-{% enddiv %}
+<% end %>
 
 ### Hot code reload
 
@@ -46,7 +46,7 @@ It's kind of like a magic reload of the page, but there is an important differen
 
 First, set a session variable on the page:
 
-{% highlight js %}
+```js
 Session.set('a-session-variable', 7);
 Session.get('a-session-variable');
 > 7
@@ -55,7 +55,7 @@ Session.get('a-session-variable');
 
 If we force a hot code reload (HCR) by saving one of our source files, then the page reloads, but the session variable is still set:
 
-{% highlight js %}
+```js
 Session.get('a-session-variable');
 > 7
 ```
@@ -64,7 +64,7 @@ Session.get('a-session-variable');
 So if we were using session variables to keep track of exactly what the user is doing, the HCR should be almost transparent to the user, as all the session variables will remain with the same values. This enables us to deploy new production versions of our Meteor application with the confidence that our users will be minimally disrupted.
 
 Now try refreshing the page manually. After doing so, the session is reset:
-{% highlight js %}
+```js
 Session.get('a-session-variable');
 > null
 ```

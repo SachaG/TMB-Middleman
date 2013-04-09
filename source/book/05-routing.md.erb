@@ -7,13 +7,13 @@ date: 0005/01/01
 
 ## Routing
 
-{% div chapter %}
+<% chapter do %>
 #### In this chapter, you will:
 
 - Learn about routing in Meteor
 - Create post discussion pages, with a unique URLs
 - Learn how to link to to those URLs properly
-{% enddiv %}
+<% end %>
 
 Now we have a list of posts (that will eventually be submitted by users), we need a discussion page, where eventually users can talk about each post.
 
@@ -35,24 +35,24 @@ This command downloads and installs the router package into our app, ready to us
 
 So far, we've only had a static layout of templates, so although the content of what the user sees can change, the structure is always the same: a header, with a list of posts below it.
 
-The Router gives us a special template helper `{%raw%}{{renderPage}}{%endraw%}`, which renders the current *page*. We place this helper within our layout, and gain a dynamic template which changes when the URL changes.
+The Router gives us a special template helper `{{renderPage}}`, which renders the current *page*. We place this helper within our layout, and gain a dynamic template which changes when the URL changes.
 
-What do we mean by a page here? It's the Router's concept of a page--the Router's single job is to map URLs to templates to be inserted in the `{%raw%}{{renderPage}}{%endraw%}` helper.. Let's see how. We'll start by inserting the `{%raw%}{{renderPage}}{%endraw%}` helper into our layout:
+What do we mean by a page here? It's the Router's concept of a page--the Router's single job is to map URLs to templates to be inserted in the `{{renderPage}}` helper.. Let's see how. We'll start by inserting the `{{renderPage}}` helper into our layout:
 
-{% handlebars %}
+```html
 <body>
  ...
  {{renderPage}}
  ...
 </body>
-{% endhandlebars %}
+```
 {% caption client/miniscope.html %}
 
 So we've replaced the inclusion of the `posts` template with a call to `renderPage` helper. You'll notice that after this change, we see nothing on the screen. This is because the router maps URLs it doesn't know about to an empty template.
 
 So to begin, we can regain our old behaviour, by mapping the empty URL `/` to the `posts` template:
 
-{% highlight js %}
+```js
 Meteor.Router.add({
   '/': 'posts'
 });
@@ -65,13 +65,13 @@ If it seems straightforward, that's because is. In the router, we've simply said
 
 There's an added advantage to what we've just done. In creating the route, we've also named it. Although you can explicitly choose a name for your route, by default, the Router chooses the name of the template being mapped to. So we've created a route, named `posts`, that maps `/` to `posts`.
 
-Why is the name of the route important? The Router gives us a couple of conveniences that allows us to write links that use our routes. The important one is a handlebars helper, `{%raw%}{{postsPath}}{%endraw%}` in this case, which returns the URL path component. So in our case, it returns `/`.
+Why is the name of the route important? The Router gives us a couple of conveniences that allows us to write links that use our routes. The important one is a handlebars helper, `{{postsPath}}` in this case, which returns the URL path component. So in our case, it returns `/`.
 
 Let's use that in our layout--we want our logo to point us back to the posts list, so we can do
 
-{% handlebars %}
+```html
   <a href="{{postsPath}}">MiniScope</a>
-{% endhandlebars %}
+```
 {% caption client/miniscope.html %}
 
 ### Routing to a specific Post using the Session
@@ -80,20 +80,20 @@ Now we've seen how to map the root URL to the `posts` template, let's map a post
 
 To start with, we'll create a simple template that just renders the same post meta data template that we used earlier in the list of posts.
 
-{% handlebars %}
+```html
 <template name="postPage">
   {{#with currentPost}}
     {{> post}}
   {{/with}}
 </template>
-{% endhandlebars %}
+```
 {% caption client/views/posts/postPage.html %}
 
 This template just grabs the post we are interested in (we'll see how soon) and renders the meta data for it. Later we'll add much more interesting things to this page, like a discussion via comments, but for now, we need to get this page working.
 
 To do so, we are going to create another named route, this time mapping URL paths of the form `/posts/<ID>` to the `postPage` template. There's only one added piece of complexity: we need to store that `<ID>` somewhere, so we know what the `currentPost` is when we render the template. The place to store that information is the *Session*:
 
-{% highlight js %}
+```js
 Meteor.Router.add({
   '/posts/:_id': {
     to: 'postPage', 
@@ -109,7 +109,7 @@ The Session in Meteor is the global store of state in the browser. It lives sole
 
 In our case, we are just interested in using the session to get the correct post rendered. So we can just access the session variable again when we create a helper to pick out the `currentPost`:
 
-{% highlight js %}
+```js
 Template.postPage.helpers({
   currentPost: function() {
     return Posts.findOne(Session.get('currentPostId'));
@@ -120,19 +120,19 @@ Template.postPage.helpers({
 
 Remember that `findOne` returns a single post that matches a query, and that providing just an `id` as an argument is a short hand for `{_id: id}`. 
 
-So what's happening here exactly? If the user browses to a URL  like `http://localhost:3000/posts/12345`, the router realizes that they are at a URL that matches the `postPage` route, and thus `postPage` template is what renders inside the `{%raw%}{{renderPage}}{%endraw%}` helper. At the same time it runs the `and` function, which sets the `currentPostId` session variable.
+So what's happening here exactly? If the user browses to a URL  like `http://localhost:3000/posts/12345`, the router realizes that they are at a URL that matches the `postPage` route, and thus `postPage` template is what renders inside the `{{renderPage}}` helper. At the same time it runs the `and` function, which sets the `currentPostId` session variable.
 
 Then, as the `postPage` template is rendered, it queries the session for that same variable, thus retrieving the correct post and rendering everything correctly.
 
 ### Using a dynamic named route helper
 
-The final thing we'd like to do is make sure our post template properly puts down links that point to the right place. Luckily, as we've (implicitly) named this route `postPage`, we get a `{%raw%}{{postPagePath}}{%endraw%}` helper that we can use. 
+The final thing we'd like to do is make sure our post template properly puts down links that point to the right place. Luckily, as we've (implicitly) named this route `postPage`, we get a `{{postPagePath}}` helper that we can use. 
 
 The only complication is we can't just use it like that, as it won't know what `id` value to substitute into the URL path (which was `'/posts/:_id'`). Luckily however, `postPagePath` helper can take an argument, and is smart enough to know that if it's passed an object, it should look at the `_id` attribute of that object and substitute it in (which is why we named that part `:_id`). So it's pretty straightforward to link things correctly:
 
-{% handlebars %}
+```html
   <a href="{{postPagePath this}}">Discuss</a>
-{% endhandlebars %}
+```
 {% caption client/views/post.html %}
 
 The only trick here is that we've reference the template's data context directly (rather than an attribute), by using the special `this` accessor.
@@ -141,8 +141,8 @@ Let's check if it works; browse to the post list and click on one of the 'Discus
 
  >> Screenshot.
 
-{% div note %}
+<% note do %>
 One thing to realise is that these URL changes are happening using HTML5 pushState. The Router picks up clicks on URLs that are internal to the site, and prevents the browser from browsing away from the app, instead just making the necessary changes to the app's state (reactively of course), with the net result of template changes as we've seen.
 
 If everything is working correctly the page should change instantaneously. In fact, sometimes things change so fast that some kind of page transition might be needed. This is outside of the scope of this book, but an interesting topic nonetheless.
-{% enddiv %}
+<% end %>

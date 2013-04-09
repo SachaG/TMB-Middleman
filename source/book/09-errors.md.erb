@@ -7,13 +7,13 @@ date: 0009/01/01
 
 ## Errors
 
-{% div chapter %}
+<% chapter do %>
 #### In this chapter, you will:
 
 - Create a better mechanism for displaying errors and messages
 - Learn how to use `Template.rendered` to know when a user has seen an error.
 - Create an atmosphere package from our work and share the results with the community!
-{% enddiv %}
+<% end %>
 
 It's a bit dissatisfying to use the browser's standard `alert()` dialog to warn the user when there's problem with their submission, and it certainly doesn't make for good UX. We can do better. 
 
@@ -28,7 +28,7 @@ What we will implement is similar to Ruby on Rails flash messages, but it's much
 To start off with, we create a collection to store our errors in. Given that the errors are only relevant to the current session and don't need to persistent in any way, we are going to do something new, and create a _local collection_. What this means is that the `Errors` collection will only exist in the browser, and will make no attempt to synchronize with the server.
 
 To achieve this, we simply create the error in a client-only file, with the collection name set to `null`.
-{% highlight js %}
+```js
 // Local (client-only) collection
 var Errors = new Meteor.Collection(null);
 ```
@@ -36,7 +36,7 @@ var Errors = new Meteor.Collection(null);
 
 Once we've created the collection, we can add a couple of functions which we can call to add and remove errors from that collection. We don't need to worry about `allow` or `deny` or anything like that, as this is a local collection and will not be saved to the Mongo database.
 
-{% highlight js %}
+```js
 var throwError = function(message) {
   Errors.insert({message: message, show: true})
 }
@@ -51,7 +51,7 @@ var clearErrors = function() {
 
 We are going to display the errors at the top of our main layout. The advantage of using a local collection to store the errors is that – like all collections – it's reactive, and we can declaratively display the errors, just like we'd display any other collection data.
 
-{% handlebars %}
+```html
 <body>
 ...
 <body>
@@ -62,10 +62,10 @@ We are going to display the errors at the top of our main layout. The advantage 
   </div>
 </body>
 ...
-{% endhandlebars %}
+```
 {% caption client/telescope.html %}
 
-{% handlebars %}
+```html
 <template name="errors">
   {{#each errors}}
     {{> error}}
@@ -78,12 +78,12 @@ We are going to display the errors at the top of our main layout. The advantage 
     {{message}}
   </div>
 </template>
-{% endhandlebars %}
+```
 {% caption client/views/errors/errors.html %}
 
 We are doing familiar things here. We just need to grab all the "shown" errors out of our collection and clear the currently visible errors when the user wants to get rid of them.
 
-{% highlight js %}
+```js
 Template.errors.helpers({
   errors: function() {
     return Errors.find({show: true});
@@ -104,7 +104,7 @@ Well, it's all very well displaying errors, but we need to create some before we
 
 Additionally, if its the `301` error that we threw earlier to indicate that we have posted a URL that's already been added to miniscope, we'll redirect the user to the existing discussion. 
 
-{% highlight js %}
+```js
 Meteor.call('post', post, function(error, id) {
   if (error) {
     // display the error to the user
@@ -130,7 +130,7 @@ Having a clear errors button is a good feature, but errors are fairly ephemeral 
 
 To do this we are going to keep track of when an error has been "seen". Obviously, we can't tell if a user has physically looked at an error, but we can tell if the error has been on screen for long enough that it's reasonable to expect the user to have seen it.
 
-{% highlight js %}
+```js
 // Local (client-only) collection
 var Errors = new Meteor.Collection(null);
 
@@ -157,7 +157,7 @@ Whenever a template is drawn or re-drawn (which happens whenever the reactive da
 SIDEBAR: TEMPLATE lifecycle
 
 
-{% handlebars %}
+```html
 ...
 {{#each errors}}
   {{> error}}
@@ -167,10 +167,10 @@ SIDEBAR: TEMPLATE lifecycle
 <template name="error">
   <li>{{message}}</li>
 </template>
-{% endhandlebars %}
+```
 {% caption client/views/errors/errors.html %}
 
-{% highlight js %}
+```js
 Template.error.rendered = function() {
   var error = this.data;
   Meteor.setTimeout(function() {
@@ -192,7 +192,7 @@ To acheive this, we can use a router filter that applies to all pages. Remember,
 
 In this case, we don't need to change the page being rendered (so the filter returns the same page it is input), but we need to have a side effect of clearing the errors. So we can do:
 
-{% highlight js %}
+```js
 Meteor.Router.filters({
   'clearErrors': function(page) {
     clearUnseenErrors();

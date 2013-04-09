@@ -8,14 +8,14 @@ date: 0004/01/01
 ## Realtime data with Collections
 
 
-{% div chapter %}
+<% chapter do %>
 #### In this chapter, you will:
 
 - Learn about Meteor's core feature: realtime collections
 - Understand how Meteor's data synchronization works
 - Integrate collections into Miniscope to our templates
 - Turn our basic prototype into a functioning realtime application!
-{% enddiv %}
+<% end %>
 
 ### Introduction to a Meteor Collection
 
@@ -32,7 +32,7 @@ The place that this data lives in Meteor is the **Collection**. A collection is 
 
 Seeing as we want our posts to be permanent and shared between users, we start by creating a Posts collection:
 
-{% highlight js %}
+```js
 var Posts = new Meteor.Collection('posts');
 ```
 {% caption lib/posts.js %}
@@ -47,7 +47,7 @@ On the server, the collection acts as an API into to your Mongo database. So in 
 
 You can take a look inside the Mongo database easily enough. In a second terminal window (whilst `mrt` is still running in your first), run the command `mrt mongo`. This will initiate a mongo shell, into which you can type standard mongo commands:
 
-{% highlight js %}
+```js
 db.posts.insert({title: "A new post"});
 
 db.posts.find();
@@ -65,7 +65,7 @@ It's important to understand this point as it's fundamental to the way Meteor wo
 
 There are no slow trips to the server or the database to fetch the data when you call `posts.find()` on the client, as the data is already pre-loaded.
 
-{% div note %}
+<% note do %>
 ### Collections vs Caches
 
 The comparison of a collection to a cache is useful to illustrate how fast it is to access, but don't take the analogy too far!
@@ -73,7 +73,7 @@ The comparison of a collection to a cache is useful to illustrate how fast it is
 Where a client-side collection differs from a cache is in the fact that the data loaded into it is fixed and decided by your application. It can be changed as a user browses around, but if you try to find a document that hasn't been sent to the browser there is no "cache-miss", or subsequent server access. It just appears as if the document *does not exist*.
 
 You explicitly decide, through publications, which data will be loaded into each collection. We'll learn more about this mechanism soon.
-{% enddiv %}
+<% end %>
 
 ### How they communicate
 
@@ -83,13 +83,13 @@ Rather than explaining this in detail, let's just watch it happen.
 
 Start by opening up two browser windows, and accessing the console in each one. Additionally, open up the Mongo console on the command line. At this point, we should see the single document we created earlier in all three contexts.
 
-{% highlight js %}
+```js
 db.posts.find();
 {title: "A new post", _id: 'xxx'};
 ```
 {% caption mongo console %}
 
-{% highlight js %}
+```js
 Posts.findOne();
 {title: "A new post", _id: 'xxx'};
 ```
@@ -97,7 +97,7 @@ Posts.findOne();
 
 Now, let's create a new post--in one of our browser windows, run an insert command:
 
-{% highlight js %}
+```js
 Posts.find().count();
 1
 Posts.insert({title: "A second post"});
@@ -109,7 +109,7 @@ Posts.find().count();
 
 Not very surprisingly, the post made it into the local collection. Now let's check Mongo:
 
-{% highlight js %}
+```js
 db.posts.find();
 {title: "A new post", _id: 'xxx'};
 {title: "A second post", _id: 'xxx'};
@@ -119,7 +119,7 @@ db.posts.find();
 So the post made it all the way back to the Mongo database, without us writing a single line of code to hook our client up to the server (well, strictly speaking, we did write a _single_ line of code: `new Meteor.Collection('posts')`). But that's not all.
 
 Now check the second browser window:
-{% highlight js %}
+```js
 Posts.find().count();
 2
 ```
@@ -149,7 +149,7 @@ First, let's make sure there's nothing in the database. Stop the meteor server (
 
 The reset command completely clears out the mongo database. It's a useful command in development, where there's a strong possibility of our database falling into a inconsistent state. Now that the database is empty, we can add the following code to a file, to load up when the server first starts:
 
-{% highlight js %}
+```js
 if (Posts.find().count() === 0) {
   Posts.insert({
     title: 'Introducing Telescope',
@@ -178,7 +178,7 @@ We've placed this file in the `server/` directory, so it will never get loaded o
 
 Now, if we open up a browser console, we see all three posts loaded up into minimongo:
 
-{% highlight js %}
+```js
 Posts.find().fetch();
 // results...
 ```
@@ -188,7 +188,7 @@ How do we get these posts into rendered HTML? We can use a template helper. We'v
 
 We can bind in our collection data in the exact same way.
 
-{% highlight js %}
+```js
 Template.postsTop.helpers({
   posts: function() {
     return Posts.find();
@@ -201,11 +201,11 @@ Now, rather than pulling a list of posts as a static array from a variable, we r
 
  >> Screenshot
 
-So can clearly that our `{%raw%}{{#each}}{%endraw%}` helper has iterated over all of our `Posts`, and displayed them all on the screen. So the server-side collection is pulling the posts from mongo, passing them over the wire to our client-side collection, and our handlebars helper is passing them into the template. 
+So can clearly that our `{{#each}}` helper has iterated over all of our `Posts`, and displayed them all on the screen. So the server-side collection is pulling the posts from mongo, passing them over the wire to our client-side collection, and our handlebars helper is passing them into the template. 
 
 Now, let's see things get cool. We'll add another post via the console:
 
-{% highlight js %}
+```js
 Posts.insert({
   name: 'Meteor Docs', 
   author: 'Tom Coleman', 
@@ -218,7 +218,7 @@ Look back at the browser -- you should see this:
 
 How has this happened? Has the browser reloaded itself? No; in fact we've just seen reactivity in action for the first time. When we told handlebars to iterate over the `Posts.find()` cursor, it knew how to observe that cursor for changes, and patch the HTML in the simplest way in order to display the correct data on screen.
 
-{% div note %}
+<% note do %>
 
 ### Inspecting DOM Changes
 
@@ -226,7 +226,7 @@ In this case, the simplest change possible was to add another `<li>` to our `<ul
 
 Now, in the javascript console, insert another post. When you tab back to the inspector, you'll see an extra `<li>`, corresponding to the new post, but you will still have the *same* existing `<li>` selected. This simple trick is a useful way to tell when elements have been re-rendered and when they have been left alone; something that may prove useful to you in the future.
 
-{% enddiv %}
+<% end %>
 
 ### Connecting collections: publications and subscriptions
 
@@ -240,7 +240,7 @@ This has an instant effect. If you look in your browser now, you'll see that all
 
 Although eventually we'll need to only transfer the posts that the user actually needs to see (taking into account things like pagination), for now, we'll just manually setup `Posts` to be published in it's entirety. To do so, we create a simple publish function that returns a `Cursor` which references all the posts:
 
-{% highlight js %}
+```js
 Meteor.publish('posts', function() {
   return Posts.find();
 });
@@ -249,7 +249,7 @@ Meteor.publish('posts', function() {
 
 In the client, we need to *subscribe* to the publication. We'll just add this line to `forum.js`:
 
-{% highlight js %}
+```js
 Meteor.subscribe('posts');
 ```
 {% caption client/forum.js %}

@@ -7,14 +7,14 @@ date: 0007/01/01
 
 ## Creating posts
 
-{% div chapter %}
+<% chapter do %>
 #### In this chapter, you will:
 
 - Learn how to submit a post client-side
 - Implement a simple security check
 - Restrict access to the post submit form
 - Learn to use a server-side method for added security
-{% enddiv %}
+<% end %>
 
 We've seen how easy it is to create posts via the console, using the `Posts.insert` database call, but we can't expect our users to open the console to create a new post! Obviously we need to build some kind of user interface to let our users post new stories to our forum. 
 
@@ -24,7 +24,7 @@ Thankfully, Meteor makes this easy too; so let's get started!
 
 We start by defining a route for our new page:
 
-{% highlight js %}
+```js
 Meteor.Router.add({
   ...
   '/submit': 'postSubmit'
@@ -34,7 +34,7 @@ Meteor.Router.add({
 
 This means if a user browses to the `/submit` URL, we'll display the `postSubmit` template. So we'd better write that template:
 
-{% handlebars %}
+```html
 <template name="postSubmit">
   <form name="post_submit" class="span8 offset2">
     <label for="url">URL</label>
@@ -49,7 +49,7 @@ This means if a user browses to the `/submit` URL, we'll display the `postSubmit
     <input type="submit" value="Submit" class="btn btn-primary"/>
   </form>
 </template>
-{% endhandlebars %}
+```
 {% caption client/views/postSubmit.html %}
 
 This is a simple form. We don't need to worry about an action for it, as we'll be intercepting submit events on the form and updating data via javascript. (It doesn't make sens to provide a non-JS fallback when you consider that a Meteor app is completely non-functional with JavaScript disabled).
@@ -60,7 +60,7 @@ We just set some straightforward `name` attributes on our form elements so we ca
 
 Let's bind an event handler to the form `submit` event. It's best to use the `submit` event (rather than say a `click` event on the button), as we then cover all possible ways of submitting (such as hitting enter in URL field for instance). So we write:
 
-{% highlight js %}
+```js
 Template.post_submit.events({
   'submit form': function(event) {
     event.preventDefault();
@@ -106,7 +106,7 @@ This is because without the `insecure` package, client-side inserts into the pos
 
 To begin with, we'll show how to allow client-side post inserts in order to get our form working again. As it turns out, we'll eventually settle on a different technique (for reasons that will become clear), but for now, we can get things working again easily enough.
 
-{% highlight js %}
+```js
 Posts.allow({
   insert: function(userId, doc) {
     // only allow posting if you are logged in
@@ -141,7 +141,7 @@ A routing filter is a function that takes a routing end point and, after checkin
 
 What we want to do is render an access denied page rather than the `postSubmit` page if the user is not logged in (the user's logged-in-ness is that application state we were talking about). So we write:
 
-{% highlight js %}
+```js
 Meteor.Router.filters({
   'requireLogin': function(page) {
     if (Meteor.user())
@@ -156,11 +156,11 @@ Meteor.Router.filter('requireLogin', {only: 'postSubmit'});
 {% caption client/lib/router.js %}
 
 We also add the template for the access denied page, which is pretty simple:
-{% handlebars %}
+```html
 <template name="accessDenied">
   You can't get here! Please log in
 </template>
-{% endhandlebars %}
+```
 {% caption client/miniscope.html %}
 
 So if you head to http://localhost:3000/submit/ without being logged in, you should see this:
@@ -174,7 +174,7 @@ To avoid this problem (which is a common class of problem that you'll see more o
 
 So we augment our routing filter a little, and add a loading template:
 
-{% highlight js %}
+```js
 Meteor.Router.filters({
   'requireLogin': function(page) {
     if (Meteor.user())
@@ -188,19 +188,19 @@ Meteor.Router.filters({
 ```
 {% caption client/lib/router.js %}
 
-{% handlebars %}
+```html
 <template name="loading">
   Spinner!
 </template>
-{% endhandlebars %}
+```
 
 ### Hiding the link in the first place.
 
 OK, so now logged out users cannot access the new post page. We needed to do that in case someone accidentally entered the wrong URL into their browser. The easiest way to stop users from reaching this page when they are logged out is to just hide the link to it from them! We can do so easily enough:
 
-{% handlebars %}
+```html
 {{#if currentUser}}<a href="/submit">Submit Post</a>{{/if}}
-{% endhandlebars %}
+```
 {% caption client/views/posts/postsTop.html %}
 
 The `currentUser` helper is provided to us by the `accounts` package and is the handlebars equivalent of `Meteor.user()`. Of course it is reactive, and the link will appear and disappear as you log in and out of the site.
@@ -225,7 +225,7 @@ A Meteor Method is a server side function that is called from the client side. W
 
 First, rather than inserting directly into the `Posts` collection, we'll call a method named `post`:
 
-{% highlight js %}
+```js
 Meteor.call('post', post, function(error, id) {
   if (error)
     return alert(error.reason);
@@ -239,7 +239,7 @@ The `Meteor.call` function calls a method named by it's first argument. You can 
 
 We define the method in our `lib/collection.js` file:
 
-{% highlight js %}
+```js
 Meteor.methods({
   post: function(post) {
     var user = Meteor.user(),

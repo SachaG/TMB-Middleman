@@ -7,13 +7,13 @@ date: 0011/01/01
 
 ## Notifications
 
-{% div chapter %}
+<% chapter do %>
 #### In this chapter, we'll:
 
 - Add a notifications collection to notify users of other user's actions.
 - Learn how to only share the relevant notifications with a given user.
 - Learn about Meteor publications and subscriptions.
-{% enddiv %}
+<% end %>
 
 
 Now that users can comment on each other's posts, it'd be good to let them know that a conversation has begun. To do so, we'll notify the post's owner that there's been a comment on their post, and provide them with a link to view that comment.
@@ -26,7 +26,7 @@ We'll create a notification for you when someone comments on your post. In futur
 
 We are already creating comments in a server-side method; so we can just augment that method to also create a notification. Because it's happening on the server side, we don't need to worry about `allow` or `deny` rules for `Notification` insertion. 
 
-{% highlight js %}
+```js
 var Notifications = new Meteor.Collection('notifications');
 Meteor.methods({
   comment: function(comment) {
@@ -60,7 +60,7 @@ We've created a simple function that looks at the post that the user is commenti
 
 Let's start by creating a simple Notifications collection, setting permissions, and publishing it to the client:
 
-{% highlight js %}
+```js
 var Notifications = new Meteor.Collection('notifications');
 
 Notifications.allow({
@@ -72,21 +72,21 @@ Notifications.allow({
 We've started by creating a simple notifications collection, which will sync client and server. We'll need to update notifications once a user has seen them, so we also enable updates (but as usual, we restrict update persmissions to a user's own data).
 
 Next we'll publish the notifications, and subscribe on the client:
-{% highlight js %}
+```js
 Meteor.publish('notifications', function() {
   return Notifications.find()
 });
 ```
 {% caption server/publications.js %}
 
-{% highlight js %}
+```js
 Meteor.subscribe('notifications');
 ```
 {% caption client/miniscope.js %}
 
 Now we can go ahead and add a list of notifications to the header.
 
-{% handlebars %}
+```html
 <body>
   <header>
     {{loginButtons}}
@@ -94,10 +94,10 @@ Now we can go ahead and add a list of notifications to the header.
   </header>
   ...
 </body>
-{% endhandlebars %}
+```
 {% caption client/telescope.html %}
 
-{% handlebars %}
+```html
 <template name="notifications">
   <ul class="notification">
     {{#each notifications}}
@@ -113,12 +113,12 @@ Now we can go ahead and add a list of notifications to the header.
     </a>
   </li>
 </template>
-{% endhandlebars %}
+```
 {% caption client/views/notifications.html %}
 
 We can see that the plan is for each notification to contain the `id` of the post that was commented on, and the name of the user that commented on it. Next, we need to make sure we select the right list of notifications in our controller, and update the notifications as read when the user clicks on the link that they point to. 
 
-{% highlight js %}
+```js
 Template.notifications.helpers({
   notifications: function() {
     return Notifications.find({userId: Meteor.userId(), read: false});
@@ -145,7 +145,7 @@ As we saw in the last example, our notifications are working well. However, ther
 
 If you still have Firefox open, try running the following code in the browser console:
 
-{% highlight js %}
+```js
 Notifications.find().count();
 > 1
 ```
@@ -161,7 +161,7 @@ To do so, we need to return a different cursor in our publication than `Notifica
 
 It's straightforward to do that, as a publish function has the current user's `_id` available at `this.userId`:
 
-{% highlight js %}
+```js
 Meteor.publish('notifications', function() {
   return Notifications.find({userId: this.userId});
 })
@@ -171,13 +171,13 @@ Meteor.publish('notifications', function() {
 Now if we check in our two browser windows, we should see two different notifications collections:
 
 XXX: How to show this?
-{% highlight js %}
+```js
 Notifications.find().count();
 > 1
 ```
 {% caption browser console %}
 
-{% highlight js %}
+```js
 Notifications.find().count();
 > 0
 ```

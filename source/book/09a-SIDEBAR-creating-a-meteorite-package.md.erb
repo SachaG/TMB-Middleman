@@ -28,7 +28,7 @@ cd errors
 
 Next, we'll create the `package.js`, the file that's used to inform Meteor of how the package will be used.
 
-{% highlight js %}
+```js
 Package.describe({
   summary: "A pattern to display application errors to the user"
 });
@@ -44,7 +44,7 @@ Package.on_use(function (api, where) {
 
 We've added three files to the package, which correspond to the three files that we'll create in the package directory, which are more or less pulled directly from miniscope, modulo some proper namespacing:
 
-{% highlight js %}
+```js
 // Local (client-only) collection
 Meteor.errors = new Meteor.Collection(null);
 
@@ -65,7 +65,7 @@ Meteor.Errors = {
 ```
 {% caption errors_client.js %}
 
-{% handlebars %}
+```html
 <template name="meteorErrors">
   {{#each errors}}
     {{> meteorError}}
@@ -78,10 +78,10 @@ Meteor.Errors = {
     {{message}}
   </div>
 </template>
-{% endhandlebars %}
+```
 {% caption errors.html %}
 
-{% highlight js %}
+```js
 Template.meteorErrors.helpers({
   errors: function() {
     return Meteor.errors.find({show: true});
@@ -149,7 +149,7 @@ First, we need to add a `smart.json`, to tell meteorite about the package so we 
 
 Then we'll create a test file that uses tiny test to run some tests against the errors codebase:
 
-{% highlight js %}
+```js
 Tinytest.add("Errors collection works", function(test) {
   test.equal(Meteor.errors.find({show: true}).count(), 0);
   
@@ -185,7 +185,7 @@ Tinytest.addAsync("Errors template works", function(test, done) {
 In these tests we're checking the basic `Meteor.Errors` functions work, as well as double checking that the template `rendered` code is still functioning.
 
 We need to tell Meteor how to run the tests in `package.js`:
-{% highlight js %}
+```js
 Package.on_test(function(api) {
   api.use('errors', 'client');
   api.use(['tinytest', 'test-helpers'], 'client');  

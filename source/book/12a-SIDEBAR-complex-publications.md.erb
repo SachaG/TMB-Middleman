@@ -18,7 +18,7 @@ In fact, in the previous example, my subscription is called `'somePosts'`, where
 
 Why would we want to do that? A simple reason is to manage the amount of data getting sent down to the client. To continue our posts example, suppose we want our users to see a long list of all the posts on the site, but they only need to see the details of a single post at once. Rather than sending all the details of all the posts, we can do:
 
-{% highlight js %}
+```js
 Meteor.publish('allPosts', function() {
   return Posts.find({}, {fields: {title: true, authorName: true}});
 });
@@ -46,7 +46,7 @@ There are many considerations as to which is the best approach, and to some degr
 
 This would be difficult to have a independent publication for, especially if the list of posts was limited in some way (say the 10 most recent). We'd have to write a publication that looked something like:
 
-{% highlight js %}
+```js
 Meteor.publish('topComments', function(topPostIds) {
   return Comments.find({postId: topPostIds});
 });
@@ -56,7 +56,7 @@ Which would be a problem as the publication would have to get torn down and re-e
 
 However, there is a way around this. We just use the fact that we can not only have more than one publication per collection, but we can also have more than one collection per publication. Here's how we could solve this case:
 
-{% highlight js %}
+```js
 Meteor.publish('topPosts', function(limit) {
   var sub = this, commentHandles = [], postHandle = nil;
   
@@ -108,7 +108,7 @@ Why would we ever want to do this? One reason is *Single Table Inheritance*. Sup
 
 Then although we would have a single `Resources` collection on the server, we could achieve `Videos`, `Sounds` and `Images` collections on the client with the following bit of magic:
 
-{% highlight js %}
+```js
   Meteor.publish(function('videos') {
     var sub = this;
     

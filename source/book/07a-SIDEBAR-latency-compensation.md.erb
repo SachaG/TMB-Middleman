@@ -44,7 +44,7 @@ So, the user sees changes instantly, and when the server returns a few moments l
 Let's make a little change to the `post` method call so we can see this in action. To do so, we'll be doing some advanced coding with the `futures` npm package to delay the insertion of objects in our method:
 
 
-{% highlight js %}
+```js
 Meteor.methods({
   post: function(post) {
     // .. existing validation code

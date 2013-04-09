@@ -13,12 +13,12 @@ The point of a social news site is creating a community of users, and there's no
 
 We'll begin by creating a new collection to store comments in, and adding some basic fixture data into that collection.
 
-{% highlight js %}
+```js
 var Comments = new Meteor.Collection('comments');
 ```
 {% caption lib/collections.js %}
 
-{% highlight js %}
+```js
 // Fixture data 
 if (Posts.find().count() === 0) {
   var now = new Date().getTime();
@@ -68,16 +68,16 @@ First, we created a couple of (completely fake) users, inserting them into the d
 
 It's all very well putting comments into the database, but we also need to show them on the discussion page. Hopefully this process should be fairly familiar to you by now, and you already know what's coming next!
 
-{% handlebars %}
+```html
 <ul class="comments">
   {{#each comments}}
     {{> comment}}
   {{/each}}
 </ul>
-{% endhandlebars %}
+```
 {% caption client/views/posts/post.html %}
 
-{% highlight js %}
+```js
 Template.post.helpers({
   comments: function() {
     return Comments.find({postId: this._id}, {sort: {submitted: -1}});
@@ -86,11 +86,11 @@ Template.post.helpers({
 ```
 {% caption client/views/posts/post.js %}
 
-We've put the `{%raw%}{{#each comments}}{%endraw%}` block inside the post template, so `this` is a post within the `comments` helper. To find the relevant comments, we check those that have linked themselves to that post, with the `postId` attribute. Finally we sort the comments by the time of submission (which we've stored as a numeric timestamp).
+We've put the `{{#each comments}}` block inside the post template, so `this` is a post within the `comments` helper. To find the relevant comments, we check those that have linked themselves to that post, with the `postId` attribute. Finally we sort the comments by the time of submission (which we've stored as a numeric timestamp).
 
 Rendering a comment is pretty straightforward, given what we've learnt about helpers and handlebars:
 
-{% handlebars %}
+```html
 <template name="comment">
   <li>
     <span class="author">{{authorName}}:</span>
@@ -98,7 +98,7 @@ Rendering a comment is pretty straightforward, given what we've learnt about hel
     <span class="date">{{submittedText}}</span>
   </li>
 </template>
-{% endhandlebars %}
+```
 {% caption client/views/comments/comment.html %}
 
 ### Submitting comments
@@ -107,14 +107,14 @@ Let's add a way for our users to create new comments. The process we'll follow w
 
 We start by adding a submit box at the bottom of each post:
 
-{% handlebars %}
+```html
 {{#if currentUser}}
   {{> newComment}}
 {{/if}}
-{% endhandlebars %}
+```
 {% caption client/views/posts/post.html %}
 
-{% handlebars %}
+```html
 <template name="newComment">
   <form name="comment">
     <label for="body">Comment on this post</label>
@@ -122,12 +122,12 @@ We start by adding a submit box at the bottom of each post:
     <button type="submit">Add Comment</button>
   </form>
 </template>
-{% endhandlebars %}
+```
 {% caption client/views/comments/comment_submit.html %}
 
 To submit our comments, we call a `comment` method in the `newComment.js` controller, which works more or less the same way as our `postSubmit` controller.
 
-{% highlight js %}
+```js
 Template.newComment.events({
   'submit form': function(event, template) {
     event.preventDefault();
@@ -147,7 +147,7 @@ Template.newComment.events({
 
 Just like we had a `post` server-side method, we'll set up a `comment` Meteor method to create our comments, check that everything is legit, and finally insert the new comment into the comments collection.
 
-{% highlight js %}
+```js
 Meteor.methods({
   comment: function(comment) {
     var user = Meteor.user();

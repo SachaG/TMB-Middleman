@@ -7,14 +7,14 @@ date: 0012/01/01
 
 ## Pagination and Subscriptions
 
-{% div chapter %}
+<% chapter do %>
 #### In this chapter, we'll:
 
 - Learn more about Meteor's subscriptions, and how we can use them to control data.
 - Use the `paginated-subscription` package to step through a list of posts, without publishing them all at once.
 - Create a special subscription to deal with direct links to post discussions.
 - Be more careful with monitoring when our data is loading and keeping the user updated of what's happening.
-{% enddiv %}
+<% end %>
 
 
 Things are looking pretty great with Miniscope, and we can expect a hit reception when it's released to the world. We should probably think a little about the performance implication of the rash of new posts that are going to entered into the site as it takes off!
@@ -27,7 +27,7 @@ So it's better to paginate our posts.
 
 First off, let's quickly write some simple code to load up a bunch of posts in our fixture data, so we've got enough that pagination makes sense.
 
-{% highlight js %}
+```js
 // Fixture data 
 if (Posts.find().count() === 0) {
   var now = new Date().getTime();
@@ -56,7 +56,7 @@ mrt add paginated-subscription
 
 Using the package is easy--we just augment our calls to `publish` and `subscribe` with numeric arguments indicating the number of posts we'd like per page. So in `miniscope.js`, we do:
 
-{% highlight js %}
+```js
 var postsHandle = Meteor.subscribeWithPagination('posts', 10);
 ```
 {% caption client/miniscope.js %}
@@ -65,7 +65,7 @@ This tells the package to setup a subscription with `10` posts coming up each ti
 
 At the server end, we just need to modify our `'posts'` subscription to take a final argument indicating how many posts we want to send down at this moment. So we change it to:
 
-{% highlight js %}
+```js
 Meteor.publish('posts', function(limit) {
   return Posts.find({}, {sort: {submitted: -1}, limit: limit});
 });
@@ -84,7 +84,7 @@ The paginated subscription handle has three useful (reactive) functions that we 
 
 We can use the combination of those three helpers to manufacture our "infinite scroll" solution. To begin with, we'll add a few elements to our post list template:
 
-{% handlebars %}
+```html
 <template name="postsList">
   <div class="posts">
     {{#each posts}}
@@ -100,14 +100,14 @@ We can use the combination of those three helpers to manufacture our "infinite s
     {{/if}}
   </div>
 </template>
-{% endhandlebars %}
+```
 {% caption client/views/posts/posts_list.html %}
 
 We've added at the bottom of our list either a button saying "Load more", or a spinner indicating if we are waiting on the server to do so.
 
 In order to implement this, we need to set up the right helpers on the `postsList` collection, which we can do using the paginated subscription handle functions:
 
-{% highlight js %}
+```js
 Template.postsList.helpers({
   posts: function() {
     return Posts.find({}, {sort: {submitted: -1}, limit: postsHandle.limit()})
@@ -134,7 +134,7 @@ You'll notice also that we changed the `posts` function to return the posts in t
 
 Finally, we need to make the show more button work. Luckily, the paginated subscription makes this easy for us. It provides a `handle.loadNextPage()` function which does exactly that. So we just need to call it:
 
-{% highlight js %}
+```js
 Template.postsList.events({
   'click .more-link': function(event) {
     event.preventDefault();
@@ -166,7 +166,7 @@ What are we to do? Do we need to alter our `posts` publication to also factor in
 A couple chapters back, we simply named our "X newest posts" publication `'posts'`. But that name was just a convenience because it was the only publication involving posts (also at that point it published all the posts too!).
 
 Now we've limited it , we should really call that publication `'newPosts'`, and in fact we'll do that now. At the same time, let's make a _new_ publication, for a single post, identified by `id`:
-{% highlight js %}
+```js
 Meteor.publish('newPosts', function(limit) {
   return Posts.find({}, {sort: {submitted: -1}, limit: limit});
 });
@@ -178,7 +178,7 @@ Meteor.publish('singlePost', function(id) {
 {% caption server/publications.js %}
 
 Now, let's subscribe to the right posts on the client side:
-{% highlight js %}
+```js
 var postsHandle = Meteor.subscribeWithPagination('posts', 10);
 
 Meteor.autorun(function() {
@@ -189,13 +189,13 @@ Meteor.autorun(function() {
 
 So we can see that we subscribe to *both* publications on the client side, and the correct data is loaded. The single post that we want to load is in the `currentPostId` session variable (as we've seen before), and we just need to pass it through to the `singlePost` subscription.
 
-{% div note %}
+<% note do %>
 What does `Meteor.autorun` do and why do we need to wrap our subscription in it? 
 
 Remember that the Session is a *reactive data source*. When we use the Session in template helpers, we are implicitly using them in reactive *computations* as a template contains such a context. What does this mean? It means that if the reactive source changes, the computation will know to re-run itself, with the net result of the template re-rendering itself, which is exactly what we want.
 
 Here, we want the subscription to reset itself whenever the `currentPostId` session variable changes. To do so, we need to set up a similiar reactive computation. `Meteor.autorun` does this--as the name implies, the code inside the autorun will automatically run and keep running each and every time the reactive data sources used inside it change.
-{% enddiv %}
+<% end %>
 
 
 ### A flash of unloaded data

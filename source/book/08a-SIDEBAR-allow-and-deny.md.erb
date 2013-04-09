@@ -42,7 +42,7 @@ This means that if you were to write a server-side `deletePost()` Meteor method 
 
 Finally, one trick you can do with `deny` is to use it as an "onX" callback. For instance, you could achieve a `lastModified` timestamp with the following code:
 
-{% highlight js %}
+```js
 Posts.deny({
   update: function(userId, doc) {
     doc.lastModified = +(new Date());

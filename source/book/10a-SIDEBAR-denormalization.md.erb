@@ -18,11 +18,11 @@ However, the normal approach also has its drawbacks: if the `name` property only
 
 On the other hand, denormalizing means that the post author name gets published as a property the post, removing the need to publish the `users` collection altogether. 
 
-{% div note %}
+<% note do %>
 
 It *would* be possible to create a special subscription that only sends down the names of the users that we are interested in (i.e. users that have created the posts we can currently see), but it's worth considering if the complexity of such code would not outweigh the difficulties created by denormalizing.
 
-{% enddiv %}
+<% end %>
 
 Of course such considerations are very application specific: if you are writing code where data integrity is of paramount importance then the seriousness of potential problems caused by inconsistencies in the data probably means that your highest priority is avoiding such problems. 
 
@@ -32,7 +32,7 @@ If you are experienced with Mongo, you might have been surprised that we created
 
 The reason is that many of the tools Meteor gives us work a lot better when operating at the collection level. For instance:
 
-1. The `{%raw%}{{#each}}{%endraw%}` helper is very efficient when iterating over a cursor (the result of `collection.find()`). The same is not true when it iterates over an array of objects within a larger document.
+1. The `{{#each}}` helper is very efficient when iterating over a cursor (the result of `collection.find()`). The same is not true when it iterates over an array of objects within a larger document.
 2. `allow` and `deny` operate at the document level, and thus make it easy to ensure that any modifications of individual comments are correct in a way that would be more complex if we operated at a post level.
 3. DDP operates at the level of attributes of a document--this would mean if `comments` was a property of a `post`, every time a comment was created on a post, the server would send the entire updated comment list of that post out to each connected client.
 4. Publications and subscriptions are a lot easier to control at the level of documents--so for instance if we wanted to paginate comments on a post, we would find it difficult to do so unless comments were in their own collection.

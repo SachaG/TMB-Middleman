@@ -7,13 +7,13 @@ date: 0014/01/01
 
 ## Animations
 
-{% div chapter %}
+<% chapter do %>
 #### In this chapter, you will:
 
 - See what happens behind the scenes when Meteor swaps two DOM elements
 - Learn how to animate posts reordering
 - Learn how to animate new posts insertion
-{% enddiv %}
+<% end %>
 
 We now have real-time voting, scoring, and ranking. But this leads to a jarring, hectic user experience as posts jump around on the homepage. So we'll use animations to smooth everything out.
 
@@ -81,13 +81,13 @@ This makes steps 5 and 6 from earlier trivially easy: all we need to do is set `
 
 This means our only challenge is figuring where to animate them *from* (steps 3 and 4) relative to their new position, in other words how much to offset them. But that's not very hard either: the correct offset is simply a post's previous position minus its new one. 
 
-{% div note %}
+<% note do %>
 #### Position:absolute
 
 We could also use `position:absolute` with a relative parent to position our elements. But a big downside of absolutely positioned elements is that they're completely removed from the flow of the page, causing their parent container to collapse as if it were empty. 
 
 This in turns means we'd need to artificially set the height of the container via JavaScript, instead of leaving the browser reflow elements naturally. So whenever possible, it's best to stick to relative positioning. 
-{% enddiv %}
+<% end %>
 
 ### Total Recall
 
@@ -105,7 +105,7 @@ We can also access a template instance's collection data through the `data` prop
 
 We can now put everything together by using the `postItem.js` controller's `rendered` Template callback for our animation logic:
 
-{% highlight js %}
+```js
 Template.postItem.rendered = function(){
   // animate post from previous position to new position
   var instance = this;
@@ -153,7 +153,7 @@ Only case 1b should be animated, unless you want your user interface lighting up
 
 First, let's make sure we only animate posts when they're actually new, and not just when they're re-rendered because their data changed. We're already testing for the presence of an instance variable (which is only set after the first render), so we just have to go back to our `rendered` callback and add an `else` block:
 
-{% highlight js %}
+```js
 Template.postItem.rendered = function(){
   // animate post from previous position to new position
   var instance = this;
@@ -184,20 +184,20 @@ Template.postItem.rendered = function(){
 
 Note that the `removeClass("hidden")` we added in the `defer()` function will run for every rendering. But it will only  do something if the `.hidden` class is actually present on the element, which will only be true the first time it's rendered. 
 
-{% div note %}
+<% note do %>
 #### CSS & JavaScript
 
 You might have noticed that we're using an `.invisible` CSS class to trigger the animation instead of animating the CSS `opacity` property directly like we did for `top`. This is because for `top`, we needed to animate the property to a specific value that depended from the instance data. 
 
 On the other hand, here we only want to show and hide an element independently of its data. Since it's a good idea to keep your CSS our of your JavaScript as much as possible, we'll only add and remove the class here, and specify the details of the animation over in our stylesheet. 
 
-{% enddiv %}
+<% end %>
 
 If you switch from page to page now you'll see that all posts will fade in. While this looks nice, it's a little bit counter-productive since the goal of our animation is to highlight "new" posts (i.e. those who appear after page load). So we want to limit our animation to these newly inserted elements, but for that we first need to define what "new" means. 
 
 To do this, we'll use a Session variable to set a timestamp inside a router filter, and we'll then be able to declare that any template created after that timestamp is "new". 
 
-{% highlight js %}
+```js
 
 Meteor.Router.filters({
   'requireLogin': function(page) {
@@ -226,7 +226,7 @@ Meteor.Router.filter('setTimestamp');
 
 We can now update our `rendered` callback to take that timestamp into account:
 
-{% highlight js %}
+```js
  if(instance.currentPosition){
     var previousPosition = instance.currentPosition;
     // calculate difference between old position and new position and send element there

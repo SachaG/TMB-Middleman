@@ -7,7 +7,7 @@ date: 0013/01/01
 
 ## Voting
 
-{% div chapter %}
+<% chapter do %>
 #### In this chapter, we'll:
 
 - Build a system where users can vote on posts.
@@ -15,7 +15,7 @@ date: 0013/01/01
 - Learn how to write a general handlebars helper.
 - Learn a little more about data security in Meteor.
 - Cover some interesting performance considerations in MongoDB.
-{% enddiv %}
+<% end %>
 
 Now we have a discussion starting around our posts, it's important that people can find the most interesting posts to discuss. As such, we need some kind of ranking system to order our post with. Although we can get complex with karma, and time-based decay of rank and many other things (and Telescope indeed does some of this), for MiniScope we won't get too complex, and we'll just rate posts by the *number of votes* they receive.
 
@@ -27,7 +27,7 @@ We'll store a list of upvoters on each post so we know whether to show the upvot
 
 We'll also denormalize the total number of upvoters on a post, for ease of usage. So, we'll be adding two attributes to our posts, `upvoters` and `votes`. Let's start by making sure they are initialized when posts are created:
 
-{% highlight js %}
+```js
 Meteor.methods({
   post: function(post) {
     var user = Meteor.user(),
@@ -52,18 +52,18 @@ Meteor.methods({
 ### Building out Voting Templates
 
 First off, we add a up-vote button to our post partial, so wherever renders, people can click the button:
-{% handlebars %}
+```html
 <template name="post">
   ...
   <p>{{votes}} Votes <a href="#" class="upvote">⬆<a/></p>
   ...
 </template>
-{% endhandlebars %}
+```
 {% caption client/views/posts/post.html %}
 
 Next, we'll call a server upvote method when the user clicks on the button.
 
-{% highlight js %}
+```js
 Template.post.events({
   'click .upvote': function() {
     Meteor.call('upvote', this._id);
@@ -72,7 +72,7 @@ Template.post.events({
 ```
 {% caption client/views/posts/post.js %}
 
-{% highlight js %}
+```js
 Meteor.methods({
   upvote: function(postId) {
     var user = Meteor.user();
@@ -105,7 +105,7 @@ This final step is interesting--we've used a couple of special mongo operators. 
 
 The point of all this is to display the posts in the right order, so let's change the `posts` controller to return the posts in the right order. To do so, we'll use the mongo `sort` operator:
 
-{% highlight js %}
+```js
 Template.posts.helpers({
   posts: function() {
     return Posts.find({}, {sort: {votes: -1}});
@@ -122,7 +122,7 @@ Actually having posts change order instantly isn't ideal, as it's if you blink y
 
 First off, we don't want to display an upvote button if the user isn't logged in, or if they've already voted for it. After all, they can't vote!
 
-{% handlebars %}
+```html
 <template name="post">
   <p>{{votes}} Votes 
     {{#if currentUserNotVoted}}
@@ -130,10 +130,10 @@ First off, we don't want to display an upvote button if the user isn't logged in
     {{/if}}
   </p>
 </template>
-{% endhandlebars %}
+```
 {% caption client/views/posts/post.html %}
 
-{% highlight js %}
+```js
 Template.posts.helpers({
   currentUserNotVoted: function() {
     var userId = Meteor.userId()
@@ -145,7 +145,7 @@ Template.posts.helpers({
 
 Next, you may notice that posts with a single vote are titled "1 votes". We need to pluralize properly. Pluralization is a complicated process, but for now we'll do it in a fairly simplistic way. However, we'll make a general handlebars helper to do so that we can use everywhere:
 
-{% highlight js %}
+```js
 Handlebars.registerHelper('pluralize', function(n, thing) {
   // fairly stupid pluralizer
   if (n === 1) {
@@ -159,7 +159,7 @@ Handlebars.registerHelper('pluralize', function(n, thing) {
 
 The helpers we've made before have been tied to the controller and template that they apply to. By using `Handlebars.registerHelper`, we've created a general helper that can be used within any template. Our helper expects two arguments, so let's use it:
 
-{% handlebars %}
+```html
 <template name="post">
   <p>{{pluralize votes "Vote"}}
     {{#if currentUser}}
@@ -167,7 +167,7 @@ The helpers we've made before have been tied to the controller and template that
     {{/if}}
   </p>
 </template>
-{% endhandlebars %}
+```
 {% caption client/views/posts/post.html %}
 
 Now we should see "1 vote". Better.
@@ -184,7 +184,7 @@ There's two issues with this. Firstly, it's inefficient to go to the database tw
 
 What if the same voter votes for the post in between steps 1 and 3? Then it's possible the user could vote for the same post twice. Thankfully, Mongo allows us to be smarter, and combine steps 1-3 into a single Mongo command:
 
-{% highlight js %}
+```js
 Meteor.methods({
   ...
   upvote: function(postId) {
@@ -213,7 +213,7 @@ The only downside of this, is that we can't now tell the user that they've alrea
 
 If you've been paying attention, and you are quick on your feet, you may have realized a flaw in our system. What's to stop a user from tweaking the total number of votes on one of their posts? Give it a try: figure out the `id` of one of your own posts (preferably one that's languishing at the bottom of the post list), and try a little hack:
 
-{% highlight js %}
+```js
   Posts.update(postId, {$set: {votes: 10000}});
 ```
 {% caption browser console %}
@@ -221,7 +221,7 @@ If you've been paying attention, and you are quick on your feet, you may have re
 How are we allowed to do this? Well, when we specified the `allow` rules for updating posts, we only said that a user can only edit *their own posts*, but never anything about *how*! 
 
 Luckily, the problem is easily solved with the addition of a `deny` rule:
-{% highlight js %}
+```js
   Posts.deny({
     update: function(userId, doc, fields) {
      return _.contains(fields, 'votes') || _.contains(fields, 'upvoters');
@@ -233,19 +233,19 @@ An `update` rule receives as third argument a set of the fields that are going t
 
 Considering that our edit post form never touches those fields, we've solved the problem nicely. Try the little hack again on another one of your posts:
 
-{% highlight js %}
+```js
   Posts.update(postId, {$set: {votes: 10000}});
   >> SOME ERROR MESSAGE
 ```
 {% caption browser console %}
 
-{% div note %}
+<% note do %>
 #### Latency compensation
 
 If you looked carefully, you'll have seen latency compensation in action. It may not have been visible, but you may have seen the post jump to the top of the list briefly, before shooting back into position. 
 
 What's happened? In your local `Posts` collection, the `update` was applied without incident. This happens instantly, so the post shot to the top of the list. Meanwhile, on the server, the `update` was being denied. So some time later (measured in the milliseconds if you are running Meteor on your own machine), the server returned an error, telling the local collection to revert itself. The end result--exactly what we'd expect.
-{% enddiv %}
+<% end %>
 
 
 ### Ranking the front page posts by number of votes
@@ -256,7 +256,7 @@ XXX: Do this once pagination has been worked out
 
 Now that we have two post list pages, it can be hard to know just which list you're currently viewing. So let's revisit our header to reflect that. Let's create a `header.js` controller and use a bit of jQuery magic to highlight the current page:
 
-{% highlight js %}
+```js
 Template.header.rendered = function(){
   $(this.firstNode).find(".nav>li").each(function(){
     if($(this).children("a").attr("href") === window.location.pathname)

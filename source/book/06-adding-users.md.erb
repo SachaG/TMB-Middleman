@@ -5,13 +5,13 @@ complete: 80
 date: 0006/01/01
 ---
 
-{% div chapter %}
+<% chapter do %>
 #### In this chapter, you will:
 
 - Learn about user accounts in Meteor
 - Add all the authentication we'll need for Miniscope
 - Use the built-in `accounts-ui` package to get an instant user interface
-{% enddiv %}
+<% end %>
 
 ## User interaction: accounts, comments, more
 
@@ -32,11 +32,11 @@ mrt add accounts-ui
 mrt add accounts-password
 ```
 
-Those two commands make the special accounts templates available to us; we can include them in our site using the `{%raw%}{{loginButtons}}{%endraw%}` helper. 
+Those two commands make the special accounts templates available to us; we can include them in our site using the `{{loginButtons}}` helper. 
 
 We'll add the buttons to our header. And since that header is starting to grow larger, let's give it more room in its own template. We're also using some extra markup and Bootstrap classes to make sure everything looks nice:
 
-{% handlebars %}
+```html
 <head>
   <title>Miniscope</title>
 </head>
@@ -48,10 +48,10 @@ We'll add the buttons to our header. And since that header is starting to grow l
     </div>
   </div>
 </body>
-{% endhandlebars %}
+```
 {% caption client/main.html %}
 
-{% handlebars %}
+```html
 <template name="header">
   <header class="navbar">
     <div class="navbar-inner">
@@ -65,7 +65,7 @@ We'll add the buttons to our header. And since that header is starting to grow l
     </div>
   </header>
 </template>
-{% endhandlebars %}
+```
 {% caption client/includes/header.html %}
 
 Now, when we browse to our app, we see the accounts login buttons in the top right hand corner of our site.
@@ -76,7 +76,7 @@ We can use these to sign up, login, request a change of password, and everything
 
 For MiniScope, we just want users to login via a username (which we can display throughout the application), so we should just let people sign in via one:
 
-{% highlight js %}
+```js
 Accounts.ui.config({
   passwordSignupFields: 'USERNAME_ONLY'
 });
@@ -90,7 +90,7 @@ If you sign up for an account, the "Sign in" button changes to show your usernam
 
 By adding the `accounts` package, Meteor has created a special new collection for us. We can access that collection at `Meteor.users()`. Try it now; in the console, type:
 
-{% highlight js %}
+```js
 Meteor.users().findOne();
 ```
 {% caption browser console %}
@@ -101,7 +101,7 @@ You can also find the single user that is logged in with `Meteor.user()`;
 
 Now, try logging out, and signing up and logging in with a second username. `Meteor.user()` should now return that a different user. Now, if we run:
 
-{% highlight js %}
+```js
 Meteor.users().find().count();
 ```
 {% caption browser console %}
@@ -137,7 +137,7 @@ Secondly, the fields are different. In Mongo, a user has a lot of data in it:
 {% caption mongo console %}
 
 Whereas in the browser, the user object is much more pared down:
-{% highlight js %}
+```js
 Meteor.users.findOne();
 ```
 {% caption browser console %}
