@@ -24,7 +24,7 @@ For instance, if we want to change the displayed post, we can simply do:
   otherPostId = Posts.findOne({title: 'Meteor'})._id;
   Session.set('currentPostId', otherPostId);
 ```
-{% caption browser console %}
+<%= caption "Browser console" %>
 
 and we should now see the post entitled "Meteor" displayed.
 
@@ -51,7 +51,7 @@ Session.set('a-session-variable', 7);
 Session.get('a-session-variable');
 > 7
 ```
-{% caption browser console %}
+<%= caption "Browser console" %>
 
 If we force a hot code reload (HCR) by saving one of our source files, then the page reloads, but the session variable is still set:
 
@@ -59,7 +59,7 @@ If we force a hot code reload (HCR) by saving one of our source files, then the 
 Session.get('a-session-variable');
 > 7
 ```
-{% caption browser console %}
+<%= caption "Browser console" %>
 
 So if we were using session variables to keep track of exactly what the user is doing, the HCR should be almost transparent to the user, as all the session variables will remain with the same values. This enables us to deploy new production versions of our Meteor application with the confidence that our users will be minimally disrupted.
 
@@ -68,7 +68,7 @@ Now try refreshing the page manually. After doing so, the session is reset:
 Session.get('a-session-variable');
 > null
 ```
-{% caption browser console %}
+<%= caption "Browser console" %>
 
 What's happened is that we've lost the session when we reloaded the page. On a HCR, Meteor saves the session to local storage in your browser and brings it out again after the reload. However, this behaviour makes sense: if a user reloads the page, it's like they've browsed to the same URL again, and they should be reset to the starting state that any user would see when they visit the URL.
 

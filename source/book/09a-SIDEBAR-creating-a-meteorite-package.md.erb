@@ -23,7 +23,7 @@ cd ..
 mkdir errors
 cd errors
 ```
-{% caption bash console %}
+<%= caption "Terminal" %>
 
 
 Next, we'll create the `package.js`, the file that's used to inform Meteor of how the package will be used.
@@ -40,7 +40,7 @@ Package.on_use(function (api, where) {
   api.add_files(['errors_client.js', 'errors.html', 'errors_controller.js'], 'client');
 });
 ```
-{% caption package.js %}
+<%= caption "package.js" %>
 
 We've added three files to the package, which correspond to the three files that we'll create in the package directory, which are more or less pulled directly from miniscope, modulo some proper namespacing:
 
@@ -63,7 +63,7 @@ Meteor.Errors = {
   }
 };
 ```
-{% caption errors_client.js %}
+<%= caption "errors_client.js" %>
 
 ```html
 <template name="meteorErrors">
@@ -79,7 +79,7 @@ Meteor.Errors = {
   </div>
 </template>
 ```
-{% caption errors.html %}
+<%= caption "errors.html" %>
 
 ```js
 Template.meteorErrors.helpers({
@@ -101,7 +101,7 @@ Template.meteorError.rendered = function() {
   }, 500);
 };
 ```
-{% caption errors_controller.js %}
+<%= caption "errors_controller.js" %>
 
 
 ### Testing with miniscope
@@ -117,7 +117,7 @@ Let's make sure that our changed code works, and test things locally with minisc
   }
 }
 ```
-{% caption smart.json %}
+<%= caption "smart.json" %>
 
 We've linked via `../errors/` as that's where the package we are developing is located relative to miniscope. 
 
@@ -145,7 +145,7 @@ First, we need to add a `smart.json`, to tell meteorite about the package so we 
   }
 }
 ```
-{% caption smart.json %}
+<%= caption "smart.json" %>
 
 Then we'll create a test file that uses tiny test to run some tests against the errors codebase:
 
@@ -180,7 +180,7 @@ Tinytest.addAsync("Errors template works", function(test, done) {
   }, 1000);
 })
 ```
-{% caption errors_tests.js %}
+<%= caption "errors_tests.js" %>
 
 In these tests we're checking the basic `Meteor.Errors` functions work, as well as double checking that the template `rendered` code is still functioning.
 
@@ -193,7 +193,7 @@ Package.on_test(function(api) {
   api.add_files('errors_tests.js', 'client');
 });
 ```
-{% caption package.js %}
+<%= caption "package.js" %>
 
 Then we can run the tests with `mrt` in the package directory, and we should see:
 >>SS
@@ -208,7 +208,7 @@ Once that's in place, releasing is easy! First we just need to push the code to 
 git push origin master
 mrt release .
 ```
-{% caption bash console %}
+<%= caption "Terminal" %>
 
 Done!
 
@@ -220,6 +220,6 @@ Now that it's released, we no longer need to link to the local package (unless w
   }
 }
 ```
-{% caption smart.json %}
+<%= caption "smart.json" %>
 
 Once we've restarted `mrt` (in the miniscope app), we should see Meteorite download our newly published package. Awesome!
