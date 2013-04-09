@@ -26,31 +26,58 @@ We start by defining a route for our new page:
 
 ```js
 Meteor.Router.add({
-  ...
+  '/': 'postsList',
+  
+  '/posts/:_id': {
+    to: 'postPage', 
+    and: function(id) { Session.set('currentPostId', id); }
+  },
+  
   '/submit': 'postSubmit'
 });
 ```
-{% caption client/lib/router.js %}
+<%= caption "client/helpers/router.js" %>
 
 This means if a user browses to the `/submit` URL, we'll display the `postSubmit` template. So we'd better write that template:
 
 ```html
 <template name="postSubmit">
-  <form name="post_submit" class="span8 offset2">
-    <label for="url">URL</label>
-    <input name="url" type="text" value="" placeholder="Your URL"/>
-    
-    <label for="title">Title</label>
-    <input name="title" type="text" value="" placeholder="Name your post"/>
-    
-    <label for="message">Message</label>
-    <textarea name="message" type="text" value=""/>
-    
-    <input type="submit" value="Submit" class="btn btn-primary"/>
+  <form class="main">
+    <div class="control-group">
+        <label class="control-label" for="url">URL</label>
+        <div class="controls">
+            <input name="url" type="text" value="" placeholder="Your URL"/>
+        </div>
+    </div>
+
+    <div class="control-group">
+        <label class="control-label" for="title">Title</label>
+        <div class="controls">
+            <input name="title" type="text" value="" placeholder="Name your post"/>
+        </div>
+    </div>
+
+    <div class="control-group">
+        <label class="control-label" for="message">Message</label>
+        <div class="controls">
+            <textarea name="message" type="text" value=""/>
+        </div>
+    </div> 
+
+    <div class="control-group">
+        <div class="controls">
+            <input type="submit" value="Submit" class="btn btn-primary"/>
+        </div>
+    </div>
   </form>
 </template>
+
 ```
-{% caption client/views/postSubmit.html %}
+<%= caption "client/views/post_submit.html" %>
+
+Note: that's a lot of markup, but it simply comes from using Twitter Bootstrap. None of it is absolutely necessary except for the form elements, but it'll make our app look a little bit nicer. It should look something like this:
+
+<%= screenshot "7-1", "The post submit form" %>
 
 This is a simple form. We don't need to worry about an action for it, as we'll be intercepting submit events on the form and updating data via javascript. (It doesn't make sens to provide a non-JS fallback when you consider that a Meteor app is completely non-functional with JavaScript disabled).
 
@@ -61,24 +88,26 @@ We just set some straightforward `name` attributes on our form elements so we ca
 Let's bind an event handler to the form `submit` event. It's best to use the `submit` event (rather than say a `click` event on the button), as we then cover all possible ways of submitting (such as hitting enter in URL field for instance). So we write:
 
 ```js
-Template.post_submit.events({
+Template.postSubmit.events({
   'submit form': function(event) {
     event.preventDefault();
     
     var post = {
-      url: $(e.target).find('[name=url]').val(),
-      title: $(e.target).find('[name=title]').val(),
-      message: $(e.target).find('[name=message]').val()
+      url: $(event.target).find('[name=url]').val(),
+      title: $(event.target).find('[name=title]').val(),
+      message: $(event.target).find('[name=message]').val()
     }
     
-    var id = Posts.insert(post);
-    Meteor.Router.to(Meteor.Routes.post(id));
+    post._id = Posts.insert(post);
+    Meteor.Router.to('postPage', post);
   }
-})
+});
 ```
-{% caption client/views/postSubmit.js %}
+<%= caption " client/views/post_submit.js" %>
 
-This function uses `jQuery` to parse out the values of our various form fields, and populate a new post object from the results. We need to ensure we `preventDefault` on the `event` argument to our handler to make sure the form doesn't go ahead and submit somewhere unexpected. 
+<%= commit "7-1", "Added a submit post page and linked to it in the header." %>
+
+This function uses [jQuery](http://jquery.com) to parse out the values of our various form fields, and populate a new post object from the results. We need to ensure we `preventDefault` on the `event` argument to our handler to make sure the browser doesn't go ahead and try to submit the form. 
 
 Finally, we can route to the show page for our new post! The `insert()` function on a collection returns the generated `id` for the object that has been inserted into the database. Luckily the `Meteor.Router.routes.post` function can handle either an object with an `_id` attribute or an id directly, so our code works well.
 
@@ -95,26 +124,27 @@ Our app no longer needs these training wheels, so let's take them off! We'll rem
 ```bash
 mrt remove insecure
 ```
+<%= caption "Terminal" %>
 
-After doing so, you'll notice that the post form no longer works.
-
->> SCREENSHOT
-
-This is because without the `insecure` package, client-side inserts into the posts collection _are no longer allowed_. We need to either give some explicit rules telling Meteor when it's OK for a client to insert posts, or else do our post inserting on server-side.
+After doing so, you'll notice that the post form no longer works. This is because without the `insecure` package, client-side inserts into the posts collection _are no longer allowed_. We need to either give some explicit rules telling Meteor when it's OK for a client to insert posts, or else do our post inserting on server-side.
 
 ### Allowing post inserts
 
-To begin with, we'll show how to allow client-side post inserts in order to get our form working again. As it turns out, we'll eventually settle on a different technique (for reasons that will become clear), but for now, we can get things working again easily enough.
+To begin with, we'll show how to allow client-side post inserts in order to get our form working again. As it turns out, we'll eventually settle on a different technique (for reasons that will become clear), but for now, we can get things working again easily enough:
 
 ```js
+Posts = new Meteor.Collection('posts');
+
 Posts.allow({
   insert: function(userId, doc) {
     // only allow posting if you are logged in
     return !! userId;
   }
-})
+});
 ```
-{% caption lib/collections.js %}
+<%= caption "collections/posts.js" %>
+
+<%= commit "7-2", "Removed insecure, and allowed certain writes to posts." %>
 
 We call `Posts.allow`, which tells Meteor "this is a set of circumstances under which clients are allowed to do things to the `Posts` collection". In this case, we are saying "clients are allow to insert posts as long as they have a `userId`". 
 
@@ -123,9 +153,9 @@ As user accounts is tied into the core of Meteor, we can rely on `userId` always
 
 We've managed to ensure that you need to be logged in to create a post. Try logging out and creating a post; you should see this in your console:
 
->> screenshot
+<%= screenshot "7-2", "Insert failed: Access denied " %>
 
-However, there are some problems with what we have so far, which we'll work on next.
+However, there are still some problems with what we have so far:
 
  - Logged out users can still reach the create post form.
  - The post is not tied to the user in any way (and there's no code on the server to enforce this).
@@ -139,9 +169,20 @@ Let's start by not letting logged out users see the new posts form. We'll do tha
 
 A routing filter is a function that takes a routing end point and, after checking the application's state, returns a new end point. Sounds complex? Well, as we'll see in this example, it's usually pretty straightforward.
 
-What we want to do is render an access denied page rather than the `postSubmit` page if the user is not logged in (the user's logged-in-ness is that application state we were talking about). So we write:
+What we want to do is render an access denied page rather than the `postSubmit` template if the user is not logged in (the user's logged-in-ness is that application state we were talking about). So let's modify router.js like so:
 
 ```js
+Meteor.Router.add({
+  '/': 'postsList',
+  
+  '/posts/:_id': {
+    to: 'postPage', 
+    and: function(id) { Session.set('currentPostId', id); }
+  },
+  
+  '/submit': 'postSubmit'
+});
+
 Meteor.Router.filters({
   'requireLogin': function(page) {
     if (Meteor.user())
@@ -153,18 +194,22 @@ Meteor.Router.filters({
 
 Meteor.Router.filter('requireLogin', {only: 'postSubmit'});
 ```
-{% caption client/lib/router.js %}
+<%= caption "client/lib/router.js" %>
 
 We also add the template for the access denied page, which is pretty simple:
 ```html
 <template name="accessDenied">
-  You can't get here! Please log in
+  <div class="alert alert-error">You can't get here! Please log in</div>
 </template>
+
 ```
-{% caption client/miniscope.html %}
+<%= caption "includes/access_denied.html" %>
+
+<%= commit "7-3", "Denied access to new posts page when not logged in." %>
 
 So if you head to http://localhost:3000/submit/ without being logged in, you should see this:
->>screenshot
+
+<%= screenshot "7-3", "The access denied template" %>
 
 The nice thing about routing filters is that they are _reactive_ too! So we can be declarative, and we don't need to think about callbacks when the user logs in or any such nonsense. When the 'logged-in-ness' of the user changes (for example, try logging in on the page above), the Router's page template instantly changes from `accessDenied` to `postSubmit` without us having to write any explict code to handle it. Simple huh?
 
@@ -175,6 +220,17 @@ To avoid this problem (which is a common class of problem that you'll see more o
 So we augment our routing filter a little, and add a loading template:
 
 ```js
+Meteor.Router.add({
+  '/': 'postsList',
+  
+  '/posts/:_id': {
+    to: 'postPage', 
+    and: function(id) { Session.set('currentPostId', id); }
+  },
+  
+  '/submit': 'postSubmit'
+});
+
 Meteor.Router.filters({
   'requireLogin': function(page) {
     if (Meteor.user())
@@ -185,14 +241,19 @@ Meteor.Router.filters({
       return 'accessDenied';
   }
 });
+
+Meteor.Router.filter('requireLogin', {only: 'postSubmit'});
 ```
-{% caption client/lib/router.js %}
+<%= caption " client/helpers/router.js" %>
+
+And then create the `loading` template:
 
 ```html
 <template name="loading">
   Spinner!
 </template>
 ```
+<%= caption " client/helpers/router.js" %>
 
 ### Hiding the link in the first place.
 
@@ -201,7 +262,7 @@ OK, so now logged out users cannot access the new post page. We needed to do tha
 ```html
 {{#if currentUser}}<a href="/submit">Submit Post</a>{{/if}}
 ```
-{% caption client/views/posts/postsTop.html %}
+<%= caption " client/views/posts/postsTop.html" %>
 
 The `currentUser` helper is provided to us by the `accounts` package and is the handlebars equivalent of `Meteor.user()`. Of course it is reactive, and the link will appear and disappear as you log in and out of the site.
 
@@ -233,7 +294,7 @@ Meteor.call('post', post, function(error, id) {
   Meteor.Router.to(Meteor.Routes.post(id));
 });
 ```
-{% caption client/views/posts/postSubmit.js %}
+<%= caption " client/views/posts/postSubmit.js" %>
 
 The `Meteor.call` function calls a method named by it's first argument. You can provide arguments to the call (in this case, the `post` object we constructed from the form), and finally attach a callback, which will execute when the server-side method is done. Here we just simply alert to the user if there's a problem, or redirect the user to the freshly created post's discussion page if not.
 
@@ -272,7 +333,7 @@ Meteor.methods({
   }
 })
 ```
-{% caption lib/collections.js %}
+<%= caption " lib/collections.js" %>
 
 This method is a little complicated, but hopefully you can follow along.
 

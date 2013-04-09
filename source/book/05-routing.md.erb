@@ -26,10 +26,9 @@ First off, let's install the Router package from atmosphere:
 ```bash
 mrt install router
 ```
-{% caption commandline %}
+<%= caption "Terminal" %>
 
 This command downloads and installs the router package into our app, ready to use.
-
 
 ### Routing: mapping URLs to templates
 
@@ -41,23 +40,25 @@ What do we mean by a page here? It's the Router's concept of a page--the Router'
 
 ```html
 <body>
- ...
- {{renderPage}}
- ...
+  ...
+  <div id="main" class="row-fluid">
+    {{renderPage}}
+  </div>
+  ...
 </body>
 ```
-{% caption client/miniscope.html %}
+<%= caption "client/main.html" %>
 
 So we've replaced the inclusion of the `posts` template with a call to `renderPage` helper. You'll notice that after this change, we see nothing on the screen. This is because the router maps URLs it doesn't know about to an empty template.
 
-So to begin, we can regain our old behaviour, by mapping the empty URL `/` to the `posts` template:
+So to begin, we can regain our old behaviour, by mapping the empty URL `/` to the `posts` template. Let's make a `helpers` directory inside `client`, and inside create `router.js` :
 
 ```js
 Meteor.Router.add({
-  '/': 'posts'
+  '/': 'postsList'
 });
 ```
-{% caption client/helpers/router.js %}
+<%= caption "client/helpers/router.js"%>
 
 If it seems straightforward, that's because is. In the router, we've simply said "if the user browses to `/`, render the template named `posts`". 
 
@@ -65,29 +66,35 @@ If it seems straightforward, that's because is. In the router, we've simply said
 
 There's an added advantage to what we've just done. In creating the route, we've also named it. Although you can explicitly choose a name for your route, by default, the Router chooses the name of the template being mapped to. So we've created a route, named `posts`, that maps `/` to `posts`.
 
-Why is the name of the route important? The Router gives us a couple of conveniences that allows us to write links that use our routes. The important one is a handlebars helper, `{{postsPath}}` in this case, which returns the URL path component. So in our case, it returns `/`.
+Why is the name of the route important? The Router gives us a couple of conveniences that allows us to write links that use our routes. The important one is a handlebars helper, `{{postsListPath}}` in this case, which returns the URL path component. So in our case, it returns `/`.
 
 Let's use that in our layout--we want our logo to point us back to the posts list, so we can do
 
 ```html
-  <a href="{{postsPath}}">MiniScope</a>
+<header class="navbar">
+  <div class="navbar-inner">
+    <a class="brand" href="{{postsListPath}}">Microscope</a>
+  </div>
+</header>
 ```
-{% caption client/miniscope.html %}
+<%= caption "client/main.html"%>
+
+<%= commit "5-1", "Very basic routing." %>
 
 ### Routing to a specific Post using the Session
 
 Now we've seen how to map the root URL to the `posts` template, let's map a post-specific URL to a page that displays the details of a single post.
 
-To start with, we'll create a simple template that just renders the same post meta data template that we used earlier in the list of posts.
+To start with, we'll create a new template that just renders the same post meta data template that we used earlier in the list of posts.
 
 ```html
 <template name="postPage">
   {{#with currentPost}}
-    {{> post}}
+    {{> postItem}}
   {{/with}}
 </template>
 ```
-{% caption client/views/posts/postPage.html %}
+<%= caption "client/views/posts/post_page.html" %>
 
 This template just grabs the post we are interested in (we'll see how soon) and renders the meta data for it. Later we'll add much more interesting things to this page, like a discussion via comments, but for now, we need to get this page working.
 
@@ -95,13 +102,15 @@ To do so, we are going to create another named route, this time mapping URL path
 
 ```js
 Meteor.Router.add({
+  '/': 'postsList',
+  
   '/posts/:_id': {
     to: 'postPage', 
     and: function(id) { Session.set('currentPostId', id); }
   }
 });
 ```
-{% caption client/helpers/router.js %}
+<%= caption "client/helpers/router.js" %>
 
 Our previous route was very simple and just mapped a URL path to a template name. Now instead, we are mapping a URL to two things: a template name (in the `to` attribute), which again doubles as the name of our route, and an auxilary function in the `and` attribute. What this does is that now our route has a side effect---it sets the *Session variable* `'currentPostId'` to the `id` value that has been pulled out of the URL.
 
@@ -116,7 +125,7 @@ Template.postPage.helpers({
   }
 });
 ```
-{% caption client/views/postsPage.js %}
+<%= caption "client/views/post_page.js"%>
 
 Remember that `findOne` returns a single post that matches a query, and that providing just an `id` as an argument is a short hand for `{_id: id}`. 
 
@@ -131,15 +140,24 @@ The final thing we'd like to do is make sure our post template properly puts dow
 The only complication is we can't just use it like that, as it won't know what `id` value to substitute into the URL path (which was `'/posts/:_id'`). Luckily however, `postPagePath` helper can take an argument, and is smart enough to know that if it's passed an object, it should look at the `_id` attribute of that object and substitute it in (which is why we named that part `:_id`). So it's pretty straightforward to link things correctly:
 
 ```html
-  <a href="{{postPagePath this}}">Discuss</a>
+<template name="postItem">
+  <div class="post">
+    <div class="post-content">
+      <h3><a href="{{url}}">{{title}}</a><span>{{domain}}</span></h3>
+    </div>
+    <a href="{{postPagePath this}}" class="discuss btn">Discuss</a>
+  </div>
+</template>
 ```
-{% caption client/views/post.html %}
+<%= caption "client/views/posts/post_item.html"%>
+
+<%= commit "5-2", "Routing to a single post page." %>
 
 The only trick here is that we've reference the template's data context directly (rather than an attribute), by using the special `this` accessor.
 
 Let's check if it works; browse to the post list and click on one of the 'Discuss' links. We should see:
 
- >> Screenshot.
+<%= screenshot "5-2", "A single post page." %>
 
 <% note do %>
 One thing to realise is that these URL changes are happening using HTML5 pushState. The Router picks up clicks on URLs that are internal to the site, and prevents the browser from browsing away from the app, instead just making the necessary changes to the app's state (reactively of course), with the net result of template changes as we've seen.

@@ -17,8 +17,7 @@ date: 0004/01/01
 - Turn our basic prototype into a functioning realtime application!
 <% end %>
 
-### Introduction to a Meteor Collection
-
+### Introduction to Collections
 
 In chapter one, we spoke about the core feature of Meteor, the automatic synchronisation of data between client and server. In this chapter, we'll take a closer look at how that works, and observe the operation of the key piece of technology that enables this, the `Meteor.Collection`.
 
@@ -37,7 +36,9 @@ If you haven't done so already, create a `collections` folder at the root of you
 ```js
 Posts = new Meteor.Collection('posts');
 ```
-{% caption collections/posts.js %}
+<%= caption "collections/posts.js" %>
+
+<%= commit "4-1", "Added a posts collection" %>
 
 Code inside folders that are not `client/` or `server/` which will run in *both* contexts. So the `Posts` collection is avaliable to both client and server. However, what the collection does on either side is very different.
 
@@ -57,11 +58,11 @@ db.posts.find();
 ```
 <% caption "the Mongo console" %>
 
-Of course the database starts empty, but Mongo's syntax is familiar, as it uses a JavaScript interface. However, we won't be doing any data manipulation in the Mongo console, although we may take a peek inside from time to time, just to make sure about what's in there.
+Mongo's syntax is familiar, as it uses a JavaScript interface. We won't be doing any data manipulation in the Mongo console, but we might take a peek inside from time to time just to make sure what's in there.
 
 ### What a collection does on the client
 
-Collections gets more interesting client-side. When you declare `Posts = new Meteor.Collection('posts');` on the client, what you are creating is a _local, in-browser cache_ of the real Mongo collection. When we say cache here, we mean in the sense that it contains a *subset* of the data, and that it's very *quick* to access data.
+Collections get more interesting client-side. When you declare `Posts = new Meteor.Collection('posts');` on the client, what you are creating is a _local, in-browser cache_ of the real Mongo collection. When we say cache here, we mean in the sense that it contains a *subset* of the data, and that it's very *quick* to access data.
 
 It's important to understand this point as it's fundamental to the way Meteor works. So to be clear: in general, a client side collection consists of some portion of all the documents stored in the Mongo collection. Secondly, those documents are stored *in browser memory*, which means that accessing them is basically instant.
 
@@ -89,43 +90,44 @@ Start by opening up two browser windows, and accessing the console in each one. 
 db.posts.find();
 {title: "A new post", _id: 'xxx'};
 ```
-{% caption mongo console %}
+<%= caption "Mongo console" %>
 
 ```js
 Posts.findOne();
 {title: "A new post", _id: 'xxx'};
 ```
-{% caption browser console %}
+<%= caption "browser console" %>
 
 Now, let's create a new post--in one of our browser windows, run an insert command:
 
 ```js
 Posts.find().count();
-1
+> 1
 Posts.insert({title: "A second post"});
-'xxx'
+> 'xxx'
 Posts.find().count();
-2
+> 2
 ```
-{% caption browser console %}
+<%= caption "browser console" %>
 
 Not very surprisingly, the post made it into the local collection. Now let's check Mongo:
 
 ```js
 db.posts.find();
-{title: "A new post", _id: 'xxx'};
-{title: "A second post", _id: 'xxx'};
+> {title: "A new post", _id: 'xxx'};
+> {title: "A second post", _id: 'xxx'};
 ```
-{% caption mongo console %}
+<%= caption "Mongo console" %>
 
-So the post made it all the way back to the Mongo database, without us writing a single line of code to hook our client up to the server (well, strictly speaking, we did write a _single_ line of code: `new Meteor.Collection('posts')`). But that's not all.
+So the post made it all the way back to the Mongo database, without us writing a single line of code to hook our client up to the server (well, strictly speaking, we did write a _single_ line of code: `new Meteor.Collection('posts')`). But that's not all!
 
-Now check the second browser window:
+Bring up the second browser window and enter this in the browser console:
+
 ```js
 Posts.find().count();
-2
+> 2
 ```
-{% caption browser console %}
+<%= caption "browser console" %>
 
 The post is there too! But we never refreshed, or even interacted with the second browser, and we certainly didn't write any code to push updates out. It all just happened magically (and instantly too, although this will become more obvious later).
 
@@ -172,9 +174,13 @@ if (Posts.find().count() === 0) {
   });
 }
 ```
-{% caption server/fixtures.js %}
+<%= caption " server/fixtures.js" %>
+
+<%= commit "4-2", "Added data to the posts collection." %>
 
 We've placed this file in the `server/` directory, so it will never get loaded on any user's browser. The code will run immediately when the server starts, and make `insert` calls on the database to add three simple posts in our `Posts` collection. As we haven't built any data security yet, there's no real difference between doing this in a file run on the server or in the browser. If we did have security though, the fact that this is running on the server would bypass such security; so it pays to be careful.
+
+Now run your server again with `mrt`, and behind the scenes these three posts will get loaded into the database.
 
 ### Wiring the data to our HTML with helpers
 
@@ -184,24 +190,26 @@ Now, if we open up a browser console, we see all three posts loaded up into mini
 Posts.find().fetch();
 // results...
 ```
-{% caption browser console %}
+<%= caption "browser console" %>
 
-How do we get these posts into rendered HTML? We can use a template helper. We've already seen in Chapter 2 how Meteor allows us to bind a *data context* to our handlebars templates to build HTML views of simple data strutures.
+How do we get these posts into rendered HTML? We can use a template helper. We've already seen in Chapter 3 how Meteor allows us to bind a *data context* to our Handlebars templates to build HTML views of simple data strutures.
 
-We can bind in our collection data in the exact same way.
+We can bind in our collection data in the exact same way:
 
 ```js
-Template.postsTop.helpers({
+Template.postsList.helpers({
   posts: function() {
     return Posts.find();
   }
 });
 ```
-{% caption client/views/postsTop.js %}
+<%= caption "client/views/posts/posts_list.js" %>
+
+<%= commit "4-3", "Wired collection into `postsList` template." %>
 
 Now, rather than pulling a list of posts as a static array from a variable, we return a `Cursor` to our `posts` helper. But what does this do? If we go back to our browser, we see:
 
- >> Screenshot
+<%= screenshot "4-3", "Using live data" %>
 
 So can clearly that our `{{#each}}` helper has iterated over all of our `Posts`, and displayed them all on the screen. So the server-side collection is pulling the posts from mongo, passing them over the wire to our client-side collection, and our handlebars helper is passing them into the template. 
 
@@ -209,16 +217,18 @@ Now, let's see things get cool. We'll add another post via the console:
 
 ```js
 Posts.insert({
-  name: 'Meteor Docs', 
+  title: 'Meteor Docs', 
   author: 'Tom Coleman', 
   url: 'http://docs.meteor.com'
 });
 ```
+<%= caption "browser console" %>
 
 Look back at the browser -- you should see this:
- >> Screenshot
 
-How has this happened? Has the browser reloaded itself? No; in fact we've just seen reactivity in action for the first time. When we told handlebars to iterate over the `Posts.find()` cursor, it knew how to observe that cursor for changes, and patch the HTML in the simplest way in order to display the correct data on screen.
+<%= screenshot "4-4", "Adding posts via the console" %>
+
+How has this happened? Has the browser reloaded itself? No. In fact, we've just seen reactivity in action for the first time. When we told handlebars to iterate over the `Posts.find()` cursor, it knew how to observe that cursor for changes, and patch the HTML in the simplest way in order to display the correct data on screen.
 
 <% note do %>
 
@@ -247,17 +257,18 @@ Meteor.publish('posts', function() {
   return Posts.find();
 });
 ```
-{% caption server/publications.js %}
+<%= caption "server/publications.js" %>
 
 In the client, we need to *subscribe* to the publication. We'll just add this line to `forum.js`:
 
 ```js
 Meteor.subscribe('posts');
 ```
-{% caption client/forum.js %}
+<%= caption " client/main.js" %>
+
+<%= commit "4-4", "Removed `autopublish` and set up a basic publication." %>
 
 If we check the browser again, our posts are back. Phew! 
-
 
 ### Conclusion
 

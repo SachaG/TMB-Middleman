@@ -25,20 +25,21 @@ In most web frameworks, adding user accounts is a familiar drag. Sure, you have 
 
 Luckily, Meteor has you covered. Thanks to the way Meteor packages can contribute code both on the server and client side, logically (in the JavaScript) and presentationally (in the HTML and CSS), we can get an accounts system almost for free. 
 
-Let's get started. In MiniScope, we'll just use Meteor's built in UI for accounts. On the command line, we type:
+Let's get started. We'll just use Meteor's built in UI for accounts. On the command line, we type:
 
 ```bash
 mrt add accounts-ui
 mrt add accounts-password
 ```
+<%= caption "Terminal" %>
 
 Those two commands make the special accounts templates available to us; we can include them in our site using the `{{loginButtons}}` helper. 
 
-We'll add the buttons to our header. And since that header is starting to grow larger, let's give it more room in its own template. We're also using some extra markup and Bootstrap classes to make sure everything looks nice:
+We'll add the buttons to our header. And since that header is starting to grow larger, let's give it more room in its own template (we'll put it in `client/views/includes/`). We're also using some extra markup and Bootstrap classes to make sure everything looks nice:
 
 ```html
 <head>
-  <title>Miniscope</title>
+  <title>Microscope</title>
 </head>
 <body>
   <div class="container">
@@ -47,18 +48,14 @@ We'll add the buttons to our header. And since that header is starting to grow l
       {{renderPage}}
     </div>
   </div>
-</body>
-```
-{% caption client/main.html %}
+</body>```
+<%= caption "client/main.html" %>
 
 ```html
 <template name="header">
   <header class="navbar">
     <div class="navbar-inner">
-      <a class="brand" href="/">Miniscope</a>
-      <ul class="nav">
-        <li><a href="/">New</a></li>
-      </ul>
+      <a class="brand" href="/">Microscope</a>
       <ul class="nav pull-right">
         <li>{{loginButtons}}</li>
       </ul>
@@ -66,23 +63,24 @@ We'll add the buttons to our header. And since that header is starting to grow l
   </header>
 </template>
 ```
-{% caption client/includes/header.html %}
+<%= caption " client/views/includes/header.html" %>
 
 Now, when we browse to our app, we see the accounts login buttons in the top right hand corner of our site.
 
->> SS
+<%= screenshot "6-1", "Meteor's built-in accounts UI" %>
 
 We can use these to sign up, login, request a change of password, and everything else that a simple site needs for password based accounts.
 
-For MiniScope, we just want users to login via a username (which we can display throughout the application), so we should just let people sign in via one:
+For our app, we just want users to login via a username (which we can display throughout the application), so we should just let people sign in via one. Let's put our `Accounts.ui` config in a new `config.js` file, inside `client/helpers/`:
 
 ```js
 Accounts.ui.config({
   passwordSignupFields: 'USERNAME_ONLY'
 });
 ```
-{% caption client/telescope.js %}
+<%= caption "client/helpers/config.js" %>
 
+<%= commit "6-1", "Added accounts and added template to the header" %>
 
 ### What does that give us?
 
@@ -93,7 +91,7 @@ By adding the `accounts` package, Meteor has created a special new collection fo
 ```js
 Meteor.users().findOne();
 ```
-{% caption browser console %}
+<%= caption "Browser console" %>
 
 The console should return an object representing your user object; if you take a look, you can see that your email is in there, as well as an `_id` that uniquely identifies you.
 
@@ -104,8 +102,7 @@ Now, try logging out, and signing up and logging in with a second username. `Met
 ```js
 Meteor.users().find().count();
 ```
-{% caption browser console %}
-
+<%= caption "Browser console" %>
 
 The console returns 1. Hold on, shouldn't that be 2? What's happened? Has the first user been deleted? If you try logging in as that user again, you'll see that's not the case.
 
@@ -114,7 +111,7 @@ Let's be sure, and check in the canonical data-store, the mongo database. We'll 
 ```bash
 > db.users.count()
 ```
-{% caption mongo console %}
+<%= caption "Mongo console" %>
 
 No, there are definitely two users. Why can we only see one in the browser?
 
@@ -130,16 +127,20 @@ There are two interesting things about this publication though. Let's take a clo
 
 Firstly, clearly the publication is only publishing one user object per-logged in user (and none when you are not logged in). That's a neat trick.
 
-Secondly, the fields are different. In Mongo, a user has a lot of data in it:
+Secondly, the fields are different. In Mongo, a user has a lot of data in it. To see it, just try:
+
 ```bash
 > db.users.findOne()
 ```
-{% caption mongo console %}
+<%= caption "Mongo console" %>
 
-Whereas in the browser, the user object is much more pared down:
+Whereas in the browser, the user object is much more pared down, as you can see by typing the equivalent command:
+
 ```js
 Meteor.users.findOne();
 ```
-{% caption browser console %}
+<%= caption "Browser console" %>
 
-So we can see in this example how a local collection is a *secure subset* of the real database. The logged in user only sees _exactly how much they need to see_ of the real dataset to get the job (signing-in in this case) done. This is a useful pattern to learn from.
+So we can see in this example how a local collection is a *secure subset* of the real database. The logged-in user only sees enough of the real dataset to get the job done (in this case, signing in). This is a useful pattern to learn from as you'll see later on.
+
+
