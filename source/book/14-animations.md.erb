@@ -129,7 +129,7 @@ Template.postItem.rendered = function(){
   }); 
 };
 ```
-{% caption /client/views/posts/postItem.js %}
+<%= caption "/client/views/posts/postItem.js" %>
 
 Note that since we set the template instance's `currentPosition` property in the `defer` callback, this means it won't exist on the first ever render of the template fragment. But this is not a problem since we're not interested in animating that first render anyway. 
 
@@ -180,7 +180,7 @@ Template.postItem.rendered = function(){
   }); 
 };
 ```
-{% caption /client/views/posts/postItem.js %}
+<%= caption "/client/views/posts/postItem.js" %>
 
 Note that the `removeClass("hidden")` we added in the `defer()` function will run for every rendering. But it will only  do something if the `.hidden` class is actually present on the element, which will only be true the first time it's rendered. 
 
@@ -222,7 +222,7 @@ Meteor.Router.filter('requireLogin', {only: 'postSubmit'});
 Meteor.Router.filter('clearErrors');
 Meteor.Router.filter('setTimestamp');
 ```
-{% caption /client/lib/router.js %}
+<%= caption "/client/lib/router.js" %>
 
 We can now update our `rendered` callback to take that timestamp into account:
 
@@ -242,7 +242,7 @@ We can now update our `rendered` callback to take that timestamp into account:
     }
   }
 ```
-{% caption /client/views/posts/postItem.js %}
+<%= caption "/client/views/posts/postItem.js" %>
 
 In plain english, all we're saying is that if a post is created (`instance.data.submitted`) after the page has loaded, then we want to hide it. 
 
