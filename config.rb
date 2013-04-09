@@ -132,7 +132,7 @@ helpers do
   def screenshot(name, caption)
     %Q{<figure class="screenshot"><img src="/images/screenshots/#{name}.png" alt="#{caption}"/><figcaption>#{caption}</figcaption></figure>}
   end    
-  def commit(name, hash, caption)
+  def commit(name, caption)
     %Q{<div class="commit">#{name}: #{caption}</div>}
   end    
   def note(&block)

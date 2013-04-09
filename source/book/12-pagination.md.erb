@@ -42,7 +42,7 @@ if (Posts.find().count() === 0) {
   });
 }
 ```
-<%= caption " server/fixtures.js" %>
+<%= caption "server/fixtures.js" %>
 
 
 ### Using the Paginated Subscription package
@@ -52,14 +52,14 @@ To achieve pagination, we'll use the `paginated-subscription` package, which can
 ```bash
 mrt add paginated-subscription
 ```
-<%= caption " command line" %>
+<%= caption "command line" %>
 
 Using the package is easy--we just augment our calls to `publish` and `subscribe` with numeric arguments indicating the number of posts we'd like per page. So in `miniscope.js`, we do:
 
 ```js
 var postsHandle = Meteor.subscribeWithPagination('posts', 10);
 ```
-<%= caption " client/miniscope.js" %>
+<%= caption "client/miniscope.js" %>
 
 This tells the package to setup a subscription with `10` posts coming up each time we head to a new page. `postsHandle` is the method that we'll use to increase the amount of posts to load, as we'll soon see.
 
@@ -70,7 +70,7 @@ Meteor.publish('posts', function(limit) {
   return Posts.find({}, {sort: {submitted: -1}, limit: limit});
 });
 ```
-<%= caption " server/publish.js" %>
+<%= caption "server/publish.js" %>
 
 As we are no longer publishing all the posts, we need to be careful about the order that we choose them out of the database in. Here, we are publishing the latest `limit` posts, in order of submission date. The package will take care of increasing the `limit` variable as the user asks to see more posts (once we've wired it into our user interface of course!).
 
@@ -101,7 +101,7 @@ We can use the combination of those three helpers to manufacture our "infinite s
   </div>
 </template>
 ```
-<%= caption " client/views/posts/posts_list.html" %>
+<%= caption "client/views/posts/posts_list.html" %>
 
 We've added at the bottom of our list either a button saying "Load more", or a spinner indicating if we are waiting on the server to do so.
 
@@ -121,12 +121,12 @@ Template.postsList.helpers({
   }
 });
 ```
-<%= caption " client/views/posts/posts_lists.js" %>
+<%= caption "client/views/posts/posts_lists.js" %>
 
 Working out if the current list of posts are ready is easy enough, as we can just ask the handle if it's still loading. Working out if all the posts are loaded is a little more tricky. We need to make sure that we aren't still waiting for more posts, and then see if the total number of posts we do have is less that how many the subscription thinks we should have. If it's less, that's a sign that there are no posts left to load.
 
 <img src="/images/book/pagination_diagram@2x.png"/>
-<%= caption " Comparing Posts.find().count() and postsHandle.loaded()%}
+<%= caption "Comparing Posts.find().count() and postsHandle.loaded()%}
 
 You'll notice also that we changed the `posts` function to return the posts in the correct order, and limited it to show only as many we are currently supposed to show, according to the handle. This is because there may be other posts in the collection, as we'll see later.
 
@@ -142,7 +142,7 @@ Template.postsList.events({
   }
 });
 ```
-<%= caption " client/views/posts/posts_lists.js" %>
+<%= caption "client/views/posts/posts_lists.js" %>
 
 It's simple enough, and we can see the post loading in action:
 >> Screenshots
@@ -175,7 +175,7 @@ Meteor.publish('singlePost', function(id) {
   return id && Posts.find(id);
 });
 ```
-<%= caption " server/publications.js" %>
+<%= caption "server/publications.js" %>
 
 Now, let's subscribe to the right posts on the client side:
 ```js
@@ -185,7 +185,7 @@ Meteor.autorun(function() {
   Meteor.subscribe('singlePost', Session.get('currentPostId'));
 });
 ```
-<%= caption " client/miniscope.js" %>
+<%= caption "client/miniscope.js" %>
 
 So we can see that we subscribe to *both* publications on the client side, and the correct data is loaded. The single post that we want to load is in the `currentPostId` session variable (as we've seen before), and we just need to pass it through to the `singlePost` subscription.
 

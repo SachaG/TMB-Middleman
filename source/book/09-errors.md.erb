@@ -27,49 +27,57 @@ What we will implement is similar to Ruby on Rails flash messages, but it's much
 
 To start off with, we create a collection to store our errors in. Given that the errors are only relevant to the current session and don't need to persistent in any way, we are going to do something new, and create a _local collection_. What this means is that the `Errors` collection will only exist in the browser, and will make no attempt to synchronize with the server.
 
-To achieve this, we simply create the error in a client-only file, with the collection name set to `null`.
+To achieve this, we simply create the error in a client-only file, with the collection name set to `null`. Let's also create a `throwError` method that simply inserts an error into our new local collection:
+
+
 ```js
 // Local (client-only) collection
-var Errors = new Meteor.Collection(null);
-```
-{% caption client/lib/errors.js %}
+Errors = new Meteor.Collection(null);
 
-Once we've created the collection, we can add a couple of functions which we can call to add and remove errors from that collection. We don't need to worry about `allow` or `deny` or anything like that, as this is a local collection and will not be saved to the Mongo database.
+
+```
+<%= caption "client/helpers/errors.js" %>
+
+Once we've created the collection, we can add a `throwError` function which we'll call to add errors to that collection. We don't need to worry about `allow` or `deny` or anything like that, as this is a local collection and will not be saved to the Mongo database.
 
 ```js
-var throwError = function(message) {
-  Errors.insert({message: message, show: true})
-}
-
-var clearErrors = function() {
-  Errors.update({}, {$set: {show: false}}, {multi:true});
+throwError = function(message) {
+  Errors.insert({message: message})
 }
 ```
-{% caption client/lib/errors.js %}
+<%= caption "client/helpers/errors.js" %>
+
+The advantage of using a local collection to store the errors is that – like all collections – it's reactive, and we can declaratively display the errors, just like we'd display any other collection data.
 
 ### Displaying errors
 
-We are going to display the errors at the top of our main layout. The advantage of using a local collection to store the errors is that – like all collections – it's reactive, and we can declaratively display the errors, just like we'd display any other collection data.
+We are going to display the errors at the top of our main layout:
 
 ```html
-<body>
-...
+<head>
+  <title>Microscope</title>
+</head>
 <body>
   <div class="container">
-  <header class="navbar">...</header>
-  <div class="errors row">{{>errors}}</div>
-  <div id="main" class="row-fluid">...</div>
+    {{> header}}
+    {{> errors}}
+    <div id="main" class="row-fluid">
+      {{renderPage}}
+    </div>
   </div>
 </body>
-...
 ```
-{% caption client/telescope.html %}
+<%= caption "client/main.html" %>
+
+Let's now create the `errors` and `error` templates in `errors.html`:
 
 ```html
 <template name="errors">
-  {{#each errors}}
-    {{> error}}
-  {{/each}}
+  <div class="errors row-fluid">    
+    {{#each errors}}
+      {{> error}}
+    {{/each}}
+  </div>
 </template>
 
 <template name="error">
@@ -79,50 +87,68 @@ We are going to display the errors at the top of our main layout. The advantage 
   </div>
 </template>
 ```
-{% caption client/views/errors/errors.html %}
+<%= caption "client/views/includes/errors.html" %>
+
+<% note do %>
+
+### 2 Templates 1 File
+
+You'll notice we're putting two templates in a single file. Up to now we've tried to adhere to a 1 file = 1 template convention, but putting all our templates in a single file would work just as well (although it would probably make for a very confusing `main.html`!).
+
+In this case, since both error templates are fairly short, we'll make an exception and stick them in the same file to make our repo a bit cleaner. 
+
+<% end %>
 
 We are doing familiar things here. We just need to grab all the "shown" errors out of our collection and clear the currently visible errors when the user wants to get rid of them.
 
 ```js
 Template.errors.helpers({
   errors: function() {
-    return Errors.find({show: true});
+    return Errors.find();
   }
 });
-
-Template.errors.events({
-  'click .clear': function() {
-    clearErrors();
-  }
-})
 ```
-{% caption client/views/errors/errors.js %}
+<%= caption "client/views/includes/errors.js" %>
+
+<%= commit "9-1", "Basic error reporting." %>
 
 ### Creating errors
 
 Well, it's all very well displaying errors, but we need to create some before we'll see anything. The natural place to display errors is if there is a problem creating posts. We'll check if there's an error in our post creation callback, and if there is, we'll display it.
 
-Additionally, if its the `301` error that we threw earlier to indicate that we have posted a URL that's already been added to miniscope, we'll redirect the user to the existing discussion. 
+Additionally, if its the `302` error that we threw earlier to indicate that we have posted a URL that's already been added to miniscope, we'll redirect the user to the existing discussion. 
 
 ```js
-Meteor.call('post', post, function(error, id) {
-  if (error) {
-    // display the error to the user
-    throwError(error.reason);
+Template.postSubmit.events({
+  'submit form': function(event) {
+    event.preventDefault();
+    
+    var post = {
+      url: $(event.target).find('[name=url]').val(),
+      title: $(event.target).find('[name=title]').val(),
+      message: $(event.target).find('[name=message]').val()
+    }
+    
+    Meteor.call('post', post, function(error, id) {
+      if (error) {
+        // display the error to the user
+        throwError(error.reason);
         
-    // if the error is that the post already exists, take us there
-    if (error.error === 302)
-      Meteor.Router.to(Meteor.Routes.post(error.details))
-  } else {
-    Meteor.Router.to(Meteor.Routes.post(id));
+        // if the error is that the post already exists, take us there
+        if (error.error === 302)
+          Meteor.Router.to('postPage', error.details)
+      } else {
+        Meteor.Router.to('postPage', id);
+      }
+    });
   }
 });
 ```
-{% caption client/views/posts/postSubmit.js %}
+<%= caption "client/views/posts/post_submit.js" %>
 
-Give it a try; try creating a post and entering the URL http://meteor.com -- as this URL is already attached to a post in the fixtures, you should see:
+Give it a try; try creating a post and entering the URL `http://meteor.com` -- as this URL is already attached to a post in the fixtures, you should see:
 
->> SCREENSHOT
+<%= screenshot "9-1", "Triggering an error" %>
 
 ### Add a seen attribute to errors and clear them when they are seen
 
@@ -147,7 +173,7 @@ var clearUnseenErrors = function() {
 }
 
 ```
-{% caption client/lib/errors.js %}
+<%= caption "client/lib/errors.js" %>
 
 
 To make it work, we'll make a note of when we've rendered the error to the screen, and set a flag on the error a short time later. To achieve that, we'll use the `rendered` callback of a template.
@@ -168,7 +194,7 @@ SIDEBAR: TEMPLATE lifecycle
   <li>{{message}}</li>
 </template>
 ```
-{% caption client/views/errors/errors.html %}
+<%= caption "client/views/errors/errors.html" %>
 
 ```js
 Template.error.rendered = function() {
@@ -178,7 +204,7 @@ Template.error.rendered = function() {
   }, 500);
 };
 ```
-{% caption client/views/errors/errors.js %}
+<%= caption "client/views/errors/errors.js" %>
 
 We use the `Meteor.setTimeout` method (which is just like JavaScript's standard `setTimeout`, but maintains some Meteor internals) to deplay updating our Errors as seen for 500 milliseconds. Remember that this isn't actually getting saved to the Mongo database, it's all just in-memory in the user's browser, so we don't need to worry about the performance of doing something like this.
 
@@ -202,4 +228,4 @@ Meteor.Router.filters({
 
 Meteor.Router.filter('clearErrors');
 ```
-{% caption client/lib/router.js %}
+<%= caption "client/lib/router.js" %>

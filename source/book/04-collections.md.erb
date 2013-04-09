@@ -174,7 +174,7 @@ if (Posts.find().count() === 0) {
   });
 }
 ```
-<%= caption " server/fixtures.js" %>
+<%= caption "server/fixtures.js" %>
 
 <%= commit "4-2", "Added data to the posts collection." %>
 
@@ -264,7 +264,7 @@ In the client, we need to *subscribe* to the publication. We'll just add this li
 ```js
 Meteor.subscribe('posts');
 ```
-<%= caption " client/main.js" %>
+<%= caption "client/main.js" %>
 
 <%= commit "4-4", "Removed `autopublish` and set up a basic publication." %>
 

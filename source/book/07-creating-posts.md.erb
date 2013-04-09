@@ -103,7 +103,7 @@ Template.postSubmit.events({
   }
 });
 ```
-<%= caption " client/views/post_submit.js" %>
+<%= caption "client/views/post_submit.js" %>
 
 <%= commit "7-1", "Added a submit post page and linked to it in the header." %>
 
@@ -312,7 +312,7 @@ Template.postSubmit.events({
   }
 });
 ```
-<%= caption " client/views/posts/post_submit.js" %>
+<%= caption "client/views/posts/post_submit.js" %>
 
 The `Meteor.call` function calls a method named by it's first argument. You can provide arguments to the call (in this case, the `post` object we constructed from the form), and finally attach a callback, which will execute when the server-side method is done. Here we just simply alert to the user if there's a problem, or redirect the user to the freshly created post's discussion page if not.
 
@@ -354,7 +354,7 @@ Meteor.methods({
   }
 });
 ```
-<%= caption " collections/posts.js" %>
+<%= caption "collections/posts.js" %>
 
 <%= commit "7-6", "Only show submit post link if logged in." %>
 

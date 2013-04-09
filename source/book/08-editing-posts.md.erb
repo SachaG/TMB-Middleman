@@ -97,6 +97,10 @@ Template.postEdit.events({
   }
 })
 ```
+<%= caption "client/views/posts/post_edit.js" %>
+
+<%= screenshot "8-1", "Post edit form." %>
+
 <%= commit "8-1", "Added edit posts form." %>
 
 By now most of that code should be familiar. First, we have our template helper that fetches the current post and passes it on to the template. 
@@ -142,6 +146,33 @@ Meteor.methods({
 <%= caption "collections/posts.js" %>
 
 <%= commit "8-2", "Added basic permission to check the post's owner." %>
+
+### Limiting Edits
+
+Just because you should be able to edit your own posts, doesn't mean you should be able to edit *everything* about them. For example, we don't want users to be able to create a post and then assign it to somebody else. 
+
+So let's use Meteor's `deny()` callback to make sure users can only edit specific fields: 
+
+```js
+Posts = new Meteor.Collection('posts');
+
+Posts.allow({
+  update: ownsDocument,
+  remove: ownsDocument
+});
+
+Posts.deny({
+  update: function(userId, post, fieldNames) {
+    // may only edit the following three fields:
+    return (_.without(fieldNames, 'url', 'title', 'message').length > 0);
+  }
+})
+```
+<%= caption "collections/posts.js" %>
+
+<%= commit "8-3", "Only allow changing certain fields of posts." %>
+
+We're taking the `fieldNames` array that contains a list of the fields being modified, and using Underscore's `without()` method to return a sub-array containing the fields that are *not* `url`, `title`, or `message`. If everything's normal, that array should be empty and its length should be 0. If someone is trying anything funky, that array's length will be 1 or more, and the callback will return `true` (thus denying the update).
 
 <% note do %>
 #### Method calls vs direct database manipulation client side

@@ -112,7 +112,7 @@ Template.posts.helpers({
   }
 });
 ```
-<%= caption " client/views/posts/posts_top.js" %>
+<%= caption "client/views/posts/posts_top.js" %>
 
 Give it a try. Signup up for a few accounts in a few anonymous browser tabs, vote for some posts, and see if you can watch the order of the posts change, instantly across all browsers. Pretty cool!
 
@@ -131,7 +131,7 @@ First off, we don't want to display an upvote button if the user isn't logged in
   </p>
 </template>
 ```
-<%= caption " client/views/posts/post.html" %>
+<%= caption "client/views/posts/post.html" %>
 
 ```js
 Template.posts.helpers({
@@ -141,7 +141,7 @@ Template.posts.helpers({
   }
 });
 ```
-<%= caption " client/views/posts/post.js" %>
+<%= caption "client/views/posts/post.js" %>
 
 Next, you may notice that posts with a single vote are titled "1 votes". We need to pluralize properly. Pluralization is a complicated process, but for now we'll do it in a fairly simplistic way. However, we'll make a general handlebars helper to do so that we can use everywhere:
 
@@ -155,7 +155,7 @@ Handlebars.registerHelper('pluralize', function(n, thing) {
   }
 });
 ```
-<%= caption " client/lib/helpers.js" %>
+<%= caption "client/lib/helpers.js" %>
 
 The helpers we've made before have been tied to the controller and template that they apply to. By using `Handlebars.registerHelper`, we've created a general helper that can be used within any template. Our helper expects two arguments, so let's use it:
 
@@ -168,7 +168,7 @@ The helpers we've made before have been tied to the controller and template that
   </p>
 </template>
 ```
-<%= caption " client/views/posts/post.html" %>
+<%= caption "client/views/posts/post.html" %>
 
 Now we should see "1 vote". Better.
 
@@ -203,7 +203,7 @@ Meteor.methods({
   }
 });
 ```
-<%= caption " lib/collections.js" %>
+<%= caption "lib/collections.js" %>
 
 What are saying is "find all the posts with this `id` that this user hasn't yet voted for, and update them in this way". If the user hasn't yet voted, it will of course find the post with that `id`. If the user _has_ voted, then the query will match no documents, and consequently nothing will happen.
 
@@ -216,7 +216,7 @@ If you've been paying attention, and you are quick on your feet, you may have re
 ```js
   Posts.update(postId, {$set: {votes: 10000}});
 ```
-<%= caption " browser console" %>
+<%= caption "browser console" %>
 
 How are we allowed to do this? Well, when we specified the `allow` rules for updating posts, we only said that a user can only edit *their own posts*, but never anything about *how*! 
 
@@ -227,7 +227,7 @@ Luckily, the problem is easily solved with the addition of a `deny` rule:
      return _.contains(fields, 'votes') || _.contains(fields, 'upvoters');
   });
 ```
-<%= caption " lib/posts.js" %>
+<%= caption "lib/posts.js" %>
 
 An `update` rule receives as third argument a set of the fields that are going to be modified. We simply take a look to see if `votes` or `upvoters` are included there, and return `true` (i.e. that we should deny this change) if so.
 
@@ -237,7 +237,7 @@ Considering that our edit post form never touches those fields, we've solved the
   Posts.update(postId, {$set: {votes: 10000}});
   >> SOME ERROR MESSAGE
 ```
-<%= caption " browser console" %>
+<%= caption "browser console" %>
 
 <% note do %>
 #### Latency compensation

@@ -16,7 +16,7 @@ We'll begin by creating a new collection to store comments in, and adding some b
 ```js
 var Comments = new Meteor.Collection('comments');
 ```
-<%= caption " lib/collections.js" %>
+<%= caption "lib/collections.js" %>
 
 ```js
 // Fixture data 
@@ -58,7 +58,7 @@ if (Posts.find().count() === 0) {
   });
 }
 ```
-<%= caption " server/fixtures.js" %>
+<%= caption "server/fixtures.js" %>
 
 To make this code work, you'll need to `mrt reset`, and clear your database.
 
@@ -75,7 +75,7 @@ It's all very well putting comments into the database, but we also need to show 
   {{/each}}
 </ul>
 ```
-<%= caption " client/views/posts/post.html" %>
+<%= caption "client/views/posts/post.html" %>
 
 ```js
 Template.post.helpers({
@@ -84,7 +84,7 @@ Template.post.helpers({
   }
 });
 ```
-<%= caption " client/views/posts/post.js" %>
+<%= caption "client/views/posts/post.js" %>
 
 We've put the `{{#each comments}}` block inside the post template, so `this` is a post within the `comments` helper. To find the relevant comments, we check those that have linked themselves to that post, with the `postId` attribute. Finally we sort the comments by the time of submission (which we've stored as a numeric timestamp).
 
@@ -99,7 +99,7 @@ Rendering a comment is pretty straightforward, given what we've learnt about hel
   </li>
 </template>
 ```
-<%= caption " client/views/comments/comment.html" %>
+<%= caption "client/views/comments/comment.html" %>
 
 ### Submitting comments
 
@@ -112,7 +112,7 @@ We start by adding a submit box at the bottom of each post:
   {{> newComment}}
 {{/if}}
 ```
-<%= caption " client/views/posts/post.html" %>
+<%= caption "client/views/posts/post.html" %>
 
 ```html
 <template name="newComment">
@@ -123,7 +123,7 @@ We start by adding a submit box at the bottom of each post:
   </form>
 </template>
 ```
-<%= caption " client/views/comments/comment_submit.html" %>
+<%= caption "client/views/comments/comment_submit.html" %>
 
 To submit our comments, we call a `comment` method in the `newComment.js` controller, which works more or less the same way as our `postSubmit` controller.
 
@@ -143,7 +143,7 @@ Template.newComment.events({
   }
 });
 ```
-<%= caption " client/views/comments/comment_submit.js" %>
+<%= caption "client/views/comments/comment_submit.js" %>
 
 Just like we had a `post` server-side method, we'll set up a `comment` Meteor method to create our comments, check that everything is legit, and finally insert the new comment into the comments collection.
 
@@ -172,7 +172,7 @@ Meteor.methods({
   }
 })
 ```
-<%= caption " lib/collections.js" %>
+<%= caption "lib/collections.js" %>
 
 
 
