@@ -244,25 +244,31 @@ Meteor.Router.filters({
 
 Meteor.Router.filter('requireLogin', {only: 'postSubmit'});
 ```
-<%= caption " client/helpers/router.js" %>
+<%= caption "client/helpers/router.js" %>
 
 And then create the `loading` template:
 
 ```html
 <template name="loading">
-  Spinner!
+  {{>spinner}}
 </template>
 ```
-<%= caption " client/helpers/router.js" %>
+<%= caption "client/views/includes/loading.js" %>
+
+<%= commit "7-4", "Show a loading screen while waiting to login." %>
 
 ### Hiding the link in the first place.
 
 OK, so now logged out users cannot access the new post page. We needed to do that in case someone accidentally entered the wrong URL into their browser. The easiest way to stop users from reaching this page when they are logged out is to just hide the link to it from them! We can do so easily enough:
 
 ```html
-{{#if currentUser}}<a href="/submit">Submit Post</a>{{/if}}
+<ul class="nav">
+  {{#if currentUser}}<li><a href="/submit">Submit Post</a></li>{{/if}}
+</ul>
 ```
-<%= caption " client/views/posts/postsTop.html" %>
+<%= caption "client/views/includes/header.html" %>
+
+<%= commit "7-5", "Only show submit post link if logged in." %>
 
 The `currentUser` helper is provided to us by the `accounts` package and is the handlebars equivalent of `Meteor.user()`. Of course it is reactive, and the link will appear and disappear as you log in and out of the site.
 
@@ -287,53 +293,70 @@ A Meteor Method is a server side function that is called from the client side. W
 First, rather than inserting directly into the `Posts` collection, we'll call a method named `post`:
 
 ```js
-Meteor.call('post', post, function(error, id) {
-  if (error)
-    return alert(error.reason);
+Template.postSubmit.events({
+  'submit form': function(event) {
+    event.preventDefault();
+    
+    var post = {
+      url: $(event.target).find('[name=url]').val(),
+      title: $(event.target).find('[name=title]').val(),
+      message: $(event.target).find('[name=message]').val()
+    }
+    
+    Meteor.call('post', post, function(error, id) {
+      if (error)
+        return alert(error.reason);
         
-  Meteor.Router.to(Meteor.Routes.post(id));
+      Meteor.Router.to('postPage', id);
+    });
+  }
 });
 ```
-<%= caption " client/views/posts/postSubmit.js" %>
+<%= caption " client/views/posts/post_submit.js" %>
 
 The `Meteor.call` function calls a method named by it's first argument. You can provide arguments to the call (in this case, the `post` object we constructed from the form), and finally attach a callback, which will execute when the server-side method is done. Here we just simply alert to the user if there's a problem, or redirect the user to the freshly created post's discussion page if not.
 
-We define the method in our `lib/collection.js` file:
+We'll define the method in our `collections/posts.js` file:
 
 ```js
+Posts = new Meteor.Collection('posts');
+
 Meteor.methods({
-  post: function(post) {
+  post: function(postAttributes) {
     var user = Meteor.user(),
-      postWithSameLink = Posts.findOne({url: post.url});
+      postWithSameLink = Posts.findOne({url: postAttributes.url});
     
     // ensure the user is logged in
     if (!user)
-      throw new Meteor.Error(401, 
-        "You need to login to post new stories");
+      throw new Meteor.Error(401, "You need to login to post new stories");
     
     // ensure the post has a title
-    if (!post.title)
+    if (!postAttributes.title)
       throw new Meteor.Error(422, 'Please fill in a headline');
     
     // check that there are no previous posts with the same link
-    if (post.url && postWithSameLink) {
+    if (postAttributes.url && postWithSameLink) {
       throw new Meteor.Error(302, 
         'This link has already been posted', 
         postWithSameLink._id);
     }
     
     // pick out the whitelisted keys
-    post = _.extend(_.pick(post, 'url', 'title', 'message'), {
+    var post = _.extend(_.pick(postAttributes, 'url', 'title', 'message'), {
       userId: user._id, 
       author: user.username, 
       submitted: new Date().getTime()
     });
     
-    return Posts.insert(post);
+    var postId = Posts.insert(post);
+    
+    return postId;
   }
-})
+});
 ```
-<%= caption " lib/collections.js" %>
+<%= caption " collections/posts.js" %>
+
+<%= commit "7-6", "Only show submit post link if logged in." %>
 
 This method is a little complicated, but hopefully you can follow along.
 

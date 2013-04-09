@@ -5,13 +5,14 @@ complete: 100
 date: 0008/01/01
 ---
 
+
 ## Editing posts
 
 Now that we can create posts, the next step is being able to edit and delete them. While the UI code to do so is fairly simple, it's a good occasion to talk about how Meteor manages user permissions. 
 
 ### Template & Controller
 
-Our `postEdit.html` template will be a fairly standard form:
+Our `post_edit.html` template will be a fairly standard form:
 
 ```html
 <template name="postEdit">
@@ -54,7 +55,7 @@ Our `postEdit.html` template will be a fairly standard form:
 </template>
 ```
 
-And here's the `postEdit.js` controller that goes with it:
+And here's the `post_edit.js` controller that goes with it:
 
 ```js
 Template.postEdit.helpers({
@@ -68,34 +69,35 @@ Template.postEdit.events({
     e.preventDefault();
     
     var currentPostId = Session.get('currentPostId');
-
+    
     var postProperties = {
       url: $(e.target).find('[name=url]').val(),
       title: $(e.target).find('[name=title]').val(),
       message: $(e.target).find('[name=message]').val()
     }
-
-    Posts.update(currentPostId, {$set: postProperties}, function(error){
+    
+    Posts.update(currentPostId, {$set: postProperties}, function(error) {
       if (error) {
         // display the error to the user
-        throwError(error.reason);
+        alert(error.reason);
       } else {
-        Meteor.Router.to("/posts/"+currentPostId);
+        Meteor.Router.to('postPage', currentPostId);
       }
     });
-
   },
+  
   'click .delete': function(e) {
     e.preventDefault();
-
-    if(confirm("Delete this post?")){
-      var currentPostId = Session.get('selectedPostId');
+    
+    if (confirm("Delete this post?")) {
+      var currentPostId = Session.get('currentPostId');
       Posts.remove(currentPostId);
-      Meteor.Router.to("/");
+      Meteor.Router.to('postsList');
     }
   }
 })
 ```
+<%= commit "8-1", "Added edit posts form." %>
 
 By now most of that code should be familiar. First, we have our template helper that fetches the current post and passes it on to the template. 
 
@@ -113,21 +115,33 @@ This will be the extent of our client-side code, and it works well.
 
 There's just one problem: nothing is preventing users from modifying or even deleting other people's posts.
 
-We can't have that, so we'll go back to our `allow()` and set up some more ground rules. 
+We can't have that, so we'll set up some more ground rules. First, create a new `permissions.js` file inside `lib` (so that our permissions logic is loaded first, and available in both environments):
 
 ```js
 // check that the userId specified owns the documents
-var ownsDocument = function(userId, doc) {
-  return doc.userId === userId;
+ownsDocument = function(userId, doc) {
+  return doc && doc.userId === userId;
 }
+```
+<%= caption "lib/permissions.js" %>
 
-// note you can only insert via the method
+Now let's go back to our `allow()` method inside `posts.js` and add this `allow()` block:
+
+```js
+Posts = new Meteor.Collection('posts');
+
 Posts.allow({
   update: ownsDocument,
   remove: ownsDocument
 });
+
+
+Meteor.methods({
+  ...
 ```
-{% caption lib/collections.js %}
+<%= caption "collections/posts.js" %>
+
+<%= commit "8-2", "Added basic permission to check the post's owner." %>
 
 <% note do %>
 #### Method calls vs direct database manipulation client side
