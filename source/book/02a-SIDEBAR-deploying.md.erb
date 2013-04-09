@@ -31,16 +31,16 @@ mrt deploy myapp.meteor.com
 Or, if you want to use domain, set its CNAME to redirect to `origin.meteor.com` and then deploy with:
 
 ```bash
-mrt deploy www.myapp..com
+mrt deploy www.myapp.com
 ```
 
 Hosting on Meteor is free, but is fairly limited since you don't have access to monitoring tools and can't control your resources.
 
 ### Deploying on Heroku
 
-Deploying on [Heroku](http://heroku.com) is still free (as long as you only use one dyno, which is the only way to make Meteor work anyway), but gives you a little more control over your app. 
+Deploying on [Heroku](http://heroku.com) is still free (as long as you only use one dyno, which is the only way you can make Meteor work on Heroku anyway, be warned), but gives you a little more control over your app. 
 
-We won't cover installing [Git](http://git-scm.com) and the Heroku command line here, but both can be done pretty easily with the [Heroku Toolber](https://toolbelt.herokuapp.com/).
+We won't cover installing [Git](http://git-scm.com) and the Heroku command line here, but both can be done pretty easily with the [Heroku Toolbar](https://toolbelt.herokuapp.com/).
 
 You'll need to use the [Heroku Buildpack for Meteorite](https://github.com/oortcloud/heroku-buildpack-meteorite.git). Buildpacks contains special instructions for Heroku, in this case to specify how to set up a server to run Meteor apps properly. When it comes time to create your new Heroku app, simply use this command:
 
