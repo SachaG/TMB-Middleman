@@ -16,12 +16,13 @@ date: 0012/01/01
 - Be more careful with monitoring when our data is loading and keeping the user updated of what's happening.
 <% end %>
 
+Things are looking pretty great with Microscope, and we can expect a hit reception when it's released to the world. So we should probably think a little about the performance implication of the rash of new posts that are going to be entered into the site as it takes off!
 
-Things are looking pretty great with Miniscope, and we can expect a hit reception when it's released to the world. We should probably think a little about the performance implication of the rash of new posts that are going to entered into the site as it takes off!
+We've spoken before about how a client side collection should contain a subset of the data on the server, and we've even managed to achieve that for our notification and comments collections. 
 
-We've spoken before about how a client side collection should contain a subset of the data on the server, and we've even managed to achieve that for our notification and comments collections. But we are still publishing all of our posts in one go to all connected users. Eventually, if we expect thousands of links to be posted, this is going to become extremely problematic. 
+But we are still publishing all of our posts in one go to all connected users. Eventually, if we expect thousands of links to be posted, this is going to become extremely problematic. 
 
-So it's better to paginate our posts.
+So we need to paginate our posts.
 
 ### Getting more posts
 
@@ -30,20 +31,33 @@ First off, let's quickly write some simple code to load up a bunch of posts in o
 ```js
 // Fixture data 
 if (Posts.find().count() === 0) {
-  var now = new Date().getTime();
+
+  //...
   
-  for (var i = 0; i < 10; i++)
   Posts.insert({
-    title: 'Test post #' + i,
-    author: 'Sacha Greif',
-    authorId: sachaId,
-    url: 'http://google.com/?q=test-' + i,
-    submitted: now - i * 3600 * 1000
+    title: 'The Meteor Book',
+    userId: tom._id,
+    author: tom.profile.name,
+    url: 'http://themeteorbook.com',
+    submitted: now - 12 * 3600 * 1000,
+    commentsCount: 0
   });
+  
+  for (var i = 0; i < 10; i++) {
+    Posts.insert({
+      title: 'Test post #' + i,
+      author: sacha.profile.name,
+      userId: sacha._id,
+      url: 'http://google.com/?q=test-' + i,
+      submitted: now - i * 3600 * 1000,
+      commentsCount: 0
+    });
+  }
 }
 ```
 <%= caption "server/fixtures.js" %>
 
+<%= commit "12-1", "Added enough posts that pagination is necessary." %>
 
 ### Using the Paginated Subscription package
 
@@ -54,14 +68,14 @@ mrt add paginated-subscription
 ```
 <%= caption "command line" %>
 
-Using the package is easy--we just augment our calls to `publish` and `subscribe` with numeric arguments indicating the number of posts we'd like per page. So in `miniscope.js`, we do:
+Using the package is easy--we just augment our calls to `publish` and `subscribe` with numeric arguments indicating the number of posts we'd like per page. So in `main.js`, we do:
 
 ```js
-var postsHandle = Meteor.subscribeWithPagination('posts', 10);
+Meteor.subscribeWithPagination('posts', 10);
 ```
-<%= caption "client/miniscope.js" %>
+<%= caption "client/main.js" %>
 
-This tells the package to setup a subscription with `10` posts coming up each time we head to a new page. `postsHandle` is the method that we'll use to increase the amount of posts to load, as we'll soon see.
+This tells the package to setup a subscription with `10` posts coming up each time we head to a new page. 
 
 At the server end, we just need to modify our `'posts'` subscription to take a final argument indicating how many posts we want to send down at this moment. So we change it to:
 
@@ -70,9 +84,9 @@ Meteor.publish('posts', function(limit) {
   return Posts.find({}, {sort: {submitted: -1}, limit: limit});
 });
 ```
-<%= caption "server/publish.js" %>
+<%= caption "server/publications.js" %>
 
-As we are no longer publishing all the posts, we need to be careful about the order that we choose them out of the database in. Here, we are publishing the latest `limit` posts, in order of submission date. The package will take care of increasing the `limit` variable as the user asks to see more posts (once we've wired it into our user interface of course!).
+As we are no longer publishing all the posts, we need to be careful about the order that we retrieve them out of the database in. Here, we are publishing the latest `limit` posts, in order of submission date. Once we've wired it into our user interface, the package will take care of increasing the `limit` variable as the user asks to see more posts.
 
 ### Using the subscription handle
 
