@@ -99,7 +99,7 @@ In this case, since both error templates are fairly short, we'll make an excepti
 
 <% end %>
 
-We are doing familiar things here. We just need to grab all the "shown" errors out of our collection and clear the currently visible errors when the user wants to get rid of them.
+We just need to wire up our template helper, and we'll be good to go!
 
 ```js
 Template.errors.helpers({
@@ -146,86 +146,87 @@ Template.postSubmit.events({
 ```
 <%= caption "client/views/posts/post_submit.js" %>
 
+<%= commit "9-2", "Actually use the error reporting." %>
+
 Give it a try; try creating a post and entering the URL `http://meteor.com` -- as this URL is already attached to a post in the fixtures, you should see:
 
 <%= screenshot "9-1", "Triggering an error" %>
 
-### Add a seen attribute to errors and clear them when they are seen
+### Clearing Errors
 
-Having a clear errors button is a good feature, but errors are fairly ephemeral and it would be good to have them clear themselves without needing user intervention. Sure, it's good to hide errors when users explicitly ask us to, but we don't want the errors to be hanging around for too long once the reason that they appeared is no longer relevant.
+Now you might have tried clicking the error's close button. If you did, you would see the error go away, only to come back as soon as you loaded up another page. What's going on?
 
-To do this we are going to keep track of when an error has been "seen". Obviously, we can't tell if a user has physically looked at an error, but we can tell if the error has been on screen for long enough that it's reasonable to expect the user to have seen it.
+Well, that close button triggers Twitter Bootstrap's embedded JavaScript. It has nothing to do with Meteor! So what's happening is that Bootstrap is removing the error `<div>` from the DOM, but of course not from the Meteor collection, meaning the error will of course pop right back up as soon as Meteor re-renders the page. 
+
+So unless we want errors relentlessly coming back from the dead to remind users of past mistakes and slowly driving them to insanity, we better add a way to remove errors from the collection, too.  
+
+But first, we'll modify the `throwError` method to include a `seen` property. This will be useful later on to keep track of whether an error has been actually seen by the user. 
+
+Once that's done, let's code up a simple `clearErrors` method that clears those "seen" errors:
 
 ```js
 // Local (client-only) collection
-var Errors = new Meteor.Collection(null);
+Errors = new Meteor.Collection(null);
 
-var throwError = function(message) {
-  Errors.insert({message: message, show: true, seen: false})
+throwError = function(message) {
+  Errors.insert({message: message, seen: false})
 }
 
-var clearErrors = function() {
-  Errors.update({}, {$set: {show: false}}, {multi:true});
+clearErrors = function() {
+  Errors.remove({seen: true});
 }
-
-var clearUnseenErrors = function() {
-  Errors.update({seen: true}, {$set: {show: false}}, {multi:true});
-}
-
 ```
-<%= caption "client/lib/errors.js" %>
+<%= caption "client/helpers/errors.js" %>
 
-
-To make it work, we'll make a note of when we've rendered the error to the screen, and set a flag on the error a short time later. To achieve that, we'll use the `rendered` callback of a template.
-
-Whenever a template is drawn or re-drawn (which happens whenever the reactive data involved changes), the `rendered` callback gets executed. So we know that the moment a rendered callback on a `error` template gets run, an error is getting drawn to the screen. So we just make sure that a few seconds later, we mark that error as seen.
-
-SIDEBAR: TEMPLATE lifecycle
-
-
-```html
-...
-{{#each errors}}
-  {{> error}}
-{{/each}}
-...
-
-<template name="error">
-  <li>{{message}}</li>
-</template>
-```
-<%= caption "client/views/errors/errors.html" %>
-
-```js
-Template.error.rendered = function() {
-  var error = this.data;
-  Meteor.setTimeout(function() {
-    Errors.update(error._id, {$set: {seen: true}});
-  }, 500);
-};
-```
-<%= caption "client/views/errors/errors.js" %>
-
-We use the `Meteor.setTimeout` method (which is just like JavaScript's standard `setTimeout`, but maintains some Meteor internals) to deplay updating our Errors as seen for 500 milliseconds. Remember that this isn't actually getting saved to the Mongo database, it's all just in-memory in the user's browser, so we don't need to worry about the performance of doing something like this.
-
-This code doesn't actually hide the errors that are marked as seen, but simply flags them--we don't want to instantly hide the errors after 500ms, just make a note so we can hide them at an appropriate poitn. Next, we need to figure what that appropriate point is
-
-### Clearing errors when we route
-
-An appropriate time to clear such errors is when we change page. Because the screen is refreshing anyway, it's a good moment to re-draw the errors without things seeming to disappear for the user for no reason.
-
-To acheive this, we can use a router filter that applies to all pages. Remember, a filter is code that runs each time a certain page is being rendered, and has the potential to change that page. 
-
-In this case, we don't need to change the page being rendered (so the filter returns the same page it is input), but we need to have a side effect of clearing the errors. So we can do:
+Now we'll simply clear errors in the router, so that going to another page makes these annoying errors vanish forever:
 
 ```js
 Meteor.Router.filters({
+  'requireLogin': function(page) {
+    if (Meteor.user())
+      return page;
+    else if (Meteor.loggingIn())
+      return 'loading';
+    else
+      return 'accessDenied';
+  },
   'clearErrors': function(page) {
-    clearUnseenErrors();
+    clearErrors();
     return page;
   }
 });
 
+Meteor.Router.filter('requireLogin', {only: 'postSubmit'});
 Meteor.Router.filter('clearErrors');
 ```
-<%= caption "client/lib/router.js" %>
+<%= caption "client/helpers/router.js" %>
+
+Things now mostly work like we want them to, but there's still one edge case we need to take care of. When we throw up an error and then redirect the user somewhere else (as we do when they try to post a duplicate link), the redirection happens instantly. This means that the user never has the chance to actually see the error before it's cleared. 
+
+This is where our `seen` property will come in handy. We need to ensure that it's only set to `true` if the user has actually seen the error. 
+
+To achieve this, we'll use `Meteor.defer()`. This function tells Meteor to execute its callback "just after" whatever's going on now. If it helps, you can consider that `defer()` is like telling the browser to wait 1 millisecond before proceeding. 
+
+What we're doing is telling Meteor to set `seen` to `true` 1 millisecond after the `errors` template has been rendered. But remember how we said that redirection happens instantly? This means that the redirection will kick in before the `defer` callback which will never be executed.
+
+This is exactly what we want: if it's not executed our error will not be marked as `seen`, which means it won't be cleared, which means it'll appear on the page our user is redirect to just like we wanted!
+
+```js
+Template.errors.helpers({
+  errors: function() {
+    return Errors.find();
+  }
+});
+
+Template.error.rendered = function() {
+  var error = this.data;
+  Meteor.defer(function() {
+    Errors.update(error._id, {$set: {seen: true}});
+  });
+};
+```
+<%= caption "client/views/includes/errors.js" %>
+
+<%= commit "9-3", "Monitor which errors have been seen, and clear on routing." %>
+
+Whew! That was a lot of work for something users will hopefully never see!
