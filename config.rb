@@ -126,4 +126,23 @@ helpers do
   def image(css_class, src, caption)
     %Q{<figure class="#{css_class}"><img src="#{src}" alt="#{caption}"/><figcaption>#{caption}</figcaption></figure>}
   end
+  def diagram(name, caption)
+    %Q{<figure class="diagram"><img src="/images/diagrams/#{name}@2x.png" alt="#{caption}"/><figcaption>#{caption}</figcaption></figure>}
+  end
+  def screenshot(name, caption)
+    %Q{<figure class="screenshot"><img src="/images/screenshots/#{name}.png" alt="#{caption}"/><figcaption>#{caption}</figcaption></figure>}
+  end    
+  def commit(name, caption)
+    %Q{<div class="commit">#{name}: #{caption}</div>}
+  end    
+  def note(&block)
+    markdown = Redcarpet::Markdown.new(Redcarpet::Render::HTML)
+    content = markdown.render(capture(&block))
+    concat %Q{<div class="note">#{content}</div>}
+  end
+  def chapter(&block)
+    markdown = Redcarpet::Markdown.new(Redcarpet::Render::HTML)
+    content = markdown.render(capture(&block))
+    concat %Q{<div class="chapter">#{content}</div>}
+  end
 end

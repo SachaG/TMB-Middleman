@@ -34,7 +34,9 @@
         %h3 (Coming out April 2013)
     .main
       = partial "partials/mailinglist"
-      .row= yield
+      .row
+        =find_and_preserve do
+          =yield
       = partial "partials/mailinglist2"
     %footer
       .row
