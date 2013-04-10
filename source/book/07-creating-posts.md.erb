@@ -362,7 +362,11 @@ This method is a little complicated, but hopefully you can follow along.
 
 First, we check to see that the user is logged in, throwing an error (which will eventually be `alert`-ed by the browser) if not. Then we do some simple validation of the post object (we need to make sure that our posts have titles). 
 
-Finally, we do the most complicated part--we search for another post with the same URL. If we do find one, we throw a `302`  error (which means redirect) telling the user that they should just go and look at that alternate post.
+Finally, we do the most complicated part--we search for another post with the same URL. If we do find one, we throw a `302` error (which means redirect) telling the user that they should just go and look at that alternate post. 
+
+Meteor's `Error` class takes three arguments. The first one (`error`) will be the `302` numeric code, the second one (`reason`) is a short human-readable explanation of the error, and the last one (`details`) can be any useful additional information.
+
+In our case, we'll use this third argument to pass the ID of the post that we just found. Spoiler alert: we'll use this later on to redirect the user to the pre-existing post.
 
 If all those checks pass, we grab the fields that we want to insert (to ensure a user calling this method in browser console can't put spurious data into our database), and include some information about the submitting user, as well as the current time into to the post. 
 
