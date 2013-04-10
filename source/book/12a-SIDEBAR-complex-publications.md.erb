@@ -8,19 +8,22 @@ date: 0012/01/02
 
 ## SIDEBAR: Advanced Publications and Subscriptions
 
-By now you should have a good grasp of how publications and subscriptions interact. So let's drop the training wheeles and examine a few more advanced scenarios.
+By now you should have a good grasp of how publications and subscriptions interact. So let's drop the training wheels and examine a few more advanced scenarios.
  
 ### Publishing a Collection Twice
 
-So what can we learn from all this? Firstly, if you look closely at the way that `_publishCursor` works (from my description above, or by [reading the source](https://github.com/meteor/meteor/blob/master/packages/Mongo-livedata/Mongo_driver.js#L290)), you'll see that the name of the _publication_ is in no way involved.
+In an earlier sidebar, we saw some of the more common publication and subscription patterns, and we learned how the `_publishCursor` function made them very easy to implement for our own sites.
 
-In fact, in the previous example, my subscription is called `'somePosts'`, whereas the relevant collection is `'posts'`. Why is this important? It means we can have _more than one publication_ linking the client and server versions of any collection.
+Well, firstly we should remember exactly what `publishCursor` does for us exactly. It takes call the documents that match a given cursor, and pushes them down into the client side collection *of the same name* as where they came from.
+However the name of the _publication_ is in no way involved.
 
-Why would we want to do that? A simple reason is to manage the amount of data getting sent down to the client. To continue our posts example, suppose we want our users to see a long list of all the posts on the site, but they only need to see the details of a single post at once. Rather than sending all the details of all the posts, we can do:
+In fact, our latest publication is called `'singlePost'`, whereas the relevant collection is `'posts'`. Why is this important? It means we can have _more than one publication_ linking the client and server versions of any collection.
+
+We've already seen that happen in our project, when we want to publish a paginated subset of all the posts as well as a single, important post. Another common use case is to publish an *overview* of a large set of documents, as well as the full details of a single post:
 
 ```js
 Meteor.publish('allPosts', function() {
-  return Posts.find({}, {fields: {title: true, authorName: true}});
+  return Posts.find({}, {fields: {title: true, author: true}});
 });
 
 Meteor.publish('postDetail', function(postId) {
@@ -28,19 +31,19 @@ Meteor.publish('postDetail', function(postId) {
 });
 ```
 
-Now, when the client subscribes to those two publications (using `autosubscribe` to ensure that the right `postId` is being sent to the `postDetail` subscription), its `'posts'` collection gets filled out from two sources -- a list of titles and author's names from the first subscription, and the full details of a post from the second.
+Now, when the client subscribes to those two publications (using `autorun` to ensure that the right `postId` is being sent to the `postDetail` subscription), its `'posts'` collection gets filled out from two sources -- a list of titles and author's names from the first subscription, and the full details of a post from the second.
 
 {% image pullcenter /images/book/doublecollection@2x.png "Publishing a collection twice" %}
 
 What happens to the overlapping post, which is sent by both subscriptions? Meteor takes care of merging the fields sent, which ends up working as we might expect. 
 
-This is great, because now when we render the list of post summaries, we are dealing with data objects that have just enough data for us to show what we need. However, when we render out the page for a single post, we have everything we need to show it. Of course, we need to take care on the client to not expect all fields to be available on all posts---this is a common gotcha!
+This is great, because now when we render the list of post summaries, we are dealing with data objects that have just enough data for us to show what we need. However, when we render out the page for a single post, we have everything we need to show it. Of course, we need to take care on the client to not expect all fields to be available on all post in this case---this is a common gotcha!
 
 ### Multiple Collections in a Single Subscription
 
 Although many developers are familiar with developing against NoSQL databases, many of those who come to Meteor from more traditional frameworks are more used to *relational* databases. In Mongo, we are told to *denormalize*, to *embed* and not to join. This can be confusing, but actually, in Meteor, sometimes it's not the best idea.
 
-Let's talk about a concrete example. We've added comments to our posts. So far, we've gotten away with just publishing the comments on the single post that the user is looking at. However, suppose we wanted to show comments on all the posts on the front page, which changes as we paginate through them. This difficulty is a good reason to embed comments in posts after all.
+Let's talk about a concrete example. We've added comments to our posts. So far, we've gotten away with just publishing the comments on the single post that the user is looking at. However, suppose we wanted to show comments on all the posts on the front page, which changes as we paginate through them. This difficulty is a good reason to embed comments in posts after all (and is the reason we denormalized comment counts).
 
 There are many considerations as to which is the best approach, and to some degree it is application specific, but there's a trick involving subscriptions that makes the separate collection much more compelling in Meteor. Suppose along with our list of post titles, we want to subscribe to a list of the top 2 comments for each post. 
 
@@ -95,18 +98,17 @@ Meteor.publish('topPosts', function(limit) {
 });
 ```
 
-
 So now, every time we publish a post, we automatically publish the top two comments attached to it. All with a single subscription call. Magic!
 
-This approach is made even easier by the `publish-with-relations` package on atmosphere, which does this for us.
+This approach is made even easier by the `publish-with-relations` package on atmosphere, which sets up code like the above for us.
 
 ### Linking different collections
 
 So what else can our new found knowledge of the flexibility of subscriptions give us? Well, if we don't use `_publishCursor`, we don't need to follow the constraint that the source collection (on the server) need have the same name as the target collection (on the client).
 
-Why would we ever want to do this? One reason is *Single Table Inheritance*. Suppose that we wanted to reference various types of objects from our posts, each of which stored common fields, but differened slightly in content. Most likely, we'd just store such objects embedded in the post, but assuming we didn't, it might make sense to store them all in a single `'resources'` collection, using a `type` attribute to indicate which sort of object they are. (For our example, let's say our types are `video`, `sound` and `image`).
+Why would we ever want to do this? One reason is *Single Table Inheritance*. Suppose that we wanted to reference various types of objects from our posts, each of which stored common fields, but differened slightly in content. Most likely, we'd just store such objects embedded in the post, but assuming we didn't, it might make sense to store them all in a single `'resources'` collection, using a `type` attribute to indicate which sort of object they are. (For our example, let's say our types are `video` and `image`).
 
-Then although we would have a single `Resources` collection on the server, we could achieve `Videos`, `Sounds` and `Images` collections on the client with the following bit of magic:
+Then although we would have a single `Resources` collection on the server, we could achieve `Videos` and `Images` collections on the client with the following bit of magic:
 
 ```js
   Meteor.publish(function('videos') {
@@ -129,4 +131,4 @@ Then although we would have a single `Resources` collection on the server, we co
 
 So basically we are doing what `_publishCursor` does, but rather than publishing from `'resources'` to `'resources'`, instead we are publishing from `'resources'` to `'videos'`. 
 
-I'm not sure if this trick is really a very good idea; but it's good to know what's possible in order to use Meteor to it's fullest.
+We're not sure if this trick is really a very good idea; but it's good to know what's possible in order to use Meteor to it's fullest.
