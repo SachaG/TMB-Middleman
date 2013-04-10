@@ -116,7 +116,7 @@ Template.errors.helpers({
 
 Well, it's all very well displaying errors, but we need to create some before we'll see anything. The natural place to display errors is if there is a problem creating posts. We'll check if there's an error in our post creation callback, and if there is, we'll display it.
 
-Additionally, if its the `302` error that we threw earlier to indicate that we have posted a URL that's already been added to miniscope, we'll redirect the user to the existing discussion. 
+Additionally, if we get the `302` error that we use to indicate that a post with the same URL already exists, we'll redirect the user to the existing post (this is why back in chapter 7 we passed that post's ID as the third `details` argument of our `Error` class). 
 
 ```js
 Template.postSubmit.events({

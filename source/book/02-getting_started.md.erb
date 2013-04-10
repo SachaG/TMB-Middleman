@@ -92,18 +92,9 @@ When it comes to organizing files, Meteor has 4 main rules:
 - Everything else runs on both the client and server.
 - Your static assets (fonts, images, etc.) go in the `/public` directory. 
 
-<% note do %>
-
-CSS automatically gets loaded and minified by Meteor, so unlike other static assets it goes into `/client`, not `/public`.
-
-<% end %>
-
 These four rules give us our four root directories: `/client`, `/server`, `/public`, and `/lib`. Go ahead and create them now. Note that `lib` is a special directory that will always be loaded first. And since it's nether `/client` or `/server`, it also means its contents will run in both environment.
 
-
 <%= diagram "meteor_files","A typical Meteor app file structure" %>
-
-<%= commit "2-3","Added bootstrap-updated package." %>
 
 You might also notice a hidden `.meteor` directory. This is where Meteor stores its own code, and modifying anything in there is a very bad idea. 
 
@@ -120,3 +111,109 @@ In this book, we're using camelCase because it's the usual JavaScript way of doi
 The only exceptions to this rule is file names, which will use underscores, and CSS classes, which use hyphens (`my-class`). The reason for this is that in the filesystem, underscores are most common, while the CSS syntax itself already uses hyphens (`font-family`, `text-align`, etc.).
 
 <% end %>
+
+### Taking Care of CSS
+
+This book is not about CSS. So to avoid slowing you down with styling details, we've decided to make the whole stylesheet available from the start, so you don't need to worry about it ever again. 
+
+CSS automatically gets loaded and minified by Meteor, so unlike other static assets it goes into `/client`, not `/public`. Go ahead and create a `client/stylesheets/` directory now, and put this `style.css` file inside it:
+
+```css
+.grid-block, .main, .post, .comments li, .comment-form {
+    background: #fff;
+    border-radius: 3px;
+    padding: 10px;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);
+}
+body {
+    background: #eee;
+    color: #666666;
+}
+.navbar { margin-bottom: 10px }
+.navbar .navbar-inner {
+    border-radius: 0px 0px 3px 3px;
+}
+#spinner { height: 300px }
+.post {
+    *zoom: 1;
+    -webkit-transition: all 300ms 0ms;
+    -webkit-transition-delay: ease-in;
+    -moz-transition: all 300ms 0ms ease-in;
+    -o-transition: all 300ms 0ms ease-in;
+    transition: all 300ms 0ms ease-in;
+    position: relative;
+    opacity: 1;
+}
+.post:before, .post:after {
+    content: "";
+    display: table;
+}
+.post:after { clear: both }
+.post.invisible { opacity: 0 }
+.post .upvote {
+    display: block;
+    margin: 7px 12px 0 0;
+    float: left;
+}
+.post .post-content { float: left }
+.post .post-content h3 {
+    margin: 0;
+    line-height: 1.4;
+    font-size: 18px;
+}
+.post .post-content h3 a {
+    display: inline-block;
+    margin-right: 5px;
+}
+.post .post-content h3 span {
+    font-weight: normal;
+    font-size: 14px;
+    display: inline-block;
+    color: #aaaaaa;
+}
+.post .post-content p { margin: 0 }
+.post .discuss {
+    display: block;
+    float: right;
+    margin-top: 7px;
+}
+.comments {
+    list-style-type: none;
+    margin: 0;
+}
+.comments li h4 {
+    font-size: 16px;
+    margin: 0;
+}
+.comments li h4 .date {
+    font-size: 12px;
+    font-weight: normal;
+}
+.comments li h4 a { font-size: 12px }
+.comments li p:last-child { margin-bottom: 0 }
+.dropdown-menu span {
+    display: block;
+    padding: 3px 20px;
+    clear: both;
+    line-height: 20px;
+    color: #bbb;
+    white-space: nowrap;
+}
+.load-more {
+    display: block;
+    border-radius: 3px;
+    background: rgba(0, 0, 0, 0.05);
+    text-align: center;
+    height: 60px;
+    line-height: 60px;
+    margin-bottom: 10px;
+}
+.load-more:hover {
+    text-decoration: none;
+    background: rgba(0, 0, 0, 0.1);
+}
+```
+
+<%= commit "2-3","Re-arranged file structure." %>
+
