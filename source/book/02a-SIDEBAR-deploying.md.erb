@@ -57,7 +57,7 @@ heroku config:add BUILDPACK_URL=https://github.com/oortcloud/heroku-buildpack-me
 You'll also need to provide a MongoDB database for your app. We recommend the [MongoHQ](https://www.mongohq.com/home) Heroku add-on (it comes with a nice UI for browsing your data), which you can either add via their web admin, or via the following command:
 
 ```bash
-heroku addons:add mongohq:small
+heroku addons:add Mongohq:small
 ```
 
 Before our Heroku instance is ready, we also need to configure Meteor's `ROOT_URL` environment variable to tell the app where it's running:

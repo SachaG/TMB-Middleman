@@ -106,7 +106,7 @@ Meteor.users().find().count();
 
 The console returns 1. Hold on, shouldn't that be 2? What's happened? Has the first user been deleted? If you try logging in as that user again, you'll see that's not the case.
 
-Let's be sure, and check in the canonical data-store, the mongo database. We'll log into mongo and check:
+Let's be sure, and check in the canonical data-store, the Mongo database. We'll log into Mongo and check:
 
 ```bash
 > db.users.count()

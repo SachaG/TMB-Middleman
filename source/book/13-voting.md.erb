@@ -157,7 +157,7 @@ Meteor.methods({
 
 The method is fairly straightforward. We do some defensive checks to ensure that the user is logged in and that the post exists. Then we double check that the user hasn't already voted for the post, and if not, we increment the vote's total score and add the user to the set of upvoters.
 
-This final step is interesting--we've used a couple of special mongo operators. There are many more to learn, but these two are extremely helpful--`$addToSet` adds an item to an array property as long as it doesn't already exist, and `$inc` simple increments an integer field.
+This final step is interesting--we've used a couple of special Mongo operators. There are many more to learn, but these two are extremely helpful--`$addToSet` adds an item to an array property as long as it doesn't already exist, and `$inc` simple increments an integer field.
 
 ### User Interface Tweaks
 

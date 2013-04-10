@@ -16,7 +16,7 @@ Part of the reason people find the concept a bit confusing initially is the "mag
 
 ### Defining Publications
 
-Fundamentally a **publication** (which we connect to using a **subscription**) is a method of transferring data from a server-side (source) collection to a client-side (target) collection. Think of the subscription as a funnel  connecting the canonical data store (the source collection, which talks to the mongo data-store) and the client-side cache (the target collection, which represents a copy or a subset of that data). 
+Fundamentally a **publication** (which we connect to using a **subscription**) is a method of transferring data from a server-side (source) collection to a client-side (target) collection. Think of the subscription as a funnel  connecting the canonical data store (the source collection, which talks to the Mongo data-store) and the client-side cache (the target collection, which represents a copy or a subset of that data). 
 
 The subscription controls exactly what data passes through that funnel, and takes care of synchronizing the data between either end. By attaching multiple subscriptions to the server's data-store, we are able to keep multiple browser's view of the data in-sync, *efficiently*, *securely* and *in real-time*.
 

@@ -42,13 +42,13 @@ Posts = new Meteor.Collection('posts');
 
 Code inside folders that are not `client/` or `server/` which will run in *both* contexts. So the `Posts` collection is avaliable to both client and server. However, what the collection does on either side is very different.
 
-On the server, the collection has the job of talking to the mongo database, and reading and writing any changes. In this sense, it can be compared to a standard database library. On the client however, the collection is a *secure* copy of a *subset* of the real, canonical collection. The client-side collection is constantly and (mostly) transparently kept up to date with the that subset in realtime.
+On the server, the collection has the job of talking to the Mongo database, and reading and writing any changes. In this sense, it can be compared to a standard database library. On the client however, the collection is a *secure* copy of a *subset* of the real, canonical collection. The client-side collection is constantly and (mostly) transparently kept up to date with the that subset in realtime.
 
 ### What a collection does on the server
 
 On the server, the collection acts as an API into to your Mongo database. So in your server-side code, you can write Mongo commands like `Posts.insert()` or `Posts.update`, and they will, as you might expect, make changes to the `posts` collection stored inside the Mongo database.
 
-You can take a look inside the Mongo database easily enough. Open up a second terminal window (while `mrt` is still running in your first), go to your app's directory, and run the command `mrt mongo`. This will initiate a mongo shell, into which you can type standard mongo commands:
+You can take a look inside the Mongo database easily enough. Open up a second terminal window (while `mrt` is still running in your first), go to your app's directory, and run the command `mrt Mongo`. This will initiate a Mongo shell, into which you can type standard Mongo commands:
 
 ```js
 db.posts.insert({title: "A new post"});
@@ -151,7 +151,7 @@ First, let's make sure there's nothing in the database. Stop the meteor server (
   mrt reset
 ```
 
-The reset command completely clears out the mongo database. It's a useful command in development, where there's a strong possibility of our database falling into a inconsistent state. Now that the database is empty, we can add the following code to a file, to load up when the server first starts:
+The reset command completely clears out the Mongo database. It's a useful command in development, where there's a strong possibility of our database falling into a inconsistent state. Now that the database is empty, we can add the following code to a file, to load up when the server first starts:
 
 ```js
 if (Posts.find().count() === 0) {
@@ -184,7 +184,7 @@ Now run your server again with `mrt`, and behind the scenes these three posts wi
 
 ### Wiring the data to our HTML with helpers
 
-Now, if we open up a browser console, we see all three posts loaded up into minimongo:
+Now, if we open up a browser console, we see all three posts loaded up into miniMongo:
 
 ```js
 Posts.find().fetch();
@@ -211,7 +211,7 @@ Now, rather than pulling a list of posts as a static array from a variable, we r
 
 <%= screenshot "4-3", "Using live data" %>
 
-So can clearly that our `{{#each}}` helper has iterated over all of our `Posts`, and displayed them all on the screen. So the server-side collection is pulling the posts from mongo, passing them over the wire to our client-side collection, and our handlebars helper is passing them into the template. 
+So can clearly that our `{{#each}}` helper has iterated over all of our `Posts`, and displayed them all on the screen. So the server-side collection is pulling the posts from Mongo, passing them over the wire to our client-side collection, and our handlebars helper is passing them into the template. 
 
 Now, let's see things get cool. We'll add another post via the console:
 

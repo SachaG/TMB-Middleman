@@ -12,7 +12,7 @@ By now you should have a good grasp of how publications and subscriptions intera
  
 ### Publishing a Collection Twice
 
-So what can we learn from all this? Firstly, if you look closely at the way that `_publishCursor` works (from my description above, or by [reading the source](https://github.com/meteor/meteor/blob/master/packages/mongo-livedata/mongo_driver.js#L290)), you'll see that the name of the _publication_ is in no way involved.
+So what can we learn from all this? Firstly, if you look closely at the way that `_publishCursor` works (from my description above, or by [reading the source](https://github.com/meteor/meteor/blob/master/packages/Mongo-livedata/Mongo_driver.js#L290)), you'll see that the name of the _publication_ is in no way involved.
 
 In fact, in the previous example, my subscription is called `'somePosts'`, whereas the relevant collection is `'posts'`. Why is this important? It means we can have _more than one publication_ linking the client and server versions of any collection.
 
