@@ -34,10 +34,10 @@ When you make a method call the client sends of the call to the server, but also
 - *+0ms:* The user clicks a submit button and the browser fires a method call.
 - *+0ms:*  The client simulates the action of the method call on the local collections and changes the UI to reflect this
 - *+200ms:*  The server makes changes to the Mongo database.
-- *+500ms:*  The client receives those changes and undoes it's simulated changes, replacing them with the servers changes (which are generally the same). The UI changes to reflect this.
+- *+500ms:*  The client receives those changes and undoes it's simulated changes, replacing them with the server's changes (which are generally the same). The UI changes to reflect this.
 
 
-So, the user sees changes instantly, and when the server returns a few moments later, there may or may not be noticable changes as the server's "true" documents come down the wire. Obviously we should aim to write our methods in such a way as to make this as difficult to notice as possible!
+So, the user sees changes instantly, and when the server returns a few moments later, there may or may not be noticable changes as the server's canonical documents come down the wire. (One thing to learn from this is that we should try to make sure we simulate the real documents as closely as we can!)
 
 ### Observing Latency Compensation
 
@@ -58,7 +58,7 @@ Meteor.methods({
     });
     
     // wait for 1 second
-    var Future = __meteor_bootstrap__.require('fibers/future');
+    var Future = Npm.require('fibers/future');
     var future = new Future();
     Meteor.setTimeout(function() {
       future.ret();
@@ -69,7 +69,7 @@ Meteor.methods({
   }
 })
 ```
-<%= caption "lib/collections.js" %>
+<%= caption "collections/posts.js" %>
 
 Exactly how futures work is outside of the scope of this book, but we've basically told Meteor to wait for one second before doing the insert on the server collection. 
 
@@ -90,8 +90,8 @@ When you define a server collection called `'posts'`, you are implicitly definin
   
 ### Methods Calling Methods
 
-If you are keeping up, you might have just realized that our `post` method is calling another method when we insert our post! How does this work?
-
+If you are keeping up, you might have just realized that our `post` method is calling another method (`posts/insert`) when we insert our post! How does this work?
+ 
 Well, the answer is refreshingly simple. When the simulation (client-side version of the method) is being run, we run `insert`'s simulation (so we insert into our local collection), but we *do not* call the real, server side `insert`, as we assume that the server side version of `post` will do this.
 
 So, indeed, when the server side `post` method calls `insert`, there's no need to worry about simulation, and the insertion goes ahead smoothly. If you think about it, the simplest way is the best!
