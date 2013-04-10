@@ -217,16 +217,15 @@ This is actually more complicated than it sounds. The problem is that Meteor's `
 1. When a new template is inserted into the DOM
 2. Whenever a template's underlying data changes
 
-What's more, we don't want the posts to fade in when the user first loads the page, so we have to distinguish between two sub-cases:
+Only case 1 should be animated, unless you want your user interface lighting up like a christmas tree every time your data changes. 
 
-1a. A template is inserted at page load
-1b. A template is inserted after page load
-
-Only case 1b should be animated, unless you want your user interface lighting up like a christmas tree every time your data changes. 
-
-First, let's make sure we only animate posts when they're actually new, and not just when they're re-rendered because their data changed. We're already testing for the presence of an instance variable (which is only set after the first render), so we just have to go back to our `rendered` callback and add an `else` block:
+So let's make sure we only animate posts when they're actually new, and not just when they're re-rendered because their data changed. We're already testing for the presence of an instance variable (which is only set after the first render), so we just have to go back to our `rendered` callback and add an `else` block:
 
 ```js
+Template.postItem.helpers({
+  //...
+});
+
 Template.postItem.rendered = function(){
   // animate post from previous position to new position
   var instance = this;
@@ -234,28 +233,35 @@ Template.postItem.rendered = function(){
   var $this = $(this.firstNode);
   var postHeight = 80;
   var newPosition = rank * postHeight;
-
-  if(instance.currentPosition){
-    // if element has a currentPosition (i.e. it's not the first ever render)
+  
+  // if element has a currentPosition (i.e. it's not the first ever render)
+  if (typeof(instance.currentPosition) !== 'undefined') {
     var previousPosition = instance.currentPosition;
     // calculate difference between old position and new position and send element there
     var delta = previousPosition - newPosition;
     $this.css("top", delta + "px");
-  }else{
+  } else {
     // it's the first ever render, so hide element
-    $this.addClass("hidden");
+    $this.addClass("invisible");
   }
-
+  
+  // let it draw in the old position, then..
   Meteor.defer(function() {
     instance.currentPosition = newPosition;
-    // bring element back to its new original position and show it
-    $this.css("top",  "0px").removeClass("hidden");
+    // bring element back to its new original position
+    $this.css("top",  "0px").removeClass("invisible");
   }); 
 };
-```
-<%= caption "/client/views/posts/postItem.js" %>
 
-Note that the `removeClass("hidden")` we added in the `defer()` function will run for every rendering. But it will only  do something if the `.hidden` class is actually present on the element, which will only be true the first time it's rendered. 
+Template.postItem.events({
+  //...
+});
+```
+<%= caption "/client/views/posts/post_item.js" %>
+
+<%= commit "14-2", "Fade items in when they are drawn." %>
+
+Note that the `removeClass("invisible")` we added in the `defer()` function will run for every rendering. But it will only  do something if the `.invisible` class is actually present on the element, which will only be true the first time it's rendered. 
 
 <% note do %>
 #### CSS & JavaScript
@@ -266,57 +272,4 @@ On the other hand, here we only want to show and hide an element independently o
 
 <% end %>
 
-If you switch from page to page now you'll see that all posts will fade in. While this looks nice, it's a little bit counter-productive since the goal of our animation is to highlight "new" posts (i.e. those who appear after page load). So we want to limit our animation to these newly inserted elements, but for that we first need to define what "new" means. 
-
-To do this, we'll use a Session variable to set a timestamp inside a router filter, and we'll then be able to declare that any template created after that timestamp is "new". 
-
-```js
-
-Meteor.Router.filters({
-  'requireLogin': function(page) {
-    if (Meteor.user())
-      return page;
-    else if (Meteor.loggingIn())
-      return 'loading';
-    else
-      return 'accessDenied';
-  },
-  'clearErrors': function(page) {
-    clearUnseenErrors();
-    return page;
-  },
-  'setTimestamp' : function(page) {
-    Session.set('pageLoadTimestamp', new Date());
-    return page;
-  }
-});
-
-Meteor.Router.filter('requireLogin', {only: 'postSubmit'});
-Meteor.Router.filter('clearErrors');
-Meteor.Router.filter('setTimestamp');
-```
-<%= caption "/client/lib/router.js" %>
-
-We can now update our `rendered` callback to take that timestamp into account:
-
-```js
- if(instance.currentPosition){
-    var previousPosition = instance.currentPosition;
-    // calculate difference between old position and new position and send element there
-    var delta = previousPosition - newPosition;
-    $this.css("top", delta + "px");
-  }else{
-    // it's the first ever render
-    var postTimestamp = instance.data.submitted;
-    var pageLoadTimeStamp = Session.get('pageLoadTimestamp');
-    if(postTimestamp > pageLoadTimeStamp){
-      // the post has been submitted after the initial page load, so we hide it
-      $this.addClass("invisible");
-    }
-  }
-```
-<%= caption "/client/views/posts/postItem.js" %>
-
-In plain english, all we're saying is that if a post is created (`instance.data.submitted`) after the page has loaded, then we want to hide it. 
-
-We should finally have the animation behavior we wanted: posts will now fade in only when they're "fresh", and not when first appearing. Load up your app and give it a try! And you can also play around with the `.post` and `.post.invisible` classes to see if you can come up with other transitions. Hint: [CSS easing functions](http://matthewlein.com/ceaser/) are a good place to start!
+We should finally have the animation behavior we wanted. Load up your app and give it a try! And you can also play around with the `.post` and `.post.invisible` classes to see if you can come up with other transitions. Hint: [CSS easing functions](http://matthewlein.com/ceaser/) are a good place to start!
