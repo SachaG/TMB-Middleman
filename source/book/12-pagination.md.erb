@@ -123,7 +123,7 @@ We can use the combination of those three helpers to manufacture our "load more"
     		<a class="more-link" href="#">Load more</a>
     	</div>
     {{else}}
-      <div>Loading...</div>
+      <div>{{> spinner}}</div>
     {{/if}}
   </div>
 </template>
