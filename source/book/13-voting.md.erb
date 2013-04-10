@@ -17,63 +17,120 @@ date: 0013/01/01
 - Cover some interesting performance considerations in MongoDB.
 <% end %>
 
-Now we have a discussion starting around our posts, it's important that people can find the most interesting posts to discuss. As such, we need some kind of ranking system to order our post with. Although we can get complex with karma, and time-based decay of rank and many other things (and Telescope indeed does some of this), for MiniScope we won't get too complex, and we'll just rate posts by the *number of votes* they receive.
+Now we have a discussion starting around our posts, it's important that people can find the most interesting posts to discuss. As such, we need some kind of ranking system to order our post with. 
 
-To do so, we'll need to let users vote on posts though. So let's get to it.
+We could build a complex ranking system with karma, time-based decay of points, and many other things (Microscope's big brother Telescope is a good example of that). But for Microscope, we'll keep things simple and just rate posts by the number of votes they've received.
+
+Let's start by giving users a way to vote on posts. 
 
 ### Data model
 
-We'll store a list of upvoters on each post so we know whether to show the upvote button to users and to stop people from voting twice. For now, we'll publish this list of upvoters in it's entirety to all users, but it's important to think about whether you should really do this (for instance, you might not want to let people find out which users have voted for their posts, even if they look in the console).
+We'll store a list of upvoters on each post so we know whether to show the upvote button to users, as well as to prevent people from voting twice. 
 
-We'll also denormalize the total number of upvoters on a post, for ease of usage. So, we'll be adding two attributes to our posts, `upvoters` and `votes`. Let's start by making sure they are initialized when posts are created:
+<% note do %>
+
+### Data Privacy & Publications
+
+We'll be publishing these lists of upvoters in their entirety to all users, making that data publicly accessible via the browser console. 
+
+This is the kind of data privacy problem that can arise from the way collections work. For example, do we want people to be able to find out who has voted for their posts?
+
+In our case it doesn't matter much, but it's important to acknowledge the issue at least. 
+
+<% end %>
+
+We'll also denormalize the total number of upvoters on a post for ease of usage. So, we'll be adding two attributes to our posts, `upvoters` and `votes`. Let's start by making sure they are initialized when posts are created:
 
 ```js
-Meteor.methods({
-  post: function(post) {
-    var user = Meteor.user(),
-      ....
-    
-    // pick out the whitelisted keys
-    post = _.extend(_.pick(post, 'url', 'title', 'message'), {
-      userId: user._id, 
-      author: user.username, 
-      submitted: new Date().getTime(),
-      upvoters: [], votes: 0
-    });
-    
-    return Posts.insert(post);
-  }
-  ...
+//...
+
+// check that there are no previous posts with the same link
+if (postAttributes.url && postWithSameLink) {
+  throw new Meteor.Error(302, 
+    'This link has already been posted', 
+    postWithSameLink._id);
+}
+
+// pick out the whitelisted keys
+var post = _.extend(_.pick(postAttributes, 'url', 'title', 'message'), {
+  userId: user._id, 
+  author: user.username, 
+  submitted: new Date().getTime(),
+  commentsCount: 0,
+  upvoters: [], 
+  votes: 0
 });
+
+var postId = Posts.insert(post);
+
+return postId;
+
+//...
 ```
-<%= caption "lib/collections.js" %>
+<%= caption "collections/posts.js" %>
 
+### Building our Voting Templates
 
-### Building out Voting Templates
+First off, we'll add an upvote button to our post partial:
 
-First off, we add a up-vote button to our post partial, so wherever renders, people can click the button:
 ```html
-<template name="post">
-  ...
-  <p>{{votes}} Votes <a href="#" class="upvote">⬆<a/></p>
-  ...
+<template name="postItem">
+  <div class="post">
+    <a href="#" class="upvote btn">⬆<a/>
+    <div class="post-content">
+      <h3><a href="{{url}}">{{title}}</a><span>{{domain}}</span></h3>
+      <p>
+        {{votes}} Votes,
+        submitted by {{author}},
+        <a href="{{postPagePath this}}">{{commentsCount}} comments</a>
+        {{#if ownPost}}<a href="{{postEditPath this}}">Edit</a>{{/if}}
+      </p>
+    </div>
+    <a href="{{postPagePath this}}" class="discuss btn">Discuss</a>
+  </div>
 </template>
 ```
-<%= caption "client/views/posts/post.html" %>
+<%= caption "client/views/posts/post_item.html" %>
 
-Next, we'll call a server upvote method when the user clicks on the button.
+<%= screenshot "13-1", "The upvote button" %>
+
+Next, we'll call a server upvote method when the user clicks on the button:
 
 ```js
-Template.post.events({
-  'click .upvote': function() {
+//...
+
+Template.postItem.events({
+  'click .upvote': function(event) {
+    event.preventDefault();
     Meteor.call('upvote', this._id);
   }
-})
+});
 ```
-<%= caption "client/views/posts/post.js" %>
+<%= caption "client/views/posts/post_item.js" %>
+
+Finally, we'll go back to our `collections/posts.js` file and add a Meteor server-side method that upvote posts:
 
 ```js
+Posts = new Meteor.Collection('posts');
+
+Posts.allow({
+  update: ownsDocument,
+  remove: ownsDocument
+});
+
+Posts.deny({
+  update: function(userId, post, fieldNames) {
+    // may only edit the following three fields:
+    return (_.without(fieldNames, 'url', 'title', 'message').length > 0);
+  }
+})
+
+
 Meteor.methods({
+  post: function(postAttributes) {
+    //...
+  },
+  
   upvote: function(postId) {
     var user = Meteor.user();
     // ensure the user is logged in
@@ -94,56 +151,56 @@ Meteor.methods({
   }
 });
 ```
-<%= caption "lib/collections.js" %>
+<%= caption "collections/posts.js" %>
 
-The method is fairly straightforward. We do some defensive checks, that the user is logged in and that the post exists. Then we double check that the user hasn't already voted for the post, and if not, we increment the vote's total score and add the user to the set of upvoters.
+<%= commit "13-1", "Added basic upvoting algorithm." %>
+
+The method is fairly straightforward. We do some defensive checks to ensure that the user is logged in and that the post exists. Then we double check that the user hasn't already voted for the post, and if not, we increment the vote's total score and add the user to the set of upvoters.
 
 This final step is interesting--we've used a couple of special mongo operators. There are many more to learn, but these two are extremely helpful--`$addToSet` adds an item to an array property as long as it doesn't already exist, and `$inc` simple increments an integer field.
 
+### User Interface Tweaks
 
-### Displaying posts in order
-
-The point of all this is to display the posts in the right order, so let's change the `posts` controller to return the posts in the right order. To do so, we'll use the mongo `sort` operator:
-
-```js
-Template.posts.helpers({
-  posts: function() {
-    return Posts.find({}, {sort: {votes: -1}});
-  }
-});
-```
-<%= caption "client/views/posts/posts_top.js" %>
-
-Give it a try. Signup up for a few accounts in a few anonymous browser tabs, vote for some posts, and see if you can watch the order of the posts change, instantly across all browsers. Pretty cool!
-
-Actually having posts change order instantly isn't ideal, as it's if you blink you might miss it! In the next chapter, we'll *animate* the posts when they change position, and hopefully make things much clearer. In the meantime, there are a few improvements we can make.
-
-### Cleaning up
-
-First off, we don't want to display an upvote button if the user isn't logged in, or if they've already voted for it. After all, they can't vote!
+If the user is not logged in, or has already upvoted a post, they won't be able to vote. To reflect this is our UI, we'll use a helper to conditionally add a `disabled` CSS class to the upvote button.
 
 ```html
-<template name="post">
-  <p>{{votes}} Votes 
-    {{#if currentUserNotVoted}}
-      <a href="#" class="upvote">⬆<a/>
-    {{/if}}
-  </p>
+<template name="postItem">
+  <div class="post">
+    <a href="#" class="upvote btn {{upvotedClass}}">⬆<a/>
+    <div class="post-content">
+      //...
+  </div>
 </template>
 ```
-<%= caption "client/views/posts/post.html" %>
+<%= caption "client/views/posts/post_item.html" %>
 
 ```js
-Template.posts.helpers({
-  currentUserNotVoted: function() {
-    var userId = Meteor.userId()
-    return userId && ! _.include(this.upvoters, userId);
+Template.postItem.helpers({
+  ownPost: function() {
+    //...
+  },
+  domain: function() {
+    //...
+  },
+  upvotedClass: function() {
+    var userId = Meteor.userId();
+    if (userId && !_.include(this.upvoters, userId)) {
+      return 'btn-primary upvoteable';
+    } else {
+      return 'disabled';
+    }
   }
 });
+//...
+});
 ```
-<%= caption "client/views/posts/post.js" %>
+<%= caption "client/views/posts/post_item.js" %>
 
-Next, you may notice that posts with a single vote are titled "1 votes". We need to pluralize properly. Pluralization is a complicated process, but for now we'll do it in a fairly simplistic way. However, we'll make a general handlebars helper to do so that we can use everywhere:
+<%= screenshot "13-2", "Greying out upvote buttons." %>
+
+<%= commit "13-2", "Grey out upvote link when not logged in / already voted." %>
+
+Next, you may notice that posts with a single vote are labelled "1 vote**s**". Let's see how to pluralize those labels properly. Pluralization is a complicated process, but for now we'll do it in a fairly simplistic way. We'll make a general Handlebars helper that we can use anywhere:
 
 ```js
 Handlebars.registerHelper('pluralize', function(n, thing) {
@@ -155,26 +212,33 @@ Handlebars.registerHelper('pluralize', function(n, thing) {
   }
 });
 ```
-<%= caption "client/lib/helpers.js" %>
+<%= caption "client/helpers/handlebars.js" %>
 
-The helpers we've made before have been tied to the controller and template that they apply to. By using `Handlebars.registerHelper`, we've created a general helper that can be used within any template. Our helper expects two arguments, so let's use it:
+The helpers we've made before have been tied to the controller and template that they apply to. By using `Handlebars.registerHelper`, we've created a global helper that can be used within any template:
 
 ```html
-<template name="post">
-  <p>{{pluralize votes "Vote"}}
-    {{#if currentUser}}
-      <a href="#" class="upvote">⬆<a/>
-    {{/if}}
-  </p>
+<template name="postItem">
+//...
+<p>
+  {{pluralize votes "Vote"}},
+  submitted by {{author}},
+  <a href="{{postPagePath this}}">{{pluralize commentsCount "comment"}}</a>
+  {{#if ownPost}}<a href="{{postEditPath this}}">Edit</a>{{/if}}
+</p>
+//...
 </template>
 ```
-<%= caption "client/views/posts/post.html" %>
+<%= caption "client/views/posts/post_item.html" %>
+
+<%= screenshot "13-3", "Perfecting Proper Pluralization (now say that 10 times)" %>
+
+<%= commit "13-3", "Added pluralize helper to format text better." %>
 
 Now we should see "1 vote". Better.
 
 ### Smarter voting algorithm
 
-Our upvoting code is pretty solid now, but there is one problem. In the upvote method, we make two calls to mongo--one grab the post, and then another to update it. 
+Our upvoting code is pretty solid now, but there is one problem. In the upvote method, we make two calls to Mongo--one to grab the post, then another to update it. 
 
 There's two issues with this. Firstly, it's inefficient to go to the database twice (on the server); but more importantly, it introduces a race condition. We are following the following algorithm:
 
@@ -185,8 +249,26 @@ There's two issues with this. Firstly, it's inefficient to go to the database tw
 What if the same voter votes for the post in between steps 1 and 3? Then it's possible the user could vote for the same post twice. Thankfully, Mongo allows us to be smarter, and combine steps 1-3 into a single Mongo command:
 
 ```js
+Posts = new Meteor.Collection('posts');
+
+Posts.allow({
+  update: ownsDocument,
+  remove: ownsDocument
+});
+
+Posts.deny({
+  update: function(userId, post, fieldNames) {
+    // may only edit the following three fields:
+    return (_.without(fieldNames, 'url', 'title', 'message').length > 0);
+  }
+})
+
+
 Meteor.methods({
-  ...
+  post: function(postAttributes) {
+    //...
+  },
+  
   upvote: function(postId) {
     var user = Meteor.user();
     // ensure the user is logged in
@@ -203,50 +285,35 @@ Meteor.methods({
   }
 });
 ```
-<%= caption "lib/collections.js" %>
+<%= caption "collections/posts.js" %>
+
+<%= commit "13-4", "Better upvoting algorithm." %>
 
 What are saying is "find all the posts with this `id` that this user hasn't yet voted for, and update them in this way". If the user hasn't yet voted, it will of course find the post with that `id`. If the user _has_ voted, then the query will match no documents, and consequently nothing will happen.
 
-The only downside of this, is that we can't now tell the user that they've already voted for the post. But they should know this anyway!
-
-### Stopping cheating
-
-If you've been paying attention, and you are quick on your feet, you may have realized a flaw in our system. What's to stop a user from tweaking the total number of votes on one of their posts? Give it a try: figure out the `id` of one of your own posts (preferably one that's languishing at the bottom of the post list), and try a little hack:
-
-```js
-  Posts.update(postId, {$set: {votes: 10000}});
-```
-<%= caption "browser console" %>
-
-How are we allowed to do this? Well, when we specified the `allow` rules for updating posts, we only said that a user can only edit *their own posts*, but never anything about *how*! 
-
-Luckily, the problem is easily solved with the addition of a `deny` rule:
-```js
-  Posts.deny({
-    update: function(userId, doc, fields) {
-     return _.contains(fields, 'votes') || _.contains(fields, 'upvoters');
-  });
-```
-<%= caption "lib/posts.js" %>
-
-An `update` rule receives as third argument a set of the fields that are going to be modified. We simply take a look to see if `votes` or `upvoters` are included there, and return `true` (i.e. that we should deny this change) if so.
-
-Considering that our edit post form never touches those fields, we've solved the problem nicely. Try the little hack again on another one of your posts:
-
-```js
-  Posts.update(postId, {$set: {votes: 10000}});
-  >> SOME ERROR MESSAGE
-```
-<%= caption "browser console" %>
+The only downside is that now we can't tell the user that they've already voted for the post (since we got rid of the database call that checked this). But they should know that from the user interface anyway.
 
 <% note do %>
 #### Latency compensation
 
-If you looked carefully, you'll have seen latency compensation in action. It may not have been visible, but you may have seen the post jump to the top of the list briefly, before shooting back into position. 
+Let's say you tried to cheat and send one of your posts to the top of the list by tweaking its number of votes:
 
-What's happened? In your local `Posts` collection, the `update` was applied without incident. This happens instantly, so the post shot to the top of the list. Meanwhile, on the server, the `update` was being denied. So some time later (measured in the milliseconds if you are running Meteor on your own machine), the server returned an error, telling the local collection to revert itself. The end result--exactly what we'd expect.
+```js
+  Posts.update(postId, {$set: {votes: 10000}});
+```
+<%= caption "Browser console" %>
+
+(Where `postId` is the id of one of your posts)
+
+This brazen attempt at gaming the system would be caught by our `deny()` callback (in `collections/posts.js`, remember?) and immediately negated.
+
+But if you looked carefully, you'll have seen latency compensation in action. It may not have been visible, but you may have seen the post jump to the top of the list briefly, before shooting back into position. 
+
+What's happened? In your local `Posts` collection, the `update` was applied without incident. This happens instantly, so the post shot to the top of the list. Meanwhile, on the server, the `update` was being denied. So some time later (measured in the milliseconds if you are running Meteor on your own machine), the server returned an error, telling the local collection to revert itself. 
+
+The end result: while waiting for the server to responds, the user interface can't help but trust the local collection. As soon as the server comes back and denies the modification, the user interfaces adapts to reflect that. 
+
 <% end %>
-
 
 ### Ranking the front page posts by number of votes
 

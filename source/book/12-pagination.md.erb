@@ -90,13 +90,26 @@ As we are no longer publishing all the posts, we need to be careful about the or
 
 ### Using the subscription handle
 
+Let's revisit our `main.js` app controller and assign a variable to our paginated subscription. This will expose some very useful functions:
+
+```js
+postsHandle = Meteor.subscribeWithPagination('posts', 10);
+
+Meteor.autorun(function() {
+  Meteor.subscribe('comments', Session.get('currentPostId'));
+})
+
+Meteor.subscribe('notifications');
+```
+<%= caption "client/main.js" %>
+
 The paginated subscription handle has three useful (reactive) functions that we can use in our helpers to figure out what's happening with the subscription:
 
  - `handle.limit()` -- this is the number of documents that the subscription has asked the server for.
  - `handle.loaded()` -- this is the amount of documents that the server claims to have returned. It's a simple counter that gets incremented by `n` (in our case, 10) each time we click "load more", so the actual number of documents could be less if we've reached the end.
  - `handle.loading()` -- is a shorthand to check if the two above are the same, which tells us that the subscription is "ready".
 
-We can use the combination of those three helpers to manufacture our "infinite scroll" solution. To begin with, we'll add a few elements to our post list template:
+We can use the combination of those three helpers to manufacture our "load more" solution. To begin with, we'll add a few elements to our post list template:
 
 ```html
 <template name="postsList">
