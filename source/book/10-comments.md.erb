@@ -308,9 +308,109 @@ Meteor.methods({
 
 We're not doing anything too fancy. We'll simply check that the user is logged in, that the comment has a body, and that it's linked to a post. 
 
-### Denormalizin' Like a Pro
+
+### Controlling the comments subscription
 
 We're not quite done with comments though. 
 
-<%= commit "10-4", "Denormalized the number of comments into the post." %>
+As things stand, we are publishing all comments across all posts to all connected clients. As we've discussed previously, we should be using a publication to control exactly which comments are published. Soon, we'll use pagination to only display a certain subset of the posts on the screen at any one time. We should do something similar with the comments.
+
+In fact, the only time we really need comments is when we are viewing a post and we need to read the discussion on that post. So at any one point, we really only want to subscribe to the comments on the post corresponding to the `currentPostId`.
+
+This is pretty straightforward with a publication that takes _an argument_:
+
+```js
+Meteor.publish('comments', function(postId) {
+  return Comments.find({postId: postId});
+});
+```
+<%= caption "server/publications.js" %>
+
+```js
+Meteor.autorun(function() {
+  Meteor.subscribe('comments', Session.get('currentPostId'));
+});
+```
+<%= caption "client/main.js" %>
+
+<%= commit "10-4", "Made a simple publication/subscription for comments." %>
+
+The `Meteor.autorun()` block is our way of hooking into Meteor's reactivity: whenever `currentPostId` changes, the code will "auto-rerun", killing the old subscription, and resubscribing to `comments` again with a different argument.
+
+So over time, as the user navigates the site, looking at different posts, the set of comments cached in the browser will change, depending on where the user is currently.
+
+There's only one problem with doing this. When we return to the homepage, it claims all our posts have 0 comments:
+
+>> SS
+
+### Denormalizin' Like a Pro
+
+The reason for this should be reasonably clear -- we only ever have at most one of our post's comments loaded, so when we call `Comments.find({postId: this._id})` in the `commentsCount` helper in `post_item` controller, we find none. 
+
+The best way to deal with this is to denormalize the number of comments onto the post. Although as we'll see, there's a minor addition of complexity in our code, the performance benefit we gain from not having to publish _all_ the comments to display the post list is worth it.
+
+We'll achieve it by adding a `commentsCount` property to the `post` data structure. To begin with, we add update our post fixtures (and `reset` to reload them):
+
+```js
+var telescopeId = Posts.insert({
+  title: 'Introducing Telescope',
+  ..
+  commentsCount: 2
+});
+
+Posts.insert({
+  title: 'Meteor',
+  ...
+  commentsCount: 0
+});
+
+Posts.insert({
+  title: 'The Meteor Book',
+  ...
+  commentsCount: 0
+});
+```
+<%= caption "server/fixtures.js" %>
+
+Then, we make sure that all new posts start with 0 comments:
+
+```js
+// pick out the whitelisted keys
+var post = _.extend(_.pick(postAttributes, 'url', 'title', 'message'), {
+  userId: user._id, 
+  author: user.username, 
+  submitted: new Date().getTime(),
+  commentsCount: 0
+});
+
+var postId = Posts.insert(post);
+```
+<%= caption "collections/posts.js" %>
+
+And then we update the relevant `commentsCount` when we make a new comment, using Mongo's `$inc` operator (which increments a numeric field by one):
+
+```js
+// update the post with the number of comments
+Posts.update(comment.postId, {$inc: {commentsCount: 1}});
+
+return Comments.insert(comment);
+```
+<%= caption "collections/comments.js "%>
+
+Finally, we can just simply remove the `commentsCount` helper from `client/views/comments/comment.js`, as the field is now directly available on the comment.
+
+Not too bad!
+
+<%= commit "10-5", "Denormalized the number of comments into the post." %>
+
+
+
+
+
+
+
+
+
+
+
 
