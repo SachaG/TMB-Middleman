@@ -10,7 +10,7 @@ date: 0004/01/02
 
 Publications and subscriptions are one of the most fundamental and important concepts in Meteor, but can be the most difficult to understand. This is mostly because what they are doing is foreign to developers who are used to more traditional ways of building for the web. 
 
-We are used to defining and thinking about our own APIs for passing data between client and server, but in Meteor data is synchronized for us. We use publications to control exactly _how_.
+We are used to defining and thinking about our own APIs for passing data between client and server, through explicitly designed and utilized protocols, but in Meteor data is synchronized for us. We don't need to think directly about how data makes it from client to server. Instead we use publications to control _which_ data is sychronized.
 
 Part of the reason people find the concept a bit confusing initially is the "magic" that Meteor does for us. Although this magic is ultimately very useful, it can obscure what's going on behind the scenes (as magic tends to do). So, let's strip away the layers of magic to try and understand what's happening. We'll learn a trick or two along the way.
 
@@ -18,7 +18,7 @@ Part of the reason people find the concept a bit confusing initially is the "mag
 
 Fundamentally a **publication** (which we connect to using a **subscription**) is a method of transferring data from a server-side (source) collection to a client-side (target) collection. Think of the subscription as a funnel  connecting the canonical data store (the source collection, which talks to the Mongo data-store) and the client-side cache (the target collection, which represents a copy or a subset of that data). 
 
-The subscription controls exactly what data passes through that funnel, and takes care of synchronizing the data between either end. By attaching multiple subscriptions to the server's data-store, we are able to keep multiple browser's view of the data in-sync, *efficiently*, *securely* and *in real-time*.
+The publication controls exactly what data passes through that funnel, and takes care of synchronizing the data between either end. By attaching multiple subscriptions to the server's data-store, we are able to keep multiple browser's view of the data in-sync, *efficiently*, *securely* and *in real-time*.
 
 The protocol that is spoken over that tunnel is called DDP (which stands for Distributed Data Protocol). To learn more about DDP, you can watch [this talk from The Realtime Conference](http://2012.realtimeconf.com/video/matt-debergalis) by Matt DeBergalis (one of the founders of Meteor), or [this screencast](http://www.eventedmind.com/posts/meteor-subscriptions-and-ddp) by Chris Mather that walks you through this concept in a little more detail.
 
@@ -30,15 +30,15 @@ Now that we've established the basics, let's dive in.
 
 ### Autopublish
 
-If you create a Meteor project from scratch (i.e using `meteor create`), it will automatically have the `autopublish` package enabled. As a starting point, let's think about what it does exactly.
+If you create a Meteor project from scratch (i.e using `meteor create`), it will automatically have the `autopublish` package enabled. As a starting point, let's talk about what that does exactly.
 
-Depending on how you look at it, `autopublish` either removes the need for subscriptions or simply takes care of them for you. What autopublish does is automatically mirrors _all data_ from the server on the client.
+Depending on how you look at it, `autopublish` either removes the need for publications or simply takes care of them for you. What autopublish does is automatically mirrors _all data_ from the server on the client.
 
 {% image pullcenter /images/book/autopublish@2x.png "Autopublish" %}
 
 How does this work? Suppose you have a collection called `'posts'` on the server. Then autopublish will automatically send every post that it finds in the Mongo posts collection into a collection called `'posts'` on the client (assuming there is one).
 
-So if you are using autopublish, you don't need to think about subscriptions. Data is ubiquitous, and things are simple. Of course, there are obvious problems with having a complete copy of your app's database cached on every user's machine. 
+So if you are using autopublish, you don't need to think about publications. Data is ubiquitous, and things are simple. Of course, there are obvious problems with having a complete copy of your app's database cached on every user's machine. 
 
 For this reason, autopublish is only appropriate when you are starting out, and haven't yet thought about subscriptions.
 
@@ -70,11 +70,11 @@ Meteor.publish('somePosts',function(){
 
 The code is easy enough, but what's going on exactly behind the scenes?
 
-If you've read the [Meteor docs](http://docs.meteor.com/#publishandsubscribe), you were probably overwhelmed by talk of using `added()` and `ready()` to set attributes of records on the client, and struggled to square that with the Meteor apps that you've seen that never use those methods.
+If you've read the [Meteor publication documentation](http://docs.meteor.com/#publishandsubscribe), you were probably overwhelmed by talk of using `added()` and `ready()` to set attributes of records on the client, and struggled to square that with the Meteor apps that you've seen that never use those methods.
 
 The reason for this is a very important convenience that Meteor provides -- the `_publishCursor()` method. You've never seen that used either? Perhaps not directly, but if you return a **cursor** (i.e. `Posts.find({'author':'Tom'})`) in a publish function, that's exactly what is going on.
 
-When meteor sees that the `somePosts` publication has returned a cursor, it calls `_publishCursor()` to (you guessed it) publish that cursor automatically. Here's what `_publishCursor()` does:
+When Meteor sees that the `somePosts` publication has returned a cursor, it calls `_publishCursor()` to (you guessed it) publish that cursor automatically. Here's what `_publishCursor()` does:
 
 - it checks the name of the server-side collection.
 - it pulls all matching documents from the cursor and sends it into a client-side collection *of the same name*. (It uses `.added()` to do this).

@@ -7,10 +7,12 @@ date: 0004/01/03
 
 ## Sidebar - Reactivity
 
-If collections are Meteor's core feature, then *reactivity* is the shell that makes that core useful. Consider how you might use the power of constantly updating collections. We've seen in the last chapter how, by using `.observe()`, we can keep track of changes to our collections. We *could* then imperatively make changes to the DOM (the rendered HTML of our webpage). For instance, we could write code that goes much like this:
+If collections are Meteor's core feature, then *reactivity* is the shell that makes that core useful. Take a moment to think it through--our collections are a source of constantly changing data, but how do we display that data on the screen?
+
+One way would be by using `.observe()`, a method on a cursor which fires callbacks as documents matching that cursor change. We *could* then imperatively make changes to the DOM (the rendered HTML of our webpage). For instance, we could write code that goes much like this:
 
 ```js
-Posts.observe({
+Posts.find().observe({
   added: function(post) {
     $('ul').append('<li>' + post.title + '</li>');
   }
@@ -19,7 +21,7 @@ Posts.observe({
 
 However, such code is going to get pretty complex pretty fast. In fact, every time we such use a dynamic attribute of our post (or a combination of such attributes) in our template, we're going to have to hook up such a observer and remember to keep it up to date. 
 
-Meteor provides us with a better way; reactivity, which is at it's core a **declarative** approach. Rather than saying "when X changes, change Y in this way", we instead say "X is generated from Y in this way", which tells the system that when X changes, it can go ahead and change Y in a sensible way. 
+Meteor provides us with a better way; reactivity, which is at it's core a **declarative** approach. Rather than saying "when X changes, change Y in this way", we instead say "Y is generated from X in this way", which tells the system that when X changes, it can go ahead and change Y in a sensible way. 
 
 This is a powerful concept, because as a realtime system is a system with many inputs that are changing at unpredictable times. Of course we could manage with an event based system where the developer is responsible for determining exactly what needs to change as the result of each event. It would quickly become very complicated however; imagine a field that depends on three or four different inputs, each of which could change at any time. Or, alternatively, when an input changes, how would you keep track of what depends on it, and what changes you need to make?
 
@@ -42,7 +44,7 @@ Most computations are setup to simply re-evaluate when they are invalidated (and
   });
 ```
 
-Here we've setup a very simple computation that simply logs a session variable. However, remember that the session is a *reactive data source*, so in calling `Session.get`, we've added the computation to the Session's list of dependencies on the variable `a-session-value`. What this means is if that' value changes, the session will tell our computation it's invalidated, and it'll auto-re-run itself:
+Here we've setup a very simple computation that simply logs a session variable. However, remember that the session is a *reactive data source*, so in calling `Session.get`, we've added the computation to the Session's list of dependencies on the variable `a-session-value`. What this means is if the value of `a-session-value` changes, the session will tell our computation it's invalidated, and it'll auto-re-run itself:
 
 ```js
 Session.set('a-session-value', 'awesome new session value');
