@@ -19,7 +19,7 @@ We now have real-time voting, scoring, and ranking. But this leads to a jarring,
 
 ### Meteor & the DOM
 
-Before we can start the fun part of making things move around, we need to understand how Meteor interacts with the DOM (Document Object Model, i.e. the collection of HTML elements stat make up a page's contents).
+Before we can start the fun part of making things move around, we need to understand how Meteor interacts with the DOM (Document Object Model, i.e. the collection of HTML elements that make up a page's contents).
 
 The crucial point to keep in mind is that elements *cannot be moved*. They can only be deleted and created (note that this is a limitation of the DOM itself, not of Meteor). So to give the illusion of elements A and B switching place, Meteor will actually delete element B and insert a brand new copy (B') before element A. 
 
@@ -36,7 +36,7 @@ So to switch posts A and B (respectively positioned in positions p1 and p2), we 
 
 The following diagram explains these steps in more detail:
 
-<img src="/images/book/animation_diagram@2x.png"/>
+<%= diagram "animation_diagram", "Swtiching two posts" %>
 
 Note that in steps 3 and 4 we're not *animating* A and B' to their positions but "teleporting" them there instantly. Since this is instantaneous, it will give the illusion that B was never deleted, and properly position both elements to be animated back to their new position.
 
@@ -66,7 +66,7 @@ Elements on a page use **static** positioning by default. Statically positioned 
 
 **Absolute** positioning goes one step further and lets you give  the element specific x/y coordinates relative to the **document** or **the first absolutely or relatively-positioned parent element**. 
 
-We'll use relative positioning to animate our posts. If you needed to modify the stylesheet, all you would do is add this code to your CSS file:
+We'll use relative positioning to animate our posts. We've already taken care of all the CSS for you, but if you needed to do it yourself all you would do is add this code to your stylesheet:
 
 {% highlight css %}
 .post{
@@ -74,8 +74,6 @@ We'll use relative positioning to animate our posts. If you needed to modify the
   transition:all 300ms 0ms ease-in;
 }
 ```
-
-But don't worry, we've already taken care of that for you!
 
 This makes steps 5 and 6 from earlier trivially easy: all we need to do is set `top` to `0px` (its default value) and our posts will slide back to their "normal" position. 
 
@@ -101,11 +99,77 @@ So what we'll do is find out a post's current position in the page, and then sto
 
 We can also access a template instance's collection data through the `data` property, which will come in handy to get a post's rank. 
 
+### Ranking Posts
+
+We've been talking about posts rank, but this "rank" does not actually exist as a post property, since it's just a consequence of the order in which posts are listed in our collection. If we want to be able to animate posts according to their rank, we'll have to somehow conjure up this property out of thin air. 
+
+We can't put this `rank` property in the database itself, since rank is a relative property that depends on how you sort posts (i.e. a post can be ranked first when sorting by date, but third when sorting by points).
+
+We would ideally put that property in our `newPosts` and `topPosts` collections, but Meteor doesn't offer a convenient mechanism to do this yet. 
+
+So instead, we'll insert `rank` at the last possible step, the `postList` template controller:
+
+```js
+Template.newPosts.helpers({
+  //...
+});
+
+Template.bestPosts.helpers({
+  //...
+});
+
+Template.postsList.helpers({
+  postsWithRank: function() {
+    var i = 0, options = {sort: this.sort, limit: this.handle.limit()};
+    return Posts.find({}, options).map(function(post) {
+      post._rank = i;
+      i += 1;
+      return post;
+    });
+  },
+
+  //...
+});
+
+Template.postsList.events({
+  //...
+});
+```
+<%= caption "/client/views/posts/posts_list.js" %>
+
+Instead of simply returning the `Posts.find({}, {sort: {submitted: -1}, limit: postsHandle.limit()})` cursor like our previous `posts` helper, `postsWithRank` takes the cursor and adds the `_rank` property to each of its documents. 
+
+Don't forget to update our `postsList` template as well:
+
+```html
+<template name="postsList">
+  <div class="posts">
+    {{#each postsWithRank}}
+      {{> postItem}}
+    {{/each}}
+    
+    {{#if postsReady}}
+      {{#unless allPostsLoaded}}
+        <a class="load-more" href="#">Load more</a>
+      {{/unless}}
+    {{else}}
+      <div>Loading...</div>
+    {{/if}}
+  </div>
+</template>
+```
+<%= caption "/client/views/posts/posts_list.html" %>
+
+
 ### Putting it together
 
 We can now put everything together by using the `postItem.js` controller's `rendered` Template callback for our animation logic:
 
 ```js
+Template.postItem.helpers({
+  //...
+});
+
 Template.postItem.rendered = function(){
   // animate post from previous position to new position
   var instance = this;
@@ -113,23 +177,32 @@ Template.postItem.rendered = function(){
   var $this = $(this.firstNode);
   var postHeight = 80;
   var newPosition = rank * postHeight;
-
- // if element has a currentPosition (i.e. it's not the first ever render)
- if(instance.currentPosition){
+ 
+  // if element has a currentPosition (i.e. it's not the first ever render)
+  if (typeof(instance.currentPosition) !== 'undefined') {
     var previousPosition = instance.currentPosition;
     // calculate difference between old position and new position and send element there
     var delta = previousPosition - newPosition;
     $this.css("top", delta + "px");
   }
-
+  
+  // let it draw in the old position, then..
   Meteor.defer(function() {
     instance.currentPosition = newPosition;
     // bring element back to its new original position
-    $this.addClass('animate').css("top",  "0px");
+    $this.css("top",  "0px");
   }); 
 };
+
+Template.postItem.events({
+  //...
+});
 ```
-<%= caption "/client/views/posts/postItem.js" %>
+<%= caption "/client/views/posts/post_item.js" %>
+
+<%= commit "14-1", "Added post reordering animation." %>
+
+It shouldn't be too hard to follow along if you refer back to our previous diagram.
 
 Note that since we set the template instance's `currentPosition` property in the `defer` callback, this means it won't exist on the first ever render of the template fragment. But this is not a problem since we're not interested in animating that first render anyway. 
 
@@ -137,7 +210,7 @@ Now open up your site and start upvoting. You should now see posts gently moving
 
 ### Animating New Posts
 
-Our posts are now reordering properly, but we don't really have a "new post" animation yet. Instead of having a new post simply pop up at the top of our list, let's fade it in. 
+Our posts are now reordering properly, but we don't really have a "new post" animation yet. Instead of having new posts simply pop up at the top of our list, let's fade them in. 
 
 This is actually more complicated than it sounds. The problem is that Meteor's `rendered` callback actually gets triggered in two separate cases:
 
