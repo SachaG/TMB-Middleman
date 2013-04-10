@@ -317,19 +317,176 @@ The end result: while waiting for the server to responds, the user interface can
 
 ### Ranking the front page posts by number of votes
 
-XXX: Do this once pagination has been worked out
+Now that we have a score for each post based on the number of votes, let's display a "best" posts list! To do so, we'll see how to manage two separate subscriptions against the post collection, and generalise our `post_list` template a little.
+
+To start off with, we want to have *two* paginated subscriptions, one for for each sort order. We'll load them both up at all times (no matter what page we are on), so that we can quickly switch between both views without any loading time:
+
+```js
+Meteor.publish('newPosts', function(limit) {
+  return Posts.find({}, {sort: {submitted: -1}, limit: limit});
+});
+
+Meteor.publish('topPosts', function(limit) {
+  return Posts.find({}, {sort: {votes: -1, submitted: -1}, limit: limit});
+});
+```
+<%= caption 'server/publications.js' %>
+
+```js
+newPostsHandle = Meteor.subscribeWithPagination('newPosts', 10);
+topPostsHandle = Meteor.subscribeWithPagination('topPosts', 10);
+```
+<%= caption 'client/main.js' %>
+
+Note that when we sort by `votes`, we have a secondary sort by submitted timestamp to ensure that the ordering is complete.
+
+Next, we'll prepare some routes:
+
+```js
+Meteor.Router.add({
+  '/': {to: 'bestPosts', as: 'home'},
+  '/best': 'bestPosts',
+  '/new': 'newPosts',
+```
+<%= caption 'client/helpers/router.js' %>
+
+We've renamed `/` to `home`, and created two new routes, one for the newest posts (which is still useful after all) and the main show, the `bestPosts` route, which we will make order by the number of votes!
+
+The next thing we need to do is create the two templates, `bestPosts` and `newPosts` which are going to be extensions of the `postsList` template:
+
+```html
+<template name="newPosts">
+  {{> postsList options}}
+</template>
+
+<template name="bestPosts">
+  {{> postsList options}}
+</template>
+
+<template name="postsList">
+  <div class="posts">
+    {{#each posts}}
+      {{> postItem}}
+    {{/each}}
+    
+    {{#if postsReady}}
+      {{#unless allPostsLoaded}}
+    		<a class="load-more" href="#">Load more</a>
+      {{/unless}}
+    {{else}}
+      <div>{{> spinner}}</div>
+    {{/if}}
+  </div>
+</template>
+
+```
+<%= caption 'client/views/posts/posts_list.html' %>
+
+The `post_list` template hasn't changed, but we do need to change the various helpers to respect the options that are passed in by the two parent templates. So we write:
+
+```js
+Template.newPosts.helpers({
+  options: function() {
+    return {
+      sort: {submitted: -1},
+      handle: newPostsHandle
+    }
+  }
+});
+
+Template.bestPosts.helpers({
+  options: function() {
+    return {
+      sort: {votes: -1, submitted: -1},
+      handle: topPostsHandle
+    }
+  }
+});
+
+Template.postsList.helpers({
+  posts: function() {
+    return Posts.find({}, {sort: this.sort, limit: this.handle.limit()});
+  },
+  postsReady: function() {
+    return this.handle.ready();
+  },
+  allPostsLoaded: function() {
+    return this.handle.ready() &&  
+      Posts.find().count() < this.handle.loaded();
+  }
+});
+
+Template.postsList.events({
+  'click .load-more': function(event) {
+    event.preventDefault();
+    this.handle.loadNextPage();
+  }
+});
+```
+<%= caption 'client/views/posts/posts_list.js' %>
+
+This code is a little bit complex, but is an instructive pattern for generalized templates.
+
+The `options` that we pass into the `post_list` template consist of two parts: a `sort` specifier, that tells the `post_list` what order to render posts in. Secondly a `handle`, which is one of the two subscription handles that tell us about pagination. 
+
+With those two things set, we can alter our various subscription state reading helpers accordingly, and gain a best posts list:
+
+>> SS
+
+<%= commit "13-5", "Added two publications for posts, and pages to display them." %>
+
 
 ### A Better Header
 
-Now that we have two post list pages, it can be hard to know just which list you're currently viewing. So let's revisit our header to reflect that. Let's create a `header.js` controller and use a bit of jQuery magic to highlight the current page:
+Now that we have two post list pages, it can be hard to know just which list you're currently viewing. So let's revisit our header to reflect that. Let's create a `header.js` controller and create a helper that uses the current path and a named route to set an active class on our navigation items:
+
+```html
+<template name="header">
+  <header class="navbar">
+    <div class="navbar-inner">
+      <a class="brand" href="/">Microscope</a>
+      <ul class="nav">
+        <li class="{{activeRouteClass 'newPosts'}}">
+          <a href="{{homePath}}">New</a>
+        </li>
+        <li class="{{activeRouteClass 'home', 'bestPosts'}}">
+          <a href="{{bestPostsPath}}">Best</a>
+        </li>
+        {{#if currentUser}}
+          <li class="{{activeRouteClass 'postSubmit'}}">
+            <a href="/submit">Submit Post</a>
+          </li>
+        {{/if}}
+        <li class="dropdown">
+          {{> notifications}}
+        </li>
+      </ul>
+      <ul class="nav pull-right">
+        <li>{{loginButtons}}</li>
+      </ul>
+    </div>
+  </header>
+</template>
+```
+<%= caption 'client/views/includes/header.js' %>
+
 
 ```js
-Template.header.rendered = function(){
-  $(this.firstNode).find(".nav>li").each(function(){
-    if($(this).children("a").attr("href") === window.location.pathname)
-      $(this).addClass("active");
-  });
-}
+Template.header.helpers({
+  activeRouteClass: function(/* route names */) {
+    var args = Array.prototype.slice.call(arguments, 0);
+    args.pop();
+    
+    var active = _.any(args, function(name) {
+      return location.pathname === Meteor.Router[name + 'Path']();
+    });
+    
+    return active && 'active';
+  }
+});
 ```
+<%= caption 'client/views/includes/header.js' %>
 
-`this.firstNode` gives us the DOM element corresponding to our current template instance, and wrapping it in the jQuery object (`$()`) lets us iterate over all its `<li>` elements. We then simply compare the link's `href` attribute to the current URL path, and if they match we add an `active` class to the `<li>`. 
+For each navigation `<li>`, we call `activeRouteClass` with a list of one or more route names which should lead to this item being active. Then in the helper, we simply check if the URL for that named route is equal to the current location, and return the class `active` if so.
+
+<%= commit "13-6", "Added active classes to the header." %>
