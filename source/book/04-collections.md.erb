@@ -51,9 +51,9 @@ On the server, the collection acts as an API into to your Mongo database. So in 
 You can take a look inside the Mongo database easily enough. Open up a second terminal window (while `mrt` is still running in your first), go to your app's directory, and run the command `mrt Mongo`. This will initiate a Mongo shell, into which you can type standard Mongo commands:
 
 ```js
-db.posts.insert({title: "A new post"});
+> db.posts.insert({title: "A new post"});
 
-db.posts.find();
+> db.posts.find();
 {title: "A new post", _id: 'xxx'};
 ```
 <% caption "the Mongo console" %>
@@ -87,13 +87,13 @@ Rather than explaining this in detail, let's just watch it happen.
 Start by opening up two browser windows, and accessing the console in each one. Additionally, open up the Mongo console on the command line. At this point, we should see the single document we created earlier in all three contexts.
 
 ```js
-db.posts.find();
+> db.posts.find();
 {title: "A new post", _id: 'xxx'};
 ```
 <%= caption "Mongo console" %>
 
 ```js
-Posts.findOne();
+> Posts.findOne();
 {title: "A new post", _id: 'xxx'};
 ```
 <%= caption "browser console" %>
@@ -101,21 +101,21 @@ Posts.findOne();
 Now, let's create a new post--in one of our browser windows, run an insert command:
 
 ```js
-Posts.find().count();
-> 1
-Posts.insert({title: "A second post"});
-> 'xxx'
-Posts.find().count();
-> 2
+> Posts.find().count();
+1
+> Posts.insert({title: "A second post"});
+'xxx'
+> Posts.find().count();
+2
 ```
 <%= caption "browser console" %>
 
 Not very surprisingly, the post made it into the local collection. Now let's check Mongo:
 
 ```js
-db.posts.find();
-> {title: "A new post", _id: 'xxx'};
-> {title: "A second post", _id: 'xxx'};
+> db.posts.find();
+{title: "A new post", _id: 'xxx'};
+{title: "A second post", _id: 'xxx'};
 ```
 <%= caption "Mongo console" %>
 
@@ -124,8 +124,8 @@ So the post made it all the way back to the Mongo database, without us writing a
 Bring up the second browser window and enter this in the browser console:
 
 ```js
-Posts.find().count();
-> 2
+> Posts.find().count();
+2
 ```
 <%= caption "browser console" %>
 
@@ -145,10 +145,10 @@ Let's find out how.
 
 The first thing we'll do is put some data into the database. We'll do so with a fixture file that loads a set of structured data into the `Posts` collection when the server first starts up. 
 
-First, let's make sure there's nothing in the database. Stop the meteor server (by pressing `ctrl-c`) and then, on the command line, run:
+First, let's make sure there's nothing in the database. Stop the Meteor server (by pressing `ctrl-c`) and then, on the command line, run:
 
 ```bash
-  mrt reset
+$ mrt reset
 ```
 
 The reset command completely clears out the Mongo database. It's a useful command in development, where there's a strong possibility of our database falling into a inconsistent state. Now that the database is empty, we can add the following code to a file, to load up when the server first starts:
@@ -187,8 +187,8 @@ Now run your server again with `mrt`, and behind the scenes these three posts wi
 Now, if we open up a browser console, we see all three posts loaded up into miniMongo:
 
 ```js
-Posts.find().fetch();
-// results...
+> Posts.find().fetch();
+[..]
 ```
 <%= caption "browser console" %>
 
@@ -216,7 +216,7 @@ So can clearly that our `{{#each}}` helper has iterated over all of our `Posts`,
 Now, let's see things get cool. We'll add another post via the console:
 
 ```js
-Posts.insert({
+> Posts.insert({
   title: 'Meteor Docs', 
   author: 'Tom Coleman', 
   url: 'http://docs.meteor.com'
@@ -245,7 +245,7 @@ Now, in the javascript console, insert another post. When you tab back to the in
 So far, we've had the `autopublish` package enabled, which, as we mentioned earlier, is not intended for production applications. Like its name indicates, this package simply says that each collection should be shared in it's entirety to each connected client. This isn't what we want anymore, so let's turn it off.
 
 ```bash
-mrt remove autopublish
+$ mrt remove autopublish
 ```
 
 This has an instant effect. If you look in your browser now, you'll see that all our posts have gone! This because we were relying on `autopublish` to make sure our clientside collection of posts was a mirror of all the posts in the database. 

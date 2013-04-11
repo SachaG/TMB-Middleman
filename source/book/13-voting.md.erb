@@ -299,7 +299,7 @@ The only downside is that now we can't tell the user that they've already voted 
 Let's say you tried to cheat and send one of your posts to the top of the list by tweaking its number of votes:
 
 ```js
-  Posts.update(postId, {$set: {votes: 10000}});
+> Posts.update(postId, {$set: {votes: 10000}});
 ```
 <%= caption "Browser console" %>
 

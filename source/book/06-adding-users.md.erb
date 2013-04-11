@@ -28,8 +28,8 @@ Luckily, Meteor has you covered. Thanks to the way Meteor packages can contribut
 Let's get started. We'll just use Meteor's built in UI for accounts. On the command line, we type:
 
 ```bash
-mrt add accounts-ui
-mrt add accounts-password
+$ mrt add accounts-ui
+$ mrt add accounts-password
 ```
 <%= caption "Terminal" %>
 
@@ -89,7 +89,8 @@ If you sign up for an account, the "Sign in" button changes to show your usernam
 By adding the `accounts` package, Meteor has created a special new collection for us. We can access that collection at `Meteor.users()`. Try it now; in the console, type:
 
 ```js
-Meteor.users().findOne();
+> Meteor.users().findOne();
+{_id: ...}
 ```
 <%= caption "Browser console" %>
 
@@ -100,7 +101,8 @@ You can also find the single user that is logged in with `Meteor.user()`;
 Now, try logging out, and signing up and logging in with a second username. `Meteor.user()` should now return that a different user. Now, if we run:
 
 ```js
-Meteor.users().find().count();
+> Meteor.users().find().count();
+1
 ```
 <%= caption "Browser console" %>
 
@@ -110,6 +112,7 @@ Let's be sure, and check in the canonical data-store, the Mongo database. We'll 
 
 ```bash
 > db.users.count()
+2
 ```
 <%= caption "Mongo console" %>
 
@@ -131,13 +134,15 @@ Secondly, the fields are different. In Mongo, a user has a lot of data in it. To
 
 ```bash
 > db.users.findOne()
+{..}
 ```
 <%= caption "Mongo console" %>
 
 Whereas in the browser, the user object is much more pared down, as you can see by typing the equivalent command:
 
 ```js
-Meteor.users.findOne();
+> Meteor.users.findOne();
+{}
 ```
 <%= caption "Browser console" %>
 

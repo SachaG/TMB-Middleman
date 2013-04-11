@@ -189,8 +189,8 @@ As we saw in the last example, our notifications are working well. However, ther
 If you still have your second browser open, try running the following code in the browser console:
 
 ```js
-Notifications.find().count();
-> 1
+> Notifications.find().count();
+1
 ```
 <%= caption "Browser console" %>
 
@@ -218,14 +218,14 @@ Meteor.publish('notifications', function() {
 Now if we check in our two browser windows, we should see two different notifications collections:
 
 ```js
-Notifications.find().count();
-> 1
+> Notifications.find().count();
+1
 ```
 <%= caption "Browser console (user 1)" %>
 
 ```js
-Notifications.find().count();
-> 0
+> Notifications.find().count();
+0
 ```
 <%= caption "Browser console (user 2)" %>
 

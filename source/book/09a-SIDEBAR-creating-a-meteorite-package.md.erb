@@ -87,9 +87,9 @@ Template.meteorError.rendered = function() {
 Let's make sure that our changed code works, and test things locally with Microscope. As we saw earlier, the package is automatically linked, so the main thing is to delete the existing files (that we've made redundant with the new package):
 
 ```bash
-rm client/helpers/errors.js
-rm client/views/includes/errors.html
-rm client/views/includes/errors.js
+$ rm client/helpers/errors.js
+$ rm client/views/includes/errors.html
+$ rm client/views/includes/errors.js
 ```
 <%= caption "removing old files on the bash console" %>
 
@@ -188,7 +188,7 @@ Package.on_test(function(api) {
 Then we can run the tests with:
 
 ```bash
-mrt test-packages packages/errors/
+$ mrt test-packages packages/errors/
 ```
 <%= caption 'Terminal' %>
 
@@ -198,7 +198,7 @@ mrt test-packages packages/errors/
 
 Finally, we want to put the package on Atmosphere so we can proudly display it to the world!
 
-First, we need to add a `smart.json`, to tell meteorite about the package so we can run `mrt` against it (and later so we can release it):
+First, we need to add a `smart.json`, to tell Meteorite about the package so we can run `mrt` against it (and later so we can release it):
 
 ```json
 {
@@ -221,19 +221,19 @@ We put in some basic metadata about the package, and what it's all about, includ
 Once that's in place, releasing is easy! First we just need to push the code to github at the location we specified (that's how Atmosphere distributes packages, by sharing github links), and then we can use the `mrt release` command to finish the job:
 
 ```bash
-git push origin master
-mrt release .
+$ git push origin master
+$ mrt release .
 Done!
 ```
 <%= caption "Terminal" %>
 
 This step won't work for you if you are following along, as there can only be one of any particular package name. In the future, Atmosphere will be namespaced by author, so you can expect this to change!
 
-Now that it's released, assuming that we've are satisifed with the functionality and don't need to change it further (if we did, we could use a git submodule), we can delete it from the project, and add it directly using meteorite:
+Now that it's released, assuming that we've are satisifed with the functionality and don't need to change it further (if we did, we could use a git submodule), we can delete it from the project, and add it directly using Meteorite:
 
 ```bash
-rm -r packages/
-mrt add errors
+$ rm -r packages/
+$ mrt add errors
 ```
 <%= caption "Terminal" %>
 

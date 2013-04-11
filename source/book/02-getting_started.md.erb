@@ -6,19 +6,19 @@ date: 0002/01/01
 
 ## Getting Started
 
-Due to the fact that Meteor doesn't yet have support for 3rd party packages (so you can't use other folk's code), some members of the community created [Meteorite](http://oortcloud.github.com/meteorite/), a wrapper for meteor. Meteorite takes care of installing meteor for you and hooking it together with any packages you might find.
+Due to the fact that Meteor doesn't yet have support for 3rd party packages (so you can't use other folk's code), some members of the community created [Meteorite](http://oortcloud.github.com/meteorite/), a wrapper for Meteor. Meteorite takes care of installing Meteor for you and hooking it together with any packages you might find.
 
 ### Installing Meteor via Meteorite
 
-So, let's install meteorite. To begin with, you'll need to ensure node and git are installed on your machine. Install them in the standard way for your OS, or try these links:
+So, let's install Meteorite. To begin with, you'll need to ensure node and git are installed on your machine. Install them in the standard way for your OS, or try these links:
  
 - [Node download site](http://nodejs.org/download/)
 - [Git download site](http://git-scm.com/downloads)
 
-Now, let's install meteorite. It's a npm executable, so we install it with
+Now, let's install Meteorite. It's a npm executable, so we install it with
 
 ```bash
-npm install -g meteorite
+$ npm install -g meteorite
 ```
 
 That's it! Meteorite will handle things from here.
@@ -27,13 +27,13 @@ Note: there is no Windows support for Meteorite yet, but you can take a look at 
 
 ### Creating a simple app
 
-Ok, first things first, let's create an app. We use meteorite's commandline tool `mrt`:
+Ok, first things first, let's create an app. We use Meteorite's commandline tool `mrt`:
 
 ```bash
-mrt create microscope
+$ mrt create microscope
 ```
 
-This command will download meteor, and set up a basic meteor project for you, ready to use. When it's done, you should see a directory, `microscope/`, containing:
+This command will download Meteor, and set up a basic Meteor project for you, ready to use. When it's done, you should see a directory, `microscope/`, containing:
 
 ```bash
 microscope.css  
@@ -43,12 +43,12 @@ smart.json
 smart.lock
 ```
 
-The app is a simple boilerplate application that meteor creates for you, demonstrating some simple parts. 
+The app is a simple boilerplate application that Meteor creates for you, demonstrating some simple parts. 
 
 Our app doesn't do much yet, but we can already run it! Just go back to your terminal and just type:
 
 ```bash
-mrt
+$ mrt
 ```
 
 Now point your browser to `http://localhost:3000/` (or the equivalent `http://0.0.0.0:3000/`) and you should see something like this: 
@@ -64,7 +64,7 @@ Congrats! You've got your first Meteor app running!
 Let's use Meteorite to add an Atmosphere smart package that will come in handy later.
 
 ```bash
-mrt add bootstrap-updated
+$ mrt add bootstrap-updated
 ```
 
 <%= commit "2-2", "Added bootstrap-updated package." %>

@@ -122,7 +122,7 @@ How do we control data security in Meteor? Well, data security is baked right in
 Our app no longer needs these training wheels, so let's take them off! We'll remove the `insecure` package:
 
 ```bash
-mrt remove insecure
+$ mrt remove insecure
 ```
 <%= caption "Terminal" %>
 
@@ -197,11 +197,11 @@ Meteor.Router.filter('requireLogin', {only: 'postSubmit'});
 <%= caption "client/lib/router.js" %>
 
 We also add the template for the access denied page, which is pretty simple:
+
 ```html
 <template name="accessDenied">
   <div class="alert alert-error">You can't get here! Please log in</div>
 </template>
-
 ```
 <%= caption "includes/access_denied.html" %>
 
