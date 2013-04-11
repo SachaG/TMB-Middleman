@@ -371,3 +371,18 @@ In our case, we'll use this third argument to pass the ID of the post that we ju
 If all those checks pass, we grab the fields that we want to insert (to ensure a user calling this method in browser console can't put spurious data into our database), and include some information about the submitting user, as well as the current time into to the post. 
 
 Finally, we insert the post, and return the new post's `id` to the user.
+
+#### Sorting posts
+
+Now that we have a submitted date on all our posts, it makes sense to ensure that they are sorted using this attribute. To do so, we can just use Mongo's `sort` operator, which expects a object consiting of the keys to sort by, and a sign indicating whether they are ascending or descending.
+
+```js
+Template.postsList.helpers({
+  posts: function() {
+    return Posts.find({}, {sort: {submitted: -1}});
+  }
+});
+```
+<%= caption "client/views/posts/posts_list.js" %>
+<%= commit "7-6", "Only show submit post link if logged in." %>
+
