@@ -192,7 +192,8 @@ What are we to do? Do we need to alter our `posts` publication to also factor in
 
 A couple chapters back, we simply named our "X newest posts" publication `'posts'`. But that name was just a convenience because it was the only publication involving posts (also at that point it published all the posts too!).
 
-Now we've limited it , we should really call that publication `'newPosts'`, and in fact we'll do that now. At the same time, let's make a _new_ publication, for a single post, identified by `id`:
+Now that we've limited it, we should really call that publication `'newPosts'`. At the same time, let's make a _new_ publication, for a single post, identified by `id`:
+
 ```js
 Meteor.publish('newPosts', function(limit) {
   return Posts.find({}, {sort: {submitted: -1}, limit: limit});
@@ -205,6 +206,7 @@ Meteor.publish('singlePost', function(id) {
 <%= caption "server/publications.js" %>
 
 Now, let's subscribe to the right posts on the client side:
+
 ```js
 var postsHandle = Meteor.subscribeWithPagination('posts', 10);
 
