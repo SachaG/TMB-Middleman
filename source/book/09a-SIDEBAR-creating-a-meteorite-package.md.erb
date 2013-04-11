@@ -81,9 +81,10 @@ Template.meteorError.rendered = function() {
 <%= caption "packages/errors/errors_list.js" %>
 
 
+
 ### Testing the package out with Microscope
 
-Let's make sure that our changed code works, and test things locally with microscope. As we saw earlier, the package is automatically linked, so the main thing is to delete the existing files (that we've made redundant with the new package):
+Let's make sure that our changed code works, and test things locally with Microscope. As we saw earlier, the package is automatically linked, so the main thing is to delete the existing files (that we've made redundant with the new package):
 
 ```bash
 rm client/helpers/errors.js
@@ -117,7 +118,6 @@ Meteor.call('post', post, function(error, id) {
 ```
 <%= caption "client/views/posts/post_submit.js" %>
 
-
 ```js
 Posts.update(currentPostId, {$set: postProperties}, function(error) {
   if (error) {
@@ -125,6 +125,8 @@ Posts.update(currentPostId, {$set: postProperties}, function(error) {
     Meteor.Errors.throw(error.reason);
 ```
 <%= caption "client/views/posts/post_edit.js" %>
+
+<%= commit "s7-1", "Created basic errors package and linked it in." %>
 
 Once we've made those changes, we should see our original behaviour (it's always best to test it out!)
 
@@ -166,6 +168,7 @@ Tinytest.addAsync("Errors template works", function(test, done) {
 ```
 <%= caption "packages/errors/errors_tests.js" %>
 
+
 In these tests we're checking the basic `Meteor.Errors` functions work, as well as double checking that the template `rendered` code is still functioning.
 
 We need to tell Meteor how to run the tests in `package.js`:
@@ -180,6 +183,8 @@ Package.on_test(function(api) {
 ```
 <%= caption "package/errors/package.js" %>
 
+<%= commit "s7-2", "Added tests to the package." %>
+
 Then we can run the tests with:
 
 ```bash
@@ -187,7 +192,7 @@ mrt test-packages packages/errors/
 ```
 <%= caption 'Terminal' %>
 
->>SS
+<%= screenshot "s7-1", "Passing all tests" %>
 
 ### Releasing the package
 
@@ -209,6 +214,8 @@ First, we need to add a `smart.json`, to tell meteorite about the package so we 
 ```
 <%= caption "smart.json" %>
 
+<%= commit "s7-3", "Added a smart.json" %>
+
 We put in some basic metadata about the package, and what it's all about, including the git location where we are going to host it (on github), and an initial version that we'll start at. If our package was relying on other Atmosphere packages, we could use a `"packages"` section to outline how.
 
 Once that's in place, releasing is easy! First we just need to push the code to github at the location we specified (that's how Atmosphere distributes packages, by sharing github links), and then we can use the `mrt release` command to finish the job:
@@ -229,5 +236,7 @@ rm -r packages/
 mrt add errors
 ```
 <%= caption "Terminal" %>
+
+<%= commit "s7-4", "Removed package from development tree." %>
 
 Now we should see Meteorite download our package for the very first time. Pretty awesome!

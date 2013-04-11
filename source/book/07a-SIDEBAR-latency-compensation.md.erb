@@ -70,10 +70,12 @@ Meteor.methods({
 Exactly how futures work is outside of the scope of this book, but we've basically told Meteor to wait for one second before doing the insert on the server collection. 
 
 If we use create a post now, we see latency compensation clearly. First, a post is inserted with `(client)` in the title:
->>SS
+
+<%= screenshot "s5-1", "Our post as first stored in the client collection" %>
 
 Then, a second later, it's cleanly replaced with the real document that was inserted by the server:
->>SS
+
+<%= screenshot "s5-2", "Our post once the client receives the update from the server collection" %>
 
 ### Local Collection Methods
 

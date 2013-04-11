@@ -129,12 +129,14 @@
 .chapter{
 	@extend .mbottom;
 }
-figure{
-	@extend .mbottom;
+.screenshot{
 	img{
 		@include border-radius(2px);
 		@include box-shadow(0px 3px 7px black(0.25));
-	}
+	}	
+}
+figure{
+	@extend .mbottom;
 }
 figcaption{
 	font-style:italic;
