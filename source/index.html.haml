@@ -5,10 +5,9 @@ title: Learn Meteor with The Meteor Book - Getting Started Tutorials & Articles
 - content_for(:title, "Learn Meteor with The Meteor Book")
 
 %section
-  - blog.articles.reverse_each do |post|
-    %article
-      %p.date
-        =post.date.strftime('%b %e %Y')
-      %h3
-        %a{:href => "#{post.url}"}
-          =post.title
+  %ul
+    - blog.articles.reverse_each do |post|
+      %li
+        %h3
+          %a{:href => "#{post.url}"}
+            =post.title
