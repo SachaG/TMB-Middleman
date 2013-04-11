@@ -33,13 +33,6 @@ Our `post_edit.html` template will be a fairly standard form:
       </div>
 
       <div class="control-group">
-          <label class="control-label" for="message">Message</label>
-          <div class="controls">
-              <textarea name="message" type="text" >{{message}}</textarea>
-          </div>
-      </div> 
-
-      <div class="control-group">
           <div class="controls">
               <input type="submit" value="Submit" class="btn btn-primary submit"/>
           </div>
@@ -53,6 +46,7 @@ Our `post_edit.html` template will be a fairly standard form:
     </form>
   {{/with}}
 </template>
+
 ```
 
 And here's the `post_edit.js` controller that goes with it:
@@ -72,8 +66,7 @@ Template.postEdit.events({
     
     var postProperties = {
       url: $(e.target).find('[name=url]').val(),
-      title: $(e.target).find('[name=title]').val(),
-      message: $(e.target).find('[name=message]').val()
+      title: $(e.target).find('[name=title]').val()
     }
     
     Posts.update(currentPostId, {$set: postProperties}, function(error) {
@@ -95,7 +88,8 @@ Template.postEdit.events({
       Meteor.Router.to('postsList');
     }
   }
-})
+});
+
 ```
 <%= caption "client/views/posts/post_edit.js" %>
 
@@ -164,15 +158,15 @@ Posts.allow({
 Posts.deny({
   update: function(userId, post, fieldNames) {
     // may only edit the following three fields:
-    return (_.without(fieldNames, 'url', 'title', 'message').length > 0);
+    return (_.without(fieldNames, 'url', 'title').length > 0);
   }
-})
+});
 ```
 <%= caption "collections/posts.js" %>
 
 <%= commit "8-3", "Only allow changing certain fields of posts." %>
 
-We're taking the `fieldNames` array that contains a list of the fields being modified, and using Underscore's `without()` method to return a sub-array containing the fields that are *not* `url`, `title`, or `message`. If everything's normal, that array should be empty and its length should be 0. If someone is trying anything funky, that array's length will be 1 or more, and the callback will return `true` (thus denying the update).
+We're taking the `fieldNames` array that contains a list of the fields being modified, and using Underscore's `without()` method to return a sub-array containing the fields that are *not* `url` or `title`. If everything's normal, that array should be empty and its length should be 0. If someone is trying anything funky, that array's length will be 1 or more, and the callback will return `true` (thus denying the update).
 
 <% note do %>
 #### Method calls vs direct database manipulation client side

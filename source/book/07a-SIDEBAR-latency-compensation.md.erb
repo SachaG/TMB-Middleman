@@ -45,29 +45,57 @@ Meteor.methods({
   post: function(post) {
     // .. existing validation code
     
-    // pick out the whitelisted keys, but display in the title where it was inserted
-    post = _.extend(_.pick(post, 'url', 'message'), {
-      title: post.title + (this.isSimulation ? '(client)' : '(server)'),
+    // pick out the whitelisted keys
+    var post = _.extend(_.pick(postAttributes, 'url'), {
+      title: postAttributes.title + (this.isSimulation ? '(client)' : '(server)'),
       userId: user._id, 
       author: user.username, 
       submitted: new Date().getTime()
     });
     
-    // wait for 1 second
-    var Future = Npm.require('fibers/future');
-    var future = new Future();
-    Meteor.setTimeout(function() {
-      future.ret();
-    }, 1000);
-    future.wait();
+    // wait for 5 seconds
+    if (! this.isSimulation) {
+      var Future = Npm.require('fibers/future');
+      var future = new Future();
+      Meteor.setTimeout(function() {
+        future.ret();
+      }, 5 * 1000);
+      future.wait();
+    }
     
-    return Posts.insert(post);
+    var postId = Posts.insert(post);
+    
+    return postId;
   }
-})
+});
 ```
 <%= caption "collections/posts.js" %>
 
 Exactly how futures work is outside of the scope of this book, but we've basically told Meteor to wait for one second before doing the insert on the server collection. 
+
+We'll also make a submit redirect directly to the post list:
+
+```js
+Template.postSubmit.events({
+  'submit form': function(event) {
+    event.preventDefault();
+    
+    var post = {
+      url: $(event.target).find('[name=url]').val(),
+      title: $(event.target).find('[name=title]').val(),
+      message: $(event.target).find('[name=message]').val()
+    }
+    
+    Meteor.call('post', post, function(error, id) {
+      if (error)
+        return alert(error.reason);
+    });
+    Meteor.Router.to('postsList');
+  }
+});
+```
+<%= caption "client/views/posts/post_submit.js" %>
+
 
 If we use create a post now, we see latency compensation clearly. First, a post is inserted with `(client)` in the title:
 >>SS
