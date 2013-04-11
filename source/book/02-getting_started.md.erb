@@ -18,7 +18,7 @@ So, let's install Meteorite. To begin with, you'll need to ensure node and git a
 Now, let's install Meteorite. It's a npm executable, so we install it with
 
 ```bash
-npm install -g meteorite
+$ npm install -g meteorite
 ```
 
 That's it! Meteorite will handle things from here.
@@ -30,7 +30,7 @@ Note: there is no Windows support for Meteorite yet, but you can take a look at 
 Ok, first things first, let's create an app. We use Meteorite's commandline tool `mrt`:
 
 ```bash
-mrt create microscope
+$ mrt create microscope
 ```
 
 This command will download Meteor, and set up a basic Meteor project for you, ready to use. When it's done, you should see a directory, `microscope/`, containing:
@@ -48,7 +48,7 @@ The app is a simple boilerplate application that Meteor creates for you, demonst
 Our app doesn't do much yet, but we can already run it! Just go back to your terminal and just type:
 
 ```bash
-mrt
+$ mrt
 ```
 
 Now point your browser to `http://localhost:3000/` (or the equivalent `http://0.0.0.0:3000/`) and you should see something like this: 
@@ -64,7 +64,7 @@ Congrats! You've got your first Meteor app running!
 Let's use Meteorite to add an Atmosphere smart package that will come in handy later.
 
 ```bash
-mrt add bootstrap-updated
+$ mrt add bootstrap-updated
 ```
 
 <%= commit "2-2", "Added bootstrap-updated package." %>

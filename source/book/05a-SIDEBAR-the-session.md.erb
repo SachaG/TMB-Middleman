@@ -20,8 +20,8 @@ Now, although that Session variable has been set by the browser, it is an indepe
 For instance, if we want to change the displayed post, we can simply do:
 
 ```js
-  otherPostId = Posts.findOne({title: 'Meteor'})._id;
-  Session.set('currentPostId', otherPostId);
+> otherPostId = Posts.findOne({title: 'Meteor'})._id;
+> Session.set('currentPostId', otherPostId);
 ```
 <%= caption "Browser console" %>
 
@@ -46,17 +46,17 @@ It's kind of like a automatic reload of the page, but there is an important diff
 First, set a session variable on the page:
 
 ```js
-Session.set('a-session-variable', 7);
-Session.get('a-session-variable');
-> 7
+> Session.set('a-session-variable', 7);
+> Session.get('a-session-variable');
+7
 ```
 <%= caption "Browser console" %>
 
 If we force a hot code reload (HCR) by saving one of our source files, then the page reloads, but the session variable is still set:
 
 ```js
-Session.get('a-session-variable');
-> 7
+> Session.get('a-session-variable');
+7
 ```
 <%= caption "Browser console" %>
 
@@ -67,8 +67,8 @@ Consider that for a moment. If we can manage to keep all of our state in the URL
 Now try refreshing the page manually. After doing so, the session is reset:
 
 ```js
-Session.get('a-session-variable');
-> null
+> Session.get('a-session-variable');
+null
 ```
 <%= caption "Browser console" %>
 
