@@ -123,7 +123,7 @@ We can use the combination of those three helpers to manufacture our "load more"
     		<a class="more-link" href="#">Load more</a>
     	</div>
     {{else}}
-      <div>{{> spinner}}</div>
+      <div>Loading...</div>
     {{/if}}
   </div>
 </template>
@@ -153,7 +153,7 @@ Template.postsList.helpers({
 Working out if the current list of posts are ready is easy enough, as we can just ask the handle if it's still loading. Working out if all the posts are loaded is a little more tricky. We need to make sure that we aren't still waiting for more posts, and then see if the total number of posts we do have is less that how many the subscription thinks we should have. If it's less, that's a sign that there are no posts left to load.
 
 <img src="/images/book/pagination_diagram@2x.png"/>
-<%= caption "Comparing Posts.find().count() and postsHandle.loaded()%}
+<%= caption "Comparing Posts.find().count() and postsHandle.loaded()" %>
 
 You'll notice also that we changed the `posts` function to return the posts in the correct order, and limited it to show only as many we are currently supposed to show, according to the handle. This is because there may be other posts in the collection, as we'll see later.
 
@@ -212,7 +212,7 @@ Meteor.autorun(function() {
   Meteor.subscribe('singlePost', Session.get('currentPostId'));
 });
 ```
-<%= caption "client/miniscope.js" %>
+<%= caption "client/main.js" %>
 
 So we can see that we subscribe to *both* publications on the client side, and the correct data is loaded. The single post that we want to load is in the `currentPostId` session variable (as we've seen before), and we just need to pass it through to the `singlePost` subscription.
 

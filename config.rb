@@ -18,8 +18,8 @@ activate :blog do |blog|
   # blog.day_link = ":year/:month/:day.html"
   # blog.default_extension = ".markdown"
 
-  blog.tag_template = "tag.html"
-  blog.calendar_template = "calendar.html"
+  # blog.tag_template = "tag.html"
+  # blog.calendar_template = "calendar.html"
 
   blog.paginate = true
   # blog.per_page = 10
@@ -27,7 +27,7 @@ activate :blog do |blog|
 end
 
 page "/feed.xml", :layout => false
-page "blog/*", :layout => :post_layout
+page "book/*", :layout => :page_layout
 
 ### 
 # Compass
@@ -133,7 +133,7 @@ helpers do
     %Q{<figure class="screenshot"><img src="/images/screenshots/#{name}.png" alt="#{caption}"/><figcaption>#{caption}</figcaption></figure>}
   end    
   def commit(name, caption)
-    %Q{<div class="commit">#{name}: #{caption}</div>}
+    %Q{<div class="commit">Commit #{name}: #{caption}</div>}
   end    
   def note(&block)
     markdown = Redcarpet::Markdown.new(Redcarpet::Render::HTML)

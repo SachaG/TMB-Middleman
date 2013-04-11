@@ -1,27 +1,13 @@
-- content_for(:title, "Learn Meteor with The Meteor Book - #{current_article.title}")
+- content_for(:title, "#{current_article.title} - The Meteor Book")
 
 - wrap_layout :layout do
   .post
-    .post-top
-      %a.back{:href => '/'} ⬅ Back to home
-      .meta
-        .twitter
-          :plain
-            <a href="https://twitter.com/share" class="twitter-share-button" data-via="TheMeteorBook">Tweet</a>
-            <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
-        .date=current_article.date.strftime('%b %e %Y')
 
     .post-content
       =find_and_preserve do
         =yield
 
-    - author = data.authors[current_page.data.author]
-    .post-author
-      %img.portrait{:src => "/images/#{author.avatar}"}
-      %p=author.bio
-
     .post-nav
-
       - prev_article = current_article.previous_article
       - if prev_article
         %a.prev{:href => "#{prev_article.url}", :title => "Previous Post: #{prev_article.title}"}

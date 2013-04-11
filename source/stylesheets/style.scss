@@ -1,6 +1,6 @@
 @import "compass/css3";
 
-@import "external/github";
+@import "includes/github";
 
 @import "includes/colors";
 @import "includes/fonts";
@@ -8,6 +8,4 @@
 @import "includes/grid";
 @import "includes/main";
 @import "includes/header";
-@import "includes/mailinglist";
-@import "includes/home";
-@import "includes/blog";
+@import "includes/book";

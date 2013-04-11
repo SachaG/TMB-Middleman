@@ -61,7 +61,7 @@
 		// font-weight:100;
 	}
 	img{
-		border:10px solid lighten($light-bg, 6%);
+		// border:10px solid lighten($light-bg, 6%);
 		width:100%;
 		display:block;
 		margin-bottom:20px;
@@ -113,4 +113,27 @@
 		display:block;
 		float:right;
 	}
+}
+.mbottom{
+	margin-bottom:20px;
+}
+.commit{
+	background:#e1dee9;
+	padding:20px;
+	@extend .mbottom;
+}
+.note{
+	background:#fcf9e2;
+	@extend .mbottom;
+}
+.chapter{
+	@extend .mbottom;
+}
+figure{
+	@extend .mbottom;
+}
+figcaption{
+	font-style:italic;
+	font-size:14px;
+	color:$light-text;
 }
