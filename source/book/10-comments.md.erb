@@ -343,11 +343,11 @@ There's only one problem with doing this. When we return to the homepage, it cla
 
 >> SS
 
-### Denormalizin' Like a Pro
+### Counting Comments
 
 The reason for this should be reasonably clear -- we only ever have at most one of our post's comments loaded, so when we call `Comments.find({postId: this._id})` in the `commentsCount` helper in `post_item` controller, we find none. 
 
-The best way to deal with this is to denormalize the number of comments onto the post (if you're not sure what that means, don't worry, the next sidebar has got you covered!). Although as we'll see, there's a minor addition of complexity in our code, the performance benefit we gain from not having to publish _all_ the comments to display the post list is worth it.
+The best way to deal with this is to *denormalize* the number of comments onto the post (if you're not sure what that means, don't worry, the next sidebar has got you covered!). Although as we'll see, there's a minor addition of complexity in our code, the performance benefit we gain from not having to publish _all_ the comments to display the post list is worth it.
 
 We'll achieve it by adding a `commentsCount` property to the `post` data structure. To begin with, we update our post fixtures (and `mrt reset` to reload them - don't forget to recreate your user account after!):
 
