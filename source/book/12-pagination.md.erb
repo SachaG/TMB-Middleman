@@ -119,9 +119,9 @@ We can use the combination of those three helpers to manufacture our "load more"
     {{/each}}
     
     {{#if postsReady}}
-    	<div class="grid more-button {{#if allPostsLoaded}} hidden {{/if}}">
-    		<a class="more-link" href="#">Load more</a>
-    	</div>
+      <div class="grid more-button {{#if allPostsLoaded}} hidden {{/if}}">
+        <a class="more-link" href="#">Load more</a>
+      </div>
     {{else}}
       <div>Loading...</div>
     {{/if}}
@@ -171,20 +171,21 @@ Template.postsList.events({
 ```
 <%= caption "client/views/posts/posts_lists.js" %>
 
-It's simple enough, and we can see the post loading in action:
->> Screenshots
+It's simple enough, and we can now see the post "load more" button in action:
+
+<%= screenshot "12-1", "The Load More button" %>
 
 ### Direct links to old posts
 
 It's all very well just loading the 10 newest post by default, but what if someone browses to the permalink of a post which is older? Let's try visiting the URL of the 11th post and seeing what happens.
 
-We can get there by making sure we have at least eleven post loaded on the post list page, and then opening the eleventh:
+We can get there by making sure we have at least eleven post loaded on the post list page, and then opening the eleventh (or any post past the first 10):
 
->> SS
+<%= screenshot "12-2", "The 11th Post" %>
 
 If we refresh the page, we reset all our subscriptions, and our paginated subscription reverts to just loading the first ten posts. So now we see:
 
->> SS
+<%= screenshot "12-3", "Vanishing Post" %>
 
 You'll see that we are looking at an empty post with no data. If you think about it, it makes sense--we are loading up the ten newest posts into our local Posts collection, but we've never loaded the post we wanted!
 
@@ -223,17 +224,6 @@ Remember that the Session is a *reactive data source*. When we use the Session i
 
 Here, we want the subscription to reset itself whenever the `currentPostId` session variable changes. To do so, we need to set up a similiar reactive computation. `Meteor.autorun` does this--as the name implies, the code inside the autorun will automatically run and keep running each and every time the reactive data sources used inside it change.
 <% end %>
-
-
-### A flash of unloaded data
-
-If you look really carefully, you might notice that we can still see the "unloaded" state on our a single post page. If you are running Meteor locally, it's only there for a split second, but on a server with a reasonable latency, it's quite noticable.
-
-This is because it takes some time for Meteor to fetch the data for the post from the server. Even though the amounts of data involved are very small, the nature of the internet is that it will still take a few hundred milliseconds at the very least for this to happen. 
-
-Ideally we wouldn't show this unloaded state, as it looks a little sloppy and unprofessional. Instead, we should show the user a loading spinner in that time period. 
-
-XXX: not going to finish this as I might find a good way to do this with the router...
 
 
 

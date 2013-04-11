@@ -431,10 +431,9 @@ The `options` that we pass into the `post_list` template consist of two parts: a
 
 With those two things set, we can alter our various subscription state reading helpers accordingly, and gain a best posts list:
 
->> SS
+<%= screenshot "13-4", "Ranking by points" %>
 
 <%= commit "13-5", "Added two publications for posts, and pages to display them." %>
-
 
 ### A Better Header
 
@@ -470,7 +469,6 @@ Now that we have two post list pages, it can be hard to know just which list you
 ```
 <%= caption 'client/views/includes/header.js' %>
 
-
 ```js
 Template.header.helpers({
   activeRouteClass: function(/* route names */) {
@@ -486,6 +484,8 @@ Template.header.helpers({
 });
 ```
 <%= caption 'client/views/includes/header.js' %>
+
+<%= screenshot "13-5", "Showing the active page" %>
 
 For each navigation `<li>`, we call `activeRouteClass` with a list of one or more route names which should lead to this item being active. Then in the helper, we simply check if the URL for that named route is equal to the current location, and return the class `active` if so.
 

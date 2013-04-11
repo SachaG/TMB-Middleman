@@ -12,12 +12,11 @@ A Meteor Method is a way of executing a series of commands on the server in a st
 
 However, if Meteor executed Methods in the naive way that you might think of, there'd be a problem. Consider the following workflow (note: the timestamps are random values picked for illustrative purpose only):
 
-{% image pullright /images/book/latency1@2x.png "Without latency compensation" %}
+<%= diagram "latency1", "Without latency compensation" %>
 
 - *+0ms:* The user clicks a submit button and the browser fires a method call.
 - *+200ms:* The server makes changes to the Mongo database.
 - *+500ms:* The client receives these changes, and updates the UI to reflect them.
-
 
 If this was the way Meteor operated, then there'd be a short lag between performing such actions and seeing the results (more or less noticeable depending on how close you were to the server). We can't have that in a modern web application!
 
@@ -27,7 +26,7 @@ To avoid this problem, Meteor introduces a concept called **Latency Compensation
 
 When you make a method call the client sends of the call to the server, but also simultaneously *simulates* the action of the method on its local collections. So our workflow becomes:
 
-{% image pullright /images/book/latency2@2x.png "With latency compensation" %}
+<%= diagram "latency2", "With latency compensation"%>
 
 - *+0ms:* The user clicks a submit button and the browser fires a method call.
 - *+0ms:*  The client simulates the action of the method call on the local collections and changes the UI to reflect this
@@ -40,7 +39,6 @@ So, the user sees changes instantly, and when the server returns a few moments l
 ### Observing Latency Compensation
 
 Let's make a little change to the `post` method call so we can see this in action. To do so, we'll be doing some advanced coding with the `futures` npm package to delay the insertion of objects in our method:
-
 
 ```js
 Meteor.methods({
