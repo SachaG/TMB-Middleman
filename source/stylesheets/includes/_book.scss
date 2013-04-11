@@ -131,6 +131,10 @@
 }
 figure{
 	@extend .mbottom;
+	img{
+		@include border-radius(2px);
+		@include box-shadow(0px 3px 7px black(0.25));
+	}
 }
 figcaption{
 	font-style:italic;

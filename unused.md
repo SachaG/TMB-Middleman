@@ -132,3 +132,8 @@ per_page: 12
     <p><%= link_to 'Next page', next_page %></p>
   <% end %>
 <% end %>
+
+
+------
+
+<%= diagram "meteor_files","A typical Meteor app file structure" %>

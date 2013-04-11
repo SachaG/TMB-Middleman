@@ -133,7 +133,7 @@ helpers do
     %Q{<figure class="screenshot"><img src="/images/screenshots/#{name}.png" alt="#{caption}"/><figcaption>#{caption}</figcaption></figure>}
   end    
   def commit(name, caption)
-    %Q{<div class="commit">Commit #{name}: #{caption}</div>}
+    %Q{<div class="commit"><a href="https://github.com/SachaG/Microscope/commits/master" target="_blank">Commit #{name}</a>: #{caption}</div>}
   end    
   def note(&block)
     markdown = Redcarpet::Markdown.new(Redcarpet::Render::HTML)
