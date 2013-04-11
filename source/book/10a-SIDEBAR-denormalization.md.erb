@@ -26,9 +26,9 @@ Of course such considerations are very application specific: if you are writing 
 
 ### Embedding documents or using multiple collections
 
-If you are experienced with Mongo, you might have been surprised that we created a second collection to store comments in. Why not just embed the comments in a list within the post document?
+If you are experienced with Mongo, you might have been surprised that we created a second collection just for comments. Why not just embed the comments in a list within the post document?
 
-The reason is that many of the tools Meteor gives us work a lot better when operating at the collection level. For instance:
+Well, it turns out that many of the tools Meteor gives us work a lot better when operating at the collection level. For instance:
 
 1. The `{{#each}}` helper is very efficient when iterating over a cursor (the result of `collection.find()`). The same is not true when it iterates over an array of objects within a larger document.
 2. `allow` and `deny` operate at the document level, and thus make it easy to ensure that any modifications of individual comments are correct in a way that would be more complex if we operated at a post level.
