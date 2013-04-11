@@ -5,3 +5,5 @@
 
 *.sublime-project
 .rbenv-version
+
+build/
