@@ -20,10 +20,6 @@ The publication controls exactly what data passes through that funnel, and takes
 
 The protocol that is spoken over that tunnel is called DDP (which stands for Distributed Data Protocol). To learn more about DDP, you can watch [this talk from The Realtime Conference](http://2012.realtimeconf.com/video/matt-debergalis) by Matt DeBergalis (one of the founders of Meteor), or [this screencast](http://www.eventedmind.com/posts/meteor-subscriptions-and-ddp) by Chris Mather that walks you through this concept in a little more detail.
 
-
-#### Picture
-MONGO <-> server collection (in server) : publication <--DDP--> subscription : client collection (in browser)
-
 Now that we've established the basics, let's dive in. 
 
 ### Autopublish
@@ -32,7 +28,7 @@ If you create a Meteor project from scratch (i.e using `meteor create`), it will
 
 Depending on how you look at it, `autopublish` either removes the need for publications or simply takes care of them for you. What autopublish does is automatically mirrors _all data_ from the server on the client.
 
-{% image pullcenter /images/book/autopublish@2x.png "Autopublish" %}
+<%= diagram "autopublish", "Autopublish" %>
 
 How does this work? Suppose you have a collection called `'posts'` on the server. Then autopublish will automatically send every post that it finds in the Mongo posts collection into a collection called `'posts'` on the client (assuming there is one).
 
@@ -42,7 +38,7 @@ For this reason, autopublish is only appropriate when you are starting out, and 
 
 ### Publishing Full Collections
 
-{% image pullright /images/book/fullcollection@2x.png "Publishing a full collection" %}
+<%= diagram "fullcollection", "Publishing a full collection" %>
 
 Once you remove autopublish, you'll quickly realize that all your data has vanished from the client. An easy way to get it back is to simply duplicate what autopublish does, and publish a collection in its entirety. For example:
 
@@ -64,7 +60,7 @@ Meteor.publish('somePosts',function(){
 });
 ```
 
-{% image pullright /images/book/partialcollection@2x.png "Publishing a partial collection" %}
+<%= diagram "partialcollection", "Publishing a partial collection" %>
 
 The code is easy enough, but what's going on exactly behind the scenes?
 
@@ -84,7 +80,7 @@ So in the example above, we are able to make sure that the user only has the pos
 
 We've seen how to only publish some of our posts, but we can keep slicing thinner! Let's see how to only publish specific _properties_. 
 
-{% image pullright /images/book/partialproperties@2x.png "Publishing partial properties" %}
+<%= diagram "partialproperties", "Publishing partial properties" %>
 
 Just like before, we'll use `find()` to return a cursor, but this time we'll exclude certain fields:
 

@@ -31,7 +31,7 @@ Meteor.publish('postDetail', function(postId) {
 
 Now, when the client subscribes to those two publications (using `autorun` to ensure that the right `postId` is being sent to the `postDetail` subscription), its `'posts'` collection gets filled out from two sources -- a list of titles and author's names from the first subscription, and the full details of a post from the second.
 
-{% image pullcenter /images/book/doublecollection@2x.png "Publishing a collection twice" %}
+<%= diagram "doublecollection", "Publishing a collection twice" %>
 
 What happens to the overlapping post, which is sent by both subscriptions? Meteor takes care of merging the fields sent, which ends up working as we might expect. 
 
