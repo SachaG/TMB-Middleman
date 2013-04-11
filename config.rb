@@ -126,11 +126,11 @@ helpers do
   def image(css_class, src, caption)
     %Q{<figure class="#{css_class}"><img src="#{src}" alt="#{caption}"/><figcaption>#{caption}</figcaption></figure>}
   end
-  def diagram(name, caption)
-    %Q{<figure class="diagram"><img src="/images/diagrams/#{name}@2x.png" alt="#{caption}"/><figcaption>#{caption}</figcaption></figure>}
+  def diagram(name, caption, css_class="")
+    %Q{<figure class="diagram #{css_class}"><img src="/images/diagrams/#{name}@2x.png" alt="#{caption}"/><figcaption>#{caption}</figcaption></figure>}
   end
-  def screenshot(name, caption)
-    %Q{<figure class="screenshot"><img src="/images/screenshots/#{name}.png" alt="#{caption}"/><figcaption>#{caption}</figcaption></figure>}
+  def screenshot(name, caption, css_class="")
+    %Q{<figure class="screenshot #{css_class}"><img src="/images/screenshots/#{name}.png" alt="#{caption}"/><figcaption>#{caption}</figcaption></figure>}
   end    
   def commit(name, caption)
     %Q{<div class="commit"><a href="https://github.com/SachaG/Microscope/search?q=#{caption}&choice=grep&l=&start=" target="_blank">Commit #{name}: #{caption}</a></div>}
