@@ -197,11 +197,11 @@ Meteor.Router.filter('requireLogin', {only: 'postSubmit'});
 <%= caption "client/lib/router.js" %>
 
 We also add the template for the access denied page, which is pretty simple:
+
 ```html
 <template name="accessDenied">
   <div class="alert alert-error">You can't get here! Please log in</div>
 </template>
-
 ```
 <%= caption "includes/access_denied.html" %>
 
