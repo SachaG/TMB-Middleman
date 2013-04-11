@@ -101,3 +101,34 @@ We can now update our `rendered` callback to take that timestamp into account:
 <%= caption "/client/views/posts/postItem.js" %>
 
 In plain english, all we're saying is that if a post is created (`instance.data.submitted`) after the page has loaded, then we want to hide it. 
+
+
+------------
+
+tag.html
+
+---
+pageable: true
+per_page: 12
+---
+<h1>Articles tagged '<%= tagname %>'</h1>
+
+<% if paginate %>
+  <p>Page <%= page_number %> of <%= num_pages %></p>
+
+  <% if prev_page %>
+    <p><%= link_to 'Previous page', prev_page %></p>
+  <% end %>
+<% end %>
+
+<ul>
+  <% page_articles.each_with_index do |article, i| %>
+    <li><%= link_to article.title, article %> <span><%= article.date.strftime('%b %e') %></span></li>
+  <% end %>
+</ul>
+
+<% if paginate %>
+  <% if next_page %>
+    <p><%= link_to 'Next page', next_page %></p>
+  <% end %>
+<% end %>
