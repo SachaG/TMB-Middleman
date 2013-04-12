@@ -1,4 +1,7 @@
 $(function(){
+  $('.post-content').annotator().annotator('setupPlugins', {}, {
+    Filter: false
+  });
   $('body').addClass('animate');
   $('#origin').val(document.referrer);
   $('#landing').val(document.title);
@@ -56,7 +59,6 @@ $(function(){
 
     // block level elements
     $.each(lines, function(index, line){
-      console.log(index+1, finalArray)
       if($.inArray(index+1, finalArray) == -1){
         lines[index] = '<span class="line">' + lines[index] + '</span>'
       }else{
