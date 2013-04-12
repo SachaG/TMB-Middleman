@@ -13,13 +13,23 @@ $(function(){
     $(this).addClass('hide');
   });
 
+  $('span:contains("❯")').removeClass('err').addClass('browser-prompt');
+
+
+  $('pre').addClass('all-new');
+
   $('.lines-highlight').each(function(){
     var $this = $(this);
+    var $pre = $this.prevAll('.highlight').first().find('pre');
+    var text = $pre.html();
+    var lines = text.split('\n');    
     var linesToHighlight = $this.attr('data-lines');
     var highlightClass = $this.attr('data-class')
     var linesArray = linesToHighlight.split(',');
     var rangesArray = [];
     var finalArray = [];
+
+    $pre.removeClass('all-new');
 
     // looping from the end makes it possible to splice from within the loop without reindexing problems
     //http://stackoverflow.com/questions/9882284/looping-through-array-and-removing-items-without-breaking-for-loop
@@ -53,9 +63,6 @@ $(function(){
     finalArray= [].concat.apply([], finalArray);
     finalArray.sort(function(a,b){return a-b});
 
-    var $pre = $this.prevAll('.highlight').first().find('pre');
-    var text = $pre.html();
-    var lines = text.split('\n');
 
     // block level elements
     $.each(lines, function(index, line){

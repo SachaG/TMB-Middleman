@@ -93,27 +93,27 @@ Start by opening up two browser windows, and accessing the console in each one. 
 <%= caption "Mongo console" %>
 
 ```js
-> Posts.findOne();
+❯ Posts.findOne();
 {title: "A new post", _id: 'xxx'};
 ```
-<%= caption "browser console" %>
+<%= caption "Browser console" %>
 
 Now, let's create a new post--in one of our browser windows, run an insert command:
 
 ```js
-> Posts.find().count();
+❯ Posts.find().count();
 1
-> Posts.insert({title: "A second post"});
+❯ Posts.insert({title: "A second post"});
 'xxx'
-> Posts.find().count();
+❯ Posts.find().count();
 2
 ```
-<%= caption "browser console" %>
+<%= caption "Browser console" %>
 
 Not very surprisingly, the post made it into the local collection. Now let's check Mongo:
 
 ```js
-> db.posts.find();
+❯ db.posts.find();
 {title: "A new post", _id: 'xxx'};
 {title: "A second post", _id: 'xxx'};
 ```
@@ -124,10 +124,10 @@ So the post made it all the way back to the Mongo database, without us writing a
 Bring up the second browser window and enter this in the browser console:
 
 ```js
-> Posts.find().count();
+❯ Posts.find().count();
 2
 ```
-<%= caption "browser console" %>
+<%= caption "Browser console" %>
 
 The post is there too! But we never refreshed, or even interacted with the second browser, and we certainly didn't write any code to push updates out. It all just happened magically (and instantly too, although this will become more obvious later).
 
@@ -187,10 +187,10 @@ Now run your server again with `mrt`, and behind the scenes these three posts wi
 Now, if we open up a browser console, we see all three posts loaded up into miniMongo:
 
 ```js
-> Posts.find().fetch();
+❯ Posts.find().fetch();
 [..]
 ```
-<%= caption "browser console" %>
+<%= caption "Browser console" %>
 
 How do we get these posts into rendered HTML? We can use a template helper. We've already seen in Chapter 3 how Meteor allows us to bind a *data context* to our Handlebars templates to build HTML views of simple data strutures.
 
@@ -216,13 +216,13 @@ So can clearly that our `{{#each}}` helper has iterated over all of our `Posts`,
 Now, let's see things get cool. We'll add another post via the console:
 
 ```js
-> Posts.insert({
+❯ Posts.insert({
   title: 'Meteor Docs', 
   author: 'Tom Coleman', 
   url: 'http://docs.meteor.com'
 });
 ```
-<%= caption "browser console" %>
+<%= caption "Browser console" %>
 
 Look back at the browser -- you should see this:
 

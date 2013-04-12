@@ -143,20 +143,51 @@ figcaption{
 	font-size:14px;
 	color:$light-text;
 }
-.line{
-	display:block;
-	margin: 0 -20px 0 -20px;
-	padding-left:20px;
+pre, code, pre span, code span{
+	font-family:Consolas, "Liberation Mono", 'PT Mono', Courier, monospace;
+	font-size:14px;
+	font-weight:normal;
+	line-height:1.5;
 }
-.highlighted{
-
-	&.added{
-		background: #dfd;
-		background: #e8fae8;
-		border-left:4px solid #c5fcc5;
+code{
+	background:lighten($light-bg, 5%);
+}
+pre{
+	// border-top:1px darken($light-bg, 10%) solid;
+	// border-bottom:1px darken($light-bg, 10%) solid;
+	padding:20px;
+	background:lighten($light-bg, 5%);
+	overflow:auto;	
+	&.all-new{
+		@include single-transition(background, 300ms, 0ms, ease-out);
+		border-left:4px solid transparent;
+		padding-left:16px;
+		&:hover{
+			background: #e8fae8;
+			border-left-color:#c5fcc5;	
+		}
 	}
-	&.deleted{
-		background: #fdd;
-		border-left:4px solid #f7bcbc;
+	.line{
+		@include single-transition(all, 300ms, 0ms, ease-out);
+		display:block;
+		margin: 0 -20px 0 -20px;
+		padding-left:20px;
+		&.highlighted{
+			border-left:4px solid transparent;
+			padding-left:16px;
+		}
+		&.deleted{
+			background: #fdd;
+			border-color: #f7bcbc;
+		}
+	}
+	&:hover{
+		.added{
+			background: #e8fae8;
+			border-color: #c5fcc5;
+		}
+	}
+	.browser-prompt{
+		color:#4289ff;
 	}
 }

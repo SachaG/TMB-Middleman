@@ -28,22 +28,6 @@ p{
 	line-height:1.7;
 	margin-bottom:20px;
 }
-pre, code, pre span, code span{
-	font-family:Consolas, "Liberation Mono", 'PT Mono', Courier, monospace;
-	font-size:14px;
-	font-weight:normal;
-	line-height:1.5;
-}
-pre{
-	border-top:1px darken($light-bg, 10%) solid;
-	border-bottom:1px darken($light-bg, 10%) solid;
-	padding:20px;
-	background:lighten($light-bg, 5%);
-	overflow:auto;
-}
-code{
-	background:lighten($light-bg, 5%);
-}
 .caption{
 	padding:10px;
 	background:$light-bg;

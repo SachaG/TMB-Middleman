@@ -9,6 +9,7 @@ gem "middleman-syntax"
 gem "susy"
 gem "zurb-foundation"
 gem "redcarpet"
+gem "kramdown"
 
 # For feed.xml.builder
 gem "builder", "~> 3.0.0"
