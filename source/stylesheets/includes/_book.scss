@@ -152,8 +152,11 @@ figcaption{
 
 	&.added{
 		background: #dfd;
+		background: #e8fae8;
+		border-left:4px solid #c5fcc5;
 	}
 	&.deleted{
 		background: #fdd;
+		border-left:4px solid #f7bcbc;
 	}
 }
