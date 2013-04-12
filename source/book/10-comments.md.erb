@@ -83,6 +83,7 @@ Meteor.subscribe('posts');
 Meteor.subscribe('comments');
 ```
 <%= caption "client/main.js" %>
+<%= highlight "2" %>
 
 ```js
 Meteor.publish('posts', function() {
@@ -91,9 +92,10 @@ Meteor.publish('posts', function() {
 
 Meteor.publish('comments', function() {
   return Comments.find();
-})
+});
 ```
 <%= caption "server/publications.js" %>
+<%= highlight "5,6,7" %>
 
 <%= commit "10-1", "Added comments collection, pub/sub and fixtures." %>
 
@@ -109,7 +111,7 @@ It's all very well putting comments into the database, but we also need to show 
 <template name="postPage">
   {{#with currentPost}}
     {{> postItem}}
-    
+
     <ul class="comments">
       {{#each comments}}
         {{> comment}}
@@ -119,6 +121,7 @@ It's all very well putting comments into the database, but we also need to show 
 </template>
 ```
 <%= caption "client/views/posts/post_page.html" %>
+<%= highlight "5,6,7,8,9" %>
 
 ```js
 Template.postPage.helpers({
@@ -131,6 +134,7 @@ Template.postPage.helpers({
 });
 ```
 <%= caption "client/views/posts/post_page.js" %>
+<%= highlight "4,5,6" %>
 
 We've put the `{{#each comments}}` block inside the post template, so `this` is a post within the `comments` helper. To find the relevant comments, we check those that are linked to that post with the `postId` attribute.
 
@@ -178,6 +182,7 @@ Finally, we'll also show the number of comments on each post:
 </template>
 ```
 <%= caption "client/views/posts/post_item.html" %>
+<%= highlight "6,7" %>
 
 And add the `commentsCount` helper to our `postItem` controller:
 
@@ -197,7 +202,7 @@ Template.postItem.helpers({
 });
 ```
 <%= caption "client/views/posts/post_item.js" %>
-
+<%= highlight "9,10,11" %>
 
 <%= commit "10-2", "Display comments on `postPage`." %>
 
@@ -229,6 +234,7 @@ We'll start by adding a submit box at the bottom of each post:
 </template>
 ```
 <%= caption "client/views/posts/post_page.html" %>
+<%= highlight "11,12,13" %>
 
 And then create the comment form template:
 
@@ -303,6 +309,7 @@ Meteor.methods({
 });
 ```
 <%= caption "collections/comments.js" %>
+<%= highlight "3~25" %>
 
 <%= commit "10-3", "Created a form to submit comments." %>
 
@@ -320,18 +327,26 @@ In fact, the only time we really need comments is when we are viewing a post and
 This is pretty straightforward with a publication that takes _an argument_:
 
 ```js
+Meteor.publish('posts', function() {
+  return Posts.find();
+});
+
 Meteor.publish('comments', function(postId) {
   return Comments.find({postId: postId});
 });
 ```
 <%= caption "server/publications.js" %>
+<%= highlight "5~7" %>
 
 ```js
+Meteor.subscribe('posts');
+
 Meteor.autorun(function() {
   Meteor.subscribe('comments', Session.get('currentPostId'));
 });
 ```
 <%= caption "client/main.js" %>
+<%= highlight "3~5" %>
 
 <%= commit "10-4", "Made a simple publication/subscription for comments." %>
 
@@ -398,6 +413,24 @@ return Comments.insert(comment);
 <%= caption "collections/comments.js "%>
 
 Finally, we can just simply remove the `commentsCount` helper from `client/views/comments/comment.js`, as the field is now directly available on the comment.
+
+```js
+Template.postItem.helpers({
+  ownPost: function() {
+    return this.userId == Meteor.userId();
+  },
+  domain: function() {
+    var a = document.createElement('a');
+    a.href = this.url;
+    return a.hostname;
+  },
+  commentsCount: function() {
+  return Comments.find({postId: this._id}).count();
+  }
+});
+```
+<%= caption "client/views/posts/post_item.js "%>
+<%= highlight "9~11", "deleted" %>
 
 Not too bad!
 

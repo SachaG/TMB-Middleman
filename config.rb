@@ -134,7 +134,10 @@ helpers do
   end    
   def commit(name, caption)
     %Q{<div class="commit"><a href="https://github.com/SachaG/Microscope/search?q=#{caption}&choice=grep&l=&start=" target="_blank">Commit #{name}: #{caption}</a></div>}
-  end    
+  end  
+  def highlight(lines, css_class="added")
+    %Q{<div class="lines-highlight" data-lines="#{lines}" data-class="#{css_class}"></div>}
+  end      
   def note(&block)
     markdown = Redcarpet::Markdown.new(Redcarpet::Render::HTML, :fenced_code_blocks => true)
     content = markdown.render(capture(&block))

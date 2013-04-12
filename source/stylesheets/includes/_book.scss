@@ -143,3 +143,17 @@ figcaption{
 	font-size:14px;
 	color:$light-text;
 }
+.line{
+	display:block;
+	margin: 0 -20px 0 -20px;
+	padding-left:20px;
+}
+.highlighted{
+
+	&.added{
+		background: #dfd;
+	}
+	&.deleted{
+		background: #fdd;
+	}
+}
