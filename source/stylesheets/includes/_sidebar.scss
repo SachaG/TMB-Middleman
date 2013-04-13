@@ -15,7 +15,7 @@
 		margin:0;
 		padding:20px;
 		overflow-y:auto;
-		
+
 		/* Let's get this party started */
 		&::-webkit-scrollbar {
 			width: 8px;
@@ -45,6 +45,7 @@
 			a{
 				color:lighten($link,10%);
 				font-weight:medium();
+				@include animate(color);
 				&:visited{
 					color:lighten($link,10%);
 				}
@@ -83,7 +84,7 @@
 			background-color:#161124;			
 		}
 	}
-	.post{
+	.row{
 		left:150px;	
 	}
 }

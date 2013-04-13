@@ -23,6 +23,8 @@ $grid-padding   : 0px;
 .row{
 	@include container;
 	padding:0 20px;
+	position:relative;
+	@include animate(left);
 }
 .book{
 	display:none;
