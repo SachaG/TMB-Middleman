@@ -2,11 +2,11 @@
 	background:#161124;
 	color:white;
 	position:fixed;
-	width:250px;
+	width:270px;
 	// max-width:350px;
 	top:0px;
 	bottom:0px;
-	left:-250px;
+	left:-270px;
 	z-index:100;
 	@include animate;
 	ul{
@@ -38,13 +38,21 @@
 			background: fade-out(#5e5774,0.3); 
 		}
 		li{
-			margin-bottom:5px;
+			margin-bottom:6px;
+			padding-bottom:6px;
 			font-size:14px;
 			border-bottom:1px solid fade-out(white, 0.8);
-			padding-bottom:5px;
+			overflow:hidden;
+			span{
+				color:white(0.2);
+				float:right;
+				display:block;
+			}
 			a{
+				display:block;
 				color:lighten($link,10%);
 				font-weight:medium();
+				margin-right:20px;
 				@include animate(color);
 				&:visited{
 					color:lighten($link,10%);

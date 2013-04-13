@@ -31,7 +31,11 @@ $grid-padding   : 0px;
 }
 
 // desktop
-
+@include small{
+	body{
+		overflow-x:hidden;
+	}
+}
 @include medium{
 	section{
 		@include container;
