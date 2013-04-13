@@ -146,6 +146,6 @@ helpers do
   def chapter(&block)
     markdown = Redcarpet::Markdown.new(Redcarpet::Render::HTML, :fenced_code_blocks => true)
     content = markdown.render(capture(&block))
-    concat %Q{<div class="chapter">#{content}</div>}
+    concat %Q{<div class="note chapter">#{content}</div>}
   end
 end

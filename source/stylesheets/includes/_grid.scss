@@ -1,12 +1,22 @@
-@import "susy";
+// at 47.5em (16*47.5=760px) switch to a 12-column layout
+$small-break: 47.5em;
 
-$total-columns  : 4;
-$column-width   : 140px;
+@mixin small(){
+  @media screen and (max-width: $small-break) {
+    @content;
+  }
+}
+@mixin medium(){
+  @media screen and (min-width: $small-break) {
+    @content;
+  }
+}
+
+$total-columns  : 12;
+$column-width   : 20px;
 $gutter-width   : 40px;
 $grid-padding   : 0px;
 
-// at 47.5em (16*47.5=760px) switch to a 4-column layout
-$break: 47.5em 4;  
 
 // mobile
 
@@ -20,8 +30,8 @@ $break: 47.5em 4;
 
 // desktop
 
-@include at-breakpoint($break) {
-	.row{
+@include medium{
+	section{
 		@include container;
 		padding:0;
 	}
@@ -48,15 +58,5 @@ $break: 47.5em 4;
 	.sidebar{
 		@include span-columns(1 omega);
 	}
-	.package{
-		ul{
-			@include cf;
-			li{
-				@include span-columns(1);
-				&:nth-child(4n){
-					@include span-columns(1 omega);
-				}				
-			}
-		}
-	}
+
 }
