@@ -8,11 +8,11 @@ date: 0007/01/02
 
 In the last chapter, we introduced a new concept in the Meteor world: **Methods**. 
 
+<%= diagram "latency1", "Without latency compensation", "pull-right" %>
+
 A Meteor Method is a way of executing a series of commands on the server in a structured way. In our example, we used a method because we wanted to make sure that new posts were tagged with their author's name and id, as well as the current server time. 
 
 However, if Meteor executed Methods in the naive way that you might think of, there'd be a problem. Consider the following workflow (note: the timestamps are random values picked for illustrative purpose only):
-
-<%= diagram "latency1", "Without latency compensation" %>
 
 - *+0ms:* The user clicks a submit button and the browser fires a method call.
 - *+200ms:* The server makes changes to the Mongo database.
@@ -22,11 +22,11 @@ If this was the way Meteor operated, then there'd be a short lag between perform
 
 ### Latency Compensation
 
+<%= diagram "latency2", "With latency compensation", "pull-right" %>
+
 To avoid this problem, Meteor introduces a concept called **Latency Compensation**. When we defined our `post` method, we placed it within a file in the `lib/` directory. This means it is avaliable to both the server *and the client* -- and it will run on both!
 
 When you make a method call the client sends of the call to the server, but also simultaneously *simulates* the action of the method on its local collections. So our workflow becomes:
-
-<%= diagram "latency2", "With latency compensation"%>
 
 - *+0ms:* The user clicks a submit button and the browser fires a method call.
 - *+0ms:*  The client simulates the action of the method call on the local collections and changes the UI to reflect this

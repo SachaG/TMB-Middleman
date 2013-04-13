@@ -137,6 +137,12 @@
 }
 figure{
 	@extend .mbottom;
+	&.pull-right{
+		float:right;
+		width:400px;
+		margin:0 0 40px 40px;
+		margin-right:-200px;
+	}
 }
 figcaption{
 	font-style:italic;
