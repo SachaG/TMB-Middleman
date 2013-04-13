@@ -55,8 +55,5 @@ $grid-padding   : 0px;
 	.about{
 		@include span-columns(3);
 	}
-	.sidebar{
-		@include span-columns(1 omega);
-	}
 
 }

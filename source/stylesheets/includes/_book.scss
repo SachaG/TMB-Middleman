@@ -4,26 +4,9 @@
 	font-size:14px;
 	
 }
-.sidebar{
-	h2{
-		font-size:18px;
-		text-transform:uppercase;
-		font-weight:500;
-		color:$light-text;
-		margin:0 0 20px 0;
-	}
-	article{
-		margin-bottom:20px;
-		.date{
-			margin-bottom:5px;
-		}
-		h3{
-			margin:0;
-			font-size:16px;
-			line-height:1.5;
-
-		}
-	}
+.post{
+	position:relative;
+	@include animate;
 }
 .post-content{
 	h2{

@@ -1,0 +1,6 @@
+%a.toggle{:href => "#"} Toggle Table of Contents
+%ul
+  - blog.articles.reverse_each do |post|
+    %li
+      %a{:href => "#{post.url}"}
+        =post.title    

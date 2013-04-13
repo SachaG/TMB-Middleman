@@ -12,6 +12,7 @@ html, body{
 	line-height:1.7;
 }
 a{
+	@include animate(color);
 	font-weight:bold;
 	text-decoration:none;
 	&:link{

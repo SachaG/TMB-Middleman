@@ -1,6 +1,8 @@
 - content_for(:title, "#{current_article.title} - The Meteor Book")
 
 - wrap_layout :layout do
+  .sidebar
+    =partial "partials/toc"
   .post
 
     .post-content

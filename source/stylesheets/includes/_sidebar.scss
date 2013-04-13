@@ -1,0 +1,89 @@
+.sidebar{
+	background:#161124;
+	color:white;
+	position:fixed;
+	width:250px;
+	// max-width:350px;
+	top:0px;
+	bottom:0px;
+	left:-250px;
+	z-index:100;
+	@include animate;
+	ul{
+		height:100%;
+		list-style-type:none;
+		margin:0;
+		padding:20px;
+		overflow-y:auto;
+		
+		/* Let's get this party started */
+		&::-webkit-scrollbar {
+			width: 8px;
+		}
+		 
+		/* Track */
+		&::-webkit-scrollbar-track {
+			-webkit-box-shadow: none; 
+			border-radius: 10px;
+		}
+		 
+		/* Handle */
+		&::-webkit-scrollbar-thumb {
+			-webkit-border-radius: 10px;
+			border-radius: 10px;
+			background: lighten(#5e5774,10%); 
+			// -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5); 
+		}
+		&::-webkit-scrollbar-thumb:window-inactive {
+			background: fade-out(#5e5774,0.3); 
+		}
+		li{
+			margin-bottom:5px;
+			font-size:14px;
+			border-bottom:1px solid fade-out(white, 0.8);
+			padding-bottom:5px;
+			a{
+				color:lighten($link,10%);
+				font-weight:medium();
+				&:visited{
+					color:lighten($link,10%);
+				}
+				&:hover{
+					color:$hover;
+				}
+			}
+			&.active a{
+				color:$hover;
+				&:before{
+					content: "\276f ";
+				}
+			}
+		}
+	}
+	.toggle{
+		display:block;
+		height:40px;
+		width:40px;
+		position:absolute;
+		right:-40px;
+		top:0px;
+		@include animate;
+		@include hide-text;
+		background:fade-out(#161124, 0.8) url('../images/menu.svg') center center no-repeat;
+		background-size:24px 24px;
+		&:hover{
+			background-color:fade-out(#161124, 0.5);
+		}
+	}
+}
+.sidebar-open{
+	.sidebar{
+		left:0px;
+		.toggle{
+			background-color:#161124;			
+		}
+	}
+	.post{
+		left:150px;	
+	}
+}
