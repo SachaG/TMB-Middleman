@@ -56,6 +56,7 @@ if (Posts.find().count() === 0) {
 }
 ```
 <%= caption "server/fixtures.js" %>
+<%= highlight "15~24" %>
 
 <%= commit "12-1", "Added enough posts that pagination is necessary." %>
 
@@ -72,8 +73,14 @@ Using the package is easy--we just augment our calls to `publish` and `subscribe
 
 ```js
 Meteor.subscribeWithPagination('posts', 10);
-```
+
+Meteor.autorun(function() {
+  Meteor.subscribe('comments', Session.get('currentPostId'));
+})
+
+Meteor.subscribe('notifications');```
 <%= caption "client/main.js" %>
+<%= highlight "1" %>
 
 This tells the package to setup a subscription with `10` posts coming up each time we head to a new page. 
 
@@ -83,8 +90,19 @@ At the server end, we just need to modify our `'posts'` subscription to take a f
 Meteor.publish('posts', function(limit) {
   return Posts.find({}, {sort: {submitted: -1}, limit: limit});
 });
+
+Meteor.publish('comments', function(postId) {
+  return Comments.find({postId: postId});
+});
+
+Meteor.publish('notifications', function() {
+  return Notifications.find({userId: this.userId});
+});
 ```
 <%= caption "server/publications.js" %>
+<%= highlight "1,2" %>
+
+<%= commit "12-2", "Added paginated subscription package, and ordered post by submitted date." %>
 
 As we are no longer publishing all the posts, we need to be careful about the order that we retrieve them out of the database in. Here, we are publishing the latest `limit` posts, in order of submission date. Once we've wired it into our user interface, the package will take care of increasing the `limit` variable as the user asks to see more posts.
 
@@ -102,6 +120,7 @@ Meteor.autorun(function() {
 Meteor.subscribe('notifications');
 ```
 <%= caption "client/main.js" %>
+<%= highlight "1" %>
 
 The paginated subscription handle has three useful (reactive) functions that we can use in our helpers to figure out what's happening with the subscription:
 
@@ -129,6 +148,7 @@ We can use the combination of those three helpers to manufacture our "load more"
 </template>
 ```
 <%= caption "client/views/posts/posts_list.html" %>
+<%= highlight "6~13" %>
 
 We've added at the bottom of our list either a button saying "Load more", or a spinner indicating if we are waiting on the server to do so.
 
@@ -149,6 +169,7 @@ Template.postsList.helpers({
 });
 ```
 <%= caption "client/views/posts/posts_lists.js" %>
+<%= highlight "3~10" %>
 
 Working out if the current list of posts are ready is easy enough, as we can just ask the handle if it's still loading. Working out if all the posts are loaded is a little more tricky. We need to make sure that we aren't still waiting for more posts, and then see if the total number of posts we do have is less that how many the subscription thinks we should have. If it's less, that's a sign that there are no posts left to load.
 
@@ -169,6 +190,8 @@ Template.postsList.events({
 });
 ```
 <%= caption "client/views/posts/posts_lists.js" %>
+
+<%= commit "12-3", "Use the paginated subscription to step through posts." %>
 
 It's simple enough, and we can now see the post "load more" button in action:
 
@@ -204,17 +227,25 @@ Meteor.publish('singlePost', function(id) {
 });
 ```
 <%= caption "server/publications.js" %>
+<%= highlight "1,5~7" %>
 
 Now, let's subscribe to the right posts on the client side:
 
 ```js
-var postsHandle = Meteor.subscribeWithPagination('posts', 10);
+postsHandle = Meteor.subscribeWithPagination('newPosts', 10);
 
 Meteor.autorun(function() {
   Meteor.subscribe('singlePost', Session.get('currentPostId'));
-});
+  
+  Meteor.subscribe('comments', Session.get('currentPostId'));
+})
+
+Meteor.subscribe('notifications');
 ```
 <%= caption "client/main.js" %>
+<%= highlight "1,4" %>
+
+<%= commit "12-4","Use a single post subscription to ensure that we can always see the right post." %>
 
 So we can see that we subscribe to *both* publications on the client side, and the correct data is loaded. The single post that we want to load is in the `currentPostId` session variable (as we've seen before), and we just need to pass it through to the `singlePost` subscription.
 

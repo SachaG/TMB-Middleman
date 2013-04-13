@@ -132,6 +132,9 @@
 	background:#e1dee9;
 	padding:20px;
 	@extend .mbottom;
+	a{
+		display:block;
+	}
 }
 .note{
 	background:#fcf9e2;
