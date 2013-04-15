@@ -26,7 +26,7 @@ Or in our case, since we're using Meteorite:
 $ mrt deploy myapp.meteor.com
 ```
 
-Or, if you want to use domain, set its CNAME to redirect to `origin.meteor.com` and then deploy with:
+Or, if you want to use your own domain, set its CNAME to redirect to `origin.meteor.com` and then deploy with:
 
 ```bash
 $ mrt deploy www.myapp.com
@@ -82,8 +82,73 @@ Congratulations, your app should now be up and running! And by the way, if you e
 $ heroku config
 ```
 
-### Deploying on EC2
+### Deploying On Your Own Server
 
-Up to now, we've only talked about deploying on managed platforms like Meteor.com or Heroku. But let's see how to take it one step further and configure a server from scratch to run our app on a service like [EC2](http://aws.amazon.com/ec2/) or [Digital Ocean](digitalocean.com).
+Up to now, we've only talked about deploying on managed platforms like Meteor.com or Heroku. But let's see how to take it one step further and configure a server from scratch to run our app on a service like [EC2](http://aws.amazon.com/ec2/) or [Digital Ocean](digitalocean.com). It's actually not much harder, once you know one or two handy tricks.
 
-// COMING SOON //
+Let's walk through deploying a Meteor app on an Ubuntu 12.10 server on EC2. You can fire an EC2 instance from your Amazon management console, then connect to it in the usual way.
+
+You will first need to install git and MongoDB:
+
+`sudo apt-get install git mongodb`
+
+The first trick when deploying a Meteor app to your own server is that `node` still evolves quite quickly (including some breaking API changes), and the Meteor support for the latest stable node version sometimes lags for a while. Fortunately, you can use **`nvm`** ([Node version manager](https://github.com/creationix/nvm)) which is much more exhaustive than Ubuntu's apt-get (i.e., you can use any past version of node), and is way easier to use than building your own node from source.
+
+To install `nvm`, just type (you need to install git first, or it will fail silently):
+
+```
+curl https://raw.github.com/creationix/nvm/master/install.sh | sh
+```
+
+At the time of this writing, meteor requires node 0.8 (though node 0.10 has been released), so let's install the latest stable release of node 0.8.x:
+
+```
+nvm install 0.8
+```
+
+Then, checkout your app's Git repo (for instance, `git clone https://github.com/SachaG/microscope.git`), for example in `/home/meteor`.
+
+The next step is to bundle your app, i.e. generate a fully-contained Node application in a tarball. It is certainly possible to bundle your app in your development environment and then just transmit the tarball (as opposed to our approach of checking out the actual code on the server), however, it would require rebuilding native packages like `fibers` every time you update your app, and it simply feels more tiresome in the long term.
+
+Here's how we bundle and untar our app (it would actually be handy to be able to “bundle as a directory, not a tarball”):
+
+```
+cd mymeteorapp 
+meteor bundle ../bundle.tgz 
+cd ..
+tar -zxvf bundle.tgz 
+```
+
+Finally, let's run the app:
+
+```
+sudo PORT=80 MONGO_URL=mongodb://localhost:27017/myapp node bundle/main.js
+```
+
+If you're serving your app on HTTP's standard port 80, remember to run this command as root (as Node's error message is not that clear if you don't).
+
+Also, like on Heroku, you can specify configuration options (`MAIL_URL`, `ROOT_URL`) as environment variables.
+
+Finally, we'll need to make sure your app runs continuously, i.e. to have it restart automatically if it crashes. The simplest way to do that is to use `forever`:
+
+```
+npm install -g forever
+forever start bundle/main.js
+```
+
+Something is still missing though: automatic startup of the app on the machine's reboot. Using Ubuntu's Upstart, you can very easily tell your OS that your meteor app should start (using `forever`) automatically. You can simply put the following snippet into e.g. `/etc/init/meteor.conf`, and type `service start meteor`. You don't need automatic respawns, as `forever` is already taking care of that!
+
+```
+# /etc/init/meteor.conf
+
+start on (local-filesystems)
+stop on shutdown
+
+script
+
+    cd /home/meteor
+    exec forever start bundle/main.js
+
+end script
+```
+
