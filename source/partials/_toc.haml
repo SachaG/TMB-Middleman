@@ -1,8 +1,11 @@
 %a.toggle{:href => "#"} Toggle Table of Contents
 %ul
   - blog.articles.reverse_each do |post|
-    %li
-      %span.number
-        =post.data.number  
+    - if post.data.sidebar
+      - li_class = "sidebar-chapter"
+    %li{:class => li_class}
+      - unless post.data.sidebar
+        %span.number
+          =post.data.number  
       %a{:href => "#{post.url}"}
         =post.title

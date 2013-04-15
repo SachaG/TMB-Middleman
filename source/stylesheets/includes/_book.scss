@@ -17,6 +17,7 @@
 	h3{
 		font-size:24px;
 		border-bottom:1px solid $light-bg;
+		clear:both;
 	}
 }
 .post-top{
@@ -52,7 +53,16 @@
 		font-weight:100;
 	}
 	h2{
+		@include cf;
 		// font-weight:100;
+		.chapter{
+			float:left;
+		}
+		.number{
+			float:right;
+			font-weight:100;
+			color:$light-text;
+		}
 	}
 	img{
 		// border:10px solid lighten($light-bg, 6%);
@@ -72,6 +82,7 @@
 		font-size:14px;
 		font-weight:normal;
 	}
+
 	.pullcenter{
 		width:50%;
 		margin:0 auto;
@@ -88,6 +99,9 @@
 			color:$light-text;
 		}
 	}
+}
+.post-nav{
+	margin:20px 0;	
 }
 .post-author{
 	border-top:1px solid $light-bg;
@@ -147,6 +161,17 @@ figure{
 			width:400px;
 			margin:0 0 40px 40px;
 			margin-right:-200px;
+		}
+		&.pull-center{
+			width:400px;
+			margin:40px auto;
+		}
+		&.pull-left{
+			float:left;
+			width:400px;
+			margin:0 40px 40px 0px;
+			margin-left:-200px;
+			clear:both;
 		}
 	}
 }

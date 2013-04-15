@@ -1,26 +1,21 @@
 - content_for(:title, "#{current_article.title} - The Meteor Book")
+- if current_article.data.sidebar
+  - content_for(:body_class, "has-sidebar")
 
 - wrap_layout :layout do
   .sidebar
     =partial "partials/toc"
   .post
+    =partial "partials/nav"
 
     .post-content
+      %h2
+        %span.chapter=current_article.title
+        %span.number=current_article.data.number
       =find_and_preserve do
         =yield
 
-    .post-nav
-      - prev_article = current_article.previous_article
-      - if prev_article
-        %a.prev{:href => "#{prev_article.url}", :title => "Previous Post: #{prev_article.title}"}
-          «
-          =prev_article.title
-
-      - next_article = current_article.next_article
-      - if next_article
-        %a.next{:href => "#{next_article.url}", :title => "next Post: #{next_article.title}"}
-          =next_article.title
-          »
+    =partial "partials/nav"
 
   .comments
     :plain

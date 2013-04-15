@@ -3,9 +3,9 @@ title: Publications and Subscriptions
 complete: 90
 date: 0004/01/02
 number: s3
+sidebar: true
 ---
 
-## SIDEBAR: Publications and Subscriptions
 
 Publications and subscriptions are one of the most fundamental and important concepts in Meteor, but can be the most difficult to understand. This is mostly because what they are doing is foreign to developers who are used to more traditional ways of building for the web. 
 
@@ -29,7 +29,7 @@ If you create a Meteor project from scratch (i.e using `meteor create`), it will
 
 Depending on how you look at it, `autopublish` either removes the need for publications or simply takes care of them for you. What autopublish does is automatically mirrors _all data_ from the server on the client.
 
-<%= diagram "autopublish", "Autopublish" %>
+<%= diagram "autopublish", "Autopublish", "pull-center"%>
 
 How does this work? Suppose you have a collection called `'posts'` on the server. Then autopublish will automatically send every post that it finds in the Mongo posts collection into a collection called `'posts'` on the client (assuming there is one).
 
@@ -39,7 +39,7 @@ For this reason, autopublish is only appropriate when you are starting out, and 
 
 ### Publishing Full Collections
 
-<%= diagram "fullcollection", "Publishing a full collection" %>
+<%= diagram "fullcollection", "Publishing a full collection", "pull-right" %>
 
 Once you remove autopublish, you'll quickly realize that all your data has vanished from the client. An easy way to get it back is to simply duplicate what autopublish does, and publish a collection in its entirety. For example:
 
@@ -61,7 +61,7 @@ Meteor.publish('somePosts',function(){
 });
 ```
 
-<%= diagram "partialcollection", "Publishing a partial collection" %>
+<%= diagram "partialcollection", "Publishing a partial collection", "pull-right" %>
 
 The code is easy enough, but what's going on exactly behind the scenes?
 
@@ -79,9 +79,9 @@ So in the example above, we are able to make sure that the user only has the pos
 
 ### Publishing Partial Properties
 
-We've seen how to only publish some of our posts, but we can keep slicing thinner! Let's see how to only publish specific _properties_. 
+<%= diagram "partialproperties", "Publishing partial properties", "pull-right" %>
 
-<%= diagram "partialproperties", "Publishing partial properties" %>
+We've seen how to only publish some of our posts, but we can keep slicing thinner! Let's see how to only publish specific _properties_. 
 
 Just like before, we'll use `find()` to return a cursor, but this time we'll exclude certain fields:
 

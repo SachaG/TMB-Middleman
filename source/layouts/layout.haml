@@ -21,7 +21,7 @@
     / %script{:src => "//use.typekit.net/rcr2ohz.js", :type => "text/javascript"}
     / :javascript
     /   try{Typekit.load();}catch(e){}  
-  %body
+  %body{:class => yield_content(:body_class)}
     %header
       .row
         %h1
