@@ -24,7 +24,7 @@ We'd like those pages to have a permalink, so we'll need some kind of routing to
 First off, let's install the Router package from atmosphere:
 
 ```bash
-$ mrt install router
+$ mrt add router
 ```
 <%= caption "Terminal" %>
 
@@ -39,15 +39,24 @@ The Router gives us a special template helper `{{renderPage}}`, which renders th
 What do we mean by a page here? It's the Router's concept of a page--the Router's single job is to map URLs to templates to be inserted in the `{{renderPage}}` helper.. Let's see how. We'll start by inserting the `{{renderPage}}` helper into our layout:
 
 ```html
+<head>
+  <title>Microscope</title>
+</head>
 <body>
-  ...
+  <div class="container">
+  <header class="navbar">
+    <div class="navbar-inner">
+      <a class="brand" href="/">Microscope</a>
+    </div>
+  </header>
   <div id="main" class="row-fluid">
     {{renderPage}}
   </div>
-  ...
+  </div>
 </body>
 ```
 <%= caption "client/main.html" %>
+<%= highlight "12" %>
 
 So we've replaced the inclusion of the `posts` template with a call to `renderPage` helper. You'll notice that after this change, we see nothing on the screen. This is because the router maps URLs it doesn't know about to an empty template.
 
@@ -78,6 +87,7 @@ Let's use that in our layout--we want our logo to point us back to the posts lis
 </header>
 ```
 <%= caption "client/main.html"%>
+<%= highlight "3" %>
 
 <%= commit "5-1", "Very basic routing." %>
 
@@ -111,6 +121,7 @@ Meteor.Router.add({
 });
 ```
 <%= caption "client/helpers/router.js" %>
+<%= highlight "2~7" %>
 
 Our previous route was very simple and just mapped a URL path to a template name. Now instead, we are mapping a URL to two things: a template name (in the `to` attribute), which again doubles as the name of our route, and an auxilary function in the `and` attribute. What this does is that now our route has a side effect---it sets the *Session variable* `'currentPostId'` to the `id` value that has been pulled out of the URL.
 
@@ -150,6 +161,7 @@ The only complication is we can't just use it like that, as it won't know what `
 </template>
 ```
 <%= caption "client/views/posts/post_item.html"%>
+<%= highlight "6" %>
 
 <%= commit "5-2", "Routing to a single post page." %>
 
@@ -160,6 +172,9 @@ Let's check if it works; browse to the post list and click on one of the 'Discus
 <%= screenshot "5-2", "A single post page." %>
 
 <% note do %>
+
+### HTML5 pushState
+
 One thing to realise is that these URL changes are happening using HTML5 pushState. The Router picks up clicks on URLs that are internal to the site, and prevents the browser from browsing away from the app, instead just making the necessary changes to the app's state (reactively of course), with the net result of template changes as we've seen.
 
 If everything is working correctly the page should change instantaneously. In fact, sometimes things change so fast that some kind of page transition might be needed. This is outside of the scope of this book, but an interesting topic nonetheless.

@@ -79,9 +79,7 @@ Note: that's a lot of markup, but it simply comes from using Twitter Bootstrap. 
 
 <%= screenshot "7-1", "The post submit form" %>
 
-This is a simple form. We don't need to worry about an action for it, as we'll be intercepting submit events on the form and updating data via javascript. (It doesn't make sens to provide a non-JS fallback when you consider that a Meteor app is completely non-functional with JavaScript disabled).
-
-We just set some straightforward `name` attributes on our form elements so we can easily grab their values out again in our event handler, as we'll see.
+This is a simple form. We don't need to worry about an action for it, as we'll be intercepting submit events on the form and updating data via javascript. (It doesn't make sense to provide a non-JS fallback when you consider that a Meteor app is completely non-functional with JavaScript disabled).
 
 ### Creating posts
 
@@ -109,7 +107,7 @@ Template.postSubmit.events({
 
 This function uses [jQuery](http://jquery.com) to parse out the values of our various form fields, and populate a new post object from the results. We need to ensure we `preventDefault` on the `event` argument to our handler to make sure the browser doesn't go ahead and try to submit the form. 
 
-Finally, we can route to the show page for our new post! The `insert()` function on a collection returns the generated `id` for the object that has been inserted into the database. Luckily the `Meteor.Router.routes.post` function can handle either an object with an `_id` attribute or an id directly, so our code works well.
+Finally, we can route to the show page for our new post! The `insert()` function on a collection returns the generated `id` for the object that has been inserted into the database. Luckily the `Meteor.Router.to()` function can handle either an object with an `_id` attribute or an id directly as its second argument, so our code works well.
 
 The net result is the user hitting submit, a post being created, and the user instantly being taken to the discussion page for that new post.
 
@@ -165,7 +163,7 @@ Let's fix this.
 
 ### Securing access to the new post form
 
-Let's start by not letting logged out users see the new posts form. We'll do that at the router level, by defining a Routing filter.
+Let's start by not letting logged out users see the new posts form. We'll do that at the router level, by defining a routing filter.
 
 A routing filter is a function that takes a routing end point and, after checking the application's state, returns a new end point. Sounds complex? Well, as we'll see in this example, it's usually pretty straightforward.
 
@@ -194,7 +192,7 @@ Meteor.Router.filters({
 
 Meteor.Router.filter('requireLogin', {only: 'postSubmit'});
 ```
-<%= caption "client/lib/router.js" %>
+<%= caption "client/helpers/router.js" %>
 
 We also add the template for the access denied page, which is pretty simple:
 
@@ -356,7 +354,7 @@ Meteor.methods({
 ```
 <%= caption "collections/posts.js" %>
 
-<%= commit "7-6", "Only show submit post link if logged in." %>
+<%= commit "7-6", "Use a method to submit the post." %>
 
 This method is a little complicated, but hopefully you can follow along.
 
@@ -384,5 +382,5 @@ Template.postsList.helpers({
 });
 ```
 <%= caption "client/views/posts/posts_list.js" %>
-<%= commit "7-6", "Only show submit post link if logged in." %>
+<%= commit "7-7", "Sort posts by submitted timestamp." %>
 

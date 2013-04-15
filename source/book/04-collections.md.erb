@@ -13,7 +13,7 @@ number: 4
 
 - Learn about Meteor's core feature: realtime collections
 - Understand how Meteor's data synchronization works
-- Integrate collections into Miniscope to our templates
+- Integrate collections with our templates
 - Turn our basic prototype into a functioning realtime application!
 <% end %>
 
@@ -21,13 +21,13 @@ number: 4
 
 In chapter one, we spoke about the core feature of Meteor, the automatic synchronisation of data between client and server. In this chapter, we'll take a closer look at how that works, and observe the operation of the key piece of technology that enables this, the `Meteor.Collection`.
 
-We are building a social news app, so the first thing we want to do is make a list of links that people have posted. We'll call such a thing a "post".
+We are building a social news app, so the first thing we want to do is make a list of links that people have posted. We'll call such a thing a "post."
 
-We need to store these posts somewhere. As of this writing, Meteor comes bundled with a Mongo database, which runs on your server and is your *persistent* store of data.
+We need to store these posts somewhere. As of this writing, Meteor comes bundled with a Mongo database, which runs on your server and is your *persistent* data store.
 
 So, although a user's browser may contain some kind of state (for instance which page they are on, or the comment they are currently typing), the server, and specifically Mongo, contains the permanent, canonical data source. By *canonical*, we mean that it is the same for all users--each user might be on a different page, but the master list of posts is the same for all of them.
 
-The place that this data lives in Meteor is the **Collection**. A collection is a special store of data that (along with publications) takes care of the job of synchronising data to and from each connected user's browser, and into the Mongo database. In *realtime*. Let's see how.
+The place that this data lives in Meteor is the **Collection**. A collection is a special data structure that (along with publications) takes care of the job of synchronising data to and from each connected user's browser, and into the Mongo database. In *realtime*. Let's see how.
 
 Seeing as we want our posts to be permanent and shared between users, we start by creating a Posts collection.
 
@@ -46,7 +46,7 @@ On the server, the collection has the job of talking to the Mongo database, and 
 
 ### What a collection does on the server
 
-On the server, the collection acts as an API into to your Mongo database. So in your server-side code, you can write Mongo commands like `Posts.insert()` or `Posts.update`, and they will, as you might expect, make changes to the `posts` collection stored inside the Mongo database.
+On the server, the collection acts as an API into to your Mongo database. So in your server-side code, you can write Mongo commands like `Posts.insert()` or `Posts.update()`, and they will, as you might expect, make changes to the `posts` collection stored inside the Mongo database.
 
 You can take a look inside the Mongo database easily enough. Open up a second terminal window (while `mrt` is still running in your first), go to your app's directory, and run the command `mrt Mongo`. This will initiate a Mongo shell, into which you can type standard Mongo commands:
 
@@ -115,7 +115,7 @@ Not very surprisingly, the post made it into the local collection. Now let's che
 ```js
 ❯ db.posts.find();
 {title: "A new post", _id: 'xxx'};
-{title: "A second post", _id: 'xxx'};
+{title: "A second post", _id: 'yyy'};
 ```
 <%= caption "Mongo console" %>
 
@@ -184,7 +184,7 @@ Now run your server again with `mrt`, and behind the scenes these three posts wi
 
 ### Wiring the data to our HTML with helpers
 
-Now, if we open up a browser console, we see all three posts loaded up into miniMongo:
+Now, if we open up a browser console, we see all three posts loaded up into MiniMongo:
 
 ```js
 ❯ Posts.find().fetch();
@@ -204,6 +204,7 @@ Template.postsList.helpers({
 });
 ```
 <%= caption "client/views/posts/posts_list.js" %>
+<%= highlight "2~4" %>
 
 <%= commit "4-3", "Wired collection into `postsList` template." %>
 
@@ -259,7 +260,7 @@ Meteor.publish('posts', function() {
 ```
 <%= caption "server/publications.js" %>
 
-In the client, we need to *subscribe* to the publication. We'll just add this line to `forum.js`:
+In the client, we need to *subscribe* to the publication. We'll just add this line to `main.js`:
 
 ```js
 Meteor.subscribe('posts');

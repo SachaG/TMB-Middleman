@@ -44,7 +44,7 @@ Let's create a new file named `main.html` inside our `/client` directory, and fi
 ```
 <%= caption "client/main.html" %>
 
-This is going to be our main app template. As you can see it's all HTML except for a single `{{> postList}}` tag, which we'll soon explain. But for now, let's create a couple more templates. 
+This is going to be our main app template. As you can see it's all HTML except for a single `{{> postList}}` tag, which is an insertion point for the `postsList` template, as we'll soon see. But for now, let's create a couple more templates. 
 
 ### Meteor Templates
 
@@ -78,9 +78,11 @@ And `post_item.html`:
 ```
 <%= caption "client/views/posts/post_item.html" %>
 
+Note the `name="postsList"` attribute of the template element. This is the name that will be used by Meteor to keep track of what template goes where. 
+
 It's time to introduce Meteor's templating system, [Handlebars](http://handlebarsjs.com). Handlebars is simply HTML, with the addition of three things: *includes*, *expressions* and *block helpers*.
 
-*Includes* use the `{{> templateName}}` syntax, and simply tell Meteor to replace them with the template of the same name, in our case `postItem`.
+*Includes* use the `{{> templateName}}` syntax, and simply tell Meteor to replace the include with the template of the same name (in our case `postItem`).
 
 *Expressions* such as `{{title}}` either call a property of the current object, or the return value of a template helper as defined in the current template's controller (more on this later). 
 
@@ -94,7 +96,7 @@ Where is this `posts` object coming from by the way? Good question. It's actuall
 
 The `postItem` template itself if fairly straightforward. It only uses three expressions, two of which (`{{url}}` and `{{title}}`) return the object's properties, and one of which (`{{domain}}`) calls a template helper. 
 
-We've been mentioning "template helpers" a lot throughout this chapter without really mentioning what they do. But we can't really explain this without also introducing controllers, which coincidentally happens to be the topic of the next section!
+We've been mentioning "template helpers" a lot throughout this chapter without really mentioning what they do. But explaining this also requires introducing controllers, which coincidentally happens to be the topic of the next section!
 
 ### Controllers
 
@@ -180,7 +182,7 @@ To answer that question we need to go back to our `posts_list.html` template. Th
 
 This means that between both `{{#each}}` tags, each post is assigned to `this` successively, and that extends all the way inside the included template's controller (`post_item.js`). 
 
-We now understand why `this.url` returns the current post's URL. And moreover, when if we use `{{title}}` and `{{url}}` inside our `post_item.html` template, Meteor knows that we mean `this.title` and `this.url` and returns the correct values. 
+We now understand why `this.url` returns the current post's URL. And moreover, if we use `{{title}}` and `{{url}}` inside our `post_item.html` template, Meteor knows that we mean `this.title` and `this.url` and returns the correct values. 
 
 If you've followed along correctly, you should be seeing a list of posts in your browser. That list is just static data, so it doesn't take advantage of Meteor's real-time features just yet. 
 
