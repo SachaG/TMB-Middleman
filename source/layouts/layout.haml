@@ -23,15 +23,12 @@
     /   try{Typekit.load();}catch(e){}  
   %body{:class => yield_content(:body_class)}
     %header
-      .row
-        %h1
-          %a{:href => '/'}
-            %span The 
-            %strong Meteor 
-            %span Book
-        %h2 
-          %a{:href => '/'} Build a Meteor app from scratch
-        %h3 PREVIEW COPY - NOT FOR SHARING
+      %h1
+        %a{:href => "/"}
+          %span The 
+          %strong Meteor 
+          %span Book
+      %h3 PREVIEW COPY - NOT FOR SHARING
     .main
       .row
         =find_and_preserve do

@@ -13,8 +13,8 @@ $small-break: 47.5em;
 }
 
 $total-columns  : 12;
-$column-width   : 20px;
-$gutter-width   : 40px;
+$column-width   : 10px;
+$gutter-width   : 60px;
 $grid-padding   : 0px;
 
 
@@ -26,9 +26,7 @@ $grid-padding   : 0px;
 	position:relative;
 	@include animate(left);
 }
-.book{
-	display:none;
-}
+
 
 // desktop
 @include small{

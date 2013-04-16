@@ -3,11 +3,28 @@ title: Learn Meteor with The Meteor Book - Getting Started Tutorials & Articles
 ---
 
 - content_for(:title, "Learn Meteor with The Meteor Book")
-
-%section
+%section.chapters
+  %h2 Table of Contents
   %ul
     - blog.articles.reverse_each do |post|
       %li
-        %h3
-          %a{:href => "#{post.url}"}
-            =post.title
+        %a.chapter-title{:href => "#{post.url}"}=post.title
+        -unless post.data.sidebar
+          %span.chapter-number=post.data.number
+%section.links
+  .book
+    %img{:src => '/images/meteor_book_illustration.png'}
+  %p
+    Welcome to the Meteor Book members area. 
+    / <br/> You currently have the <strong>Red Giant</strong> package. <a href="#">Upgrade?</a>
+  .screencasts
+    %h3 Screencasts
+    - data.screencasts.each do |screencast|
+      %li
+        %a{:href => screencast.link}=screencast.name
+  .interviews
+    %h3 Interviews
+    - data.interviews.each do |interview|
+      %li
+        %a{:href => interview.link}=interview.name
+

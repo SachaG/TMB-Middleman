@@ -109,6 +109,8 @@ configure :build do
   # set :http_path, "/Content/images/"
 end
 
+activate :livereload
+
 activate :directory_indexes
 
 activate :syntax#,:linenos => 'table'
