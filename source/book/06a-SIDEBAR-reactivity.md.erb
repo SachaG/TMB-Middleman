@@ -22,7 +22,7 @@ Posts.find().observe({
 
 However, such code is going to get pretty complex pretty fast. In fact, every time we such use a dynamic attribute of our post (or a combination of such attributes) in our template, we're going to have to hook up such a observer and remember to keep it up to date. 
 
-Meteor provides us with a better way; reactivity, which is at it's core a **declarative** approach. Rather than saying "when X changes, change Y in this way", we instead say "Y is generated from X in this way", which tells the system that when X changes, it can go ahead and change Y in a sensible way. 
+Meteor provides us with a better way; reactivity, which is at its core a **declarative** approach. Rather than saying "when X changes, change Y in this way", we instead say "Y is generated from X in this way", which tells the system that when X changes, it can go ahead and change Y in a sensible way. 
 
 This is a powerful concept, because as a realtime system is a system with many inputs that are changing at unpredictable times. Of course we could manage with an event based system where the developer is responsible for determining exactly what needs to change as the result of each event. It would quickly become very complicated however; imagine a field that depends on three or four different inputs, each of which could change at any time. Or, alternatively, when an input changes, how would you keep track of what depends on it, and what changes you need to make?
 
@@ -35,7 +35,7 @@ The way that dependency tracking in Meteor works is disarmingly simple.
 
 Whenever you are generating some data that takes reactive inputs, you set up a `Computation`. (In fact you usually don't do this explicitly, as Meteor sets up a special Computation for each Template that it renders). A computation wraps up some code that executes.
 
-When that code executes, it may call a *reactive function*. Such a function is simply a normal function that tracks all the computations that have called it in a simple list (which is called a `Dependency`). When a reactive function wants to indicate that its value has changed, it simply calls `dependency.changed()` and each Computation is *invalidated* (which basically means told that it's inputs have changed). 
+When that code executes, it may call a *reactive function*. Such a function is simply a normal function that tracks all the computations that have called it in a simple list (which is called a `Dependency`). When a reactive function wants to indicate that its value has changed, it simply calls `dependency.changed()` and each Computation is *invalidated* (which basically means told that its inputs have changed). 
 
 Most computations are setup to simply re-evaluate when they are invalidated (and this is what happens to the template computations). There's a simple way to create such a computation; the `Meteor.autorun` function:
 
