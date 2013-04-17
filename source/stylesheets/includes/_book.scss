@@ -128,14 +128,7 @@
 .mbottom{
 	margin-bottom:20px;
 }
-.commit{
-	background:#e1dee9;
-	padding:20px;
-	@extend .mbottom;
-	a{
-		display:block;
-	}
-}
+
 .note{
 	background:#fcf9e2;
 	@extend .mbottom;
@@ -229,5 +222,59 @@ pre{
 	}
 	.browser-prompt{
 		color:#4289ff;
+	}
+}
+.commit{
+	// background:#e1dee9;
+	padding:20px;
+	@extend .mbottom;
+	@include cf;
+	border:4px solid $light-bg;
+	@include border-radius(10px);
+	img{
+		display:block;
+		float:left;
+		width:40px;
+		margin:0;
+	}
+	.message{
+		float:left;
+		margin:0 0 0 15px;
+	}
+	h4{
+		margin:0;
+		line-height:1;
+	}
+	p{
+		margin:0;
+	}
+	.actions{
+		float:right;
+		padding-top:4px;
+	}
+	a{
+		float:left;
+		display:block;
+		@include border-radius(3px);
+		background:$light-bg;
+		margin-right:5px;
+		padding:5px 10px;
+		font-size:14px;
+		&:nth-of-type(2n){
+			margin-right:0;
+		}
+		&:hover{
+			background:$purple;
+		}
+	}
+	.commit-link{
+		@include medium{
+
+		}
+	}
+	.instance-link{
+		@include medium{
+
+		}
 	}
 }
