@@ -17,7 +17,7 @@ module Rack
         resp = @static.call(env.merge!({"PATH_INFO" => orig_path + path}))
         break if 404 != resp[0] && found = resp
       end
-      found or @app.call
+      found or @app.call(env)
     end
   end
 end
