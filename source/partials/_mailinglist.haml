@@ -9,6 +9,8 @@
         %input#landing{:type=>"hidden", :name=>"LANDING", :value=>"The Meteor Book"}
         %input#origin{:type=>"hidden", :name=>"ORIGIN"}
         %button.submit.button{:name => "subscribe", :type => "submit"} Subscribe
+      %h3 Please login...
+      %div{'data-hull-widget' => 'identity@hull', 'data-hull-provider' => 'email' }
     .share
       %h4 Share the news!
       %ul
@@ -17,4 +19,6 @@
         %li
           %a.ss-icon{:href => "http://www.facebook.com/sharer/sharer.php?src=bm&v=4&i=1359253178&u=http%3A%2F%2Fthemeteorbook.com", :target => "_blank"} facebook  
         %li
-          %a.ss-icon{:href => "https://plus.google.com/share?url=http://themeteorbook.com", :target => "_blank"} googleplus  
+          %a.ss-icon{:href => "https://plus.google.com/share?url=http://themeteorbook.com", :target => "_blank"} googleplus
+    
+    
