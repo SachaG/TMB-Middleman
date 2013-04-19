@@ -2,3 +2,4 @@ appId:    '5170c5025a5c61423200003c'
 orgUrl:   'http://themeteorbook.alpha.hullapp.io'
 version:  '0.4.1'
 debug:    true
+jsUrl:	'http://hull-js.s3.amazonaws.com'
