@@ -113,7 +113,7 @@ activate :livereload
 
 activate :directory_indexes
 
-activate :syntax#,:linenos => 'table'
+activate :syntax #,:linenos => 'table'
 
 set :markdown_engine, :redcarpet
 set :markdown, :fenced_code_blocks => true, :smartypants => true
@@ -151,3 +151,27 @@ helpers do
     concat %Q{<div class="note chapter">#{content}</div>}
   end
 end
+
+require "better_errors"
+use BetterErrors::Middleware
+BetterErrors.application_root = File.dirname(__FILE__)
+
+
+require 'hull/paywall'
+
+hull_config = {
+  app_id:     '',
+  app_secret: '',
+  endpoint:   'http://YOU_ORG_NAMESPACE.alpha.hullapp.io',
+  paths: {
+    # keys    : path regexp to protect
+    # values  : gumroad permalink to unlock the content & redirect to page to buy content...
+    # -> you must create Products on Gumroad and give them short names
+    # in the 'More Options' form -> http://gum.co/my-permalink
+    '^/2013/.*' => { permalink: 'hull', redirect: '/buy_blog_2013' },
+    '^/other/.*' => { permalink: 'fuck', redirect: '/buy_other' }
+  }
+}
+
+
+use Hull::Paywall, hull_config

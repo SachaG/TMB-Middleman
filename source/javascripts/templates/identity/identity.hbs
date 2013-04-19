@@ -1,0 +1,10 @@
+{{#if loggedIn.email}}
+I am 
+{{#each me.identities}}
+{{#if picture}}<img src="{{picture}}" width='24' height='24' />{{/if}}
+<strong>{{email}}</strong>
+{{/each}}
+<button class='btn' data-hull-action='logout'>Logout</button>
+{{else}}
+<button class='btn' data-hull-action='login' data-hull-provider='email'>Login</button>
+{{/if}}

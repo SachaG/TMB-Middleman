@@ -39,7 +39,13 @@
         
     %script{:src => "/javascripts/jquery-migrate-1.1.1.js"}   
     %script{:src => "/javascripts/annotator-full.min.js"}    
+    %script{:src => "#{data.hull.jsUrl}/#{data.hull.version}/hull.js"}
     %script{:src => "/javascripts/script.js"}
+    %script{:src => "/javascripts/templates.js"}
+    :javascript
+      Hull.init({ appId: "#{data.hull.appId}", orgUrl: "#{data.hull.orgUrl}", debug: #{data.hull.debug || 'false' } })
+
+    
     :javascript
         var _gaq = _gaq || [];
         _gaq.push(['_setAccount', 'UA-38246482-1']);
