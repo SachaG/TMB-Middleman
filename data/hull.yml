@@ -1,0 +1,4 @@
+appId:    ''
+orgUrl:   'http://YOUR_ORG_NAMESPACE.alpha.hullapp.io'
+version:  '0.4.1'
+debug:    true
