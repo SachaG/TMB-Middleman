@@ -41,8 +41,14 @@
     %footer
       .row
         &copy; 2013 <a href="http://tom.thesnail.org">Tom Coleman</a> and <a href="http://sachagreif.com">Sacha Greif</a>
-        
+    
+    %script{:src => "#{data.hull.jsUrl}/#{data.hull.version}/hull.js"}
     %script{:src => "/javascripts/script.js"}
+    %script{:src => "/javascripts/templates.js"}
+    :javascript
+      Hull.init({ appId: "#{data.hull.appId}", orgUrl: "#{data.hull.orgUrl}", debug: #{data.hull.debug || 'false' } })
+
+    
     :javascript
         var _gaq = _gaq || [];
         _gaq.push(['_setAccount', 'UA-38246482-1']);
