@@ -13,7 +13,7 @@ By now you should have a good grasp of how publications and subscriptions intera
 
 In an earlier sidebar, we saw some of the more common publication and subscription patterns, and we learned how the `_publishCursor` function made them very easy to implement for our own sites.
 
-Well, firstly we should remember exactly what `publishCursor` does for us exactly. It takes call the documents that match a given cursor, and pushes them down into the client side collection *of the same name* as where they came from.
+Well, firstly we should remember exactly what `publishCursor` does for us exactly. It takes all the documents that match a given cursor, and pushes them down into the client side collection *of the same name* as where they came from.
 However the name of the _publication_ is in no way involved.
 
 <%= diagram "doublecollection", "Publishing a collection twice", "pull-right" %>
@@ -36,7 +36,7 @@ Now, when the client subscribes to those two publications (using `autorun` to en
 
 What happens to the overlapping post, which is sent by both subscriptions? Meteor takes care of merging the fields sent, which ends up working as we might expect. 
 
-This is great, because now when we render the list of post summaries, we are dealing with data objects that have just enough data for us to show what we need. However, when we render out the page for a single post, we have everything we need to show it. Of course, we need to take care on the client to not expect all fields to be available on all post in this case---this is a common gotcha!
+This is great, because now when we render the list of post summaries, we are dealing with data objects that have just enough data for us to show what we need. However, when we render out the page for a single post, we have everything we need to show it. Of course, we need to take care on the client to not expect all fields to be available on all posts in this case---this is a common gotcha!
 
 ### Multiple Collections in a Single Subscription
 
@@ -114,7 +114,7 @@ Why would we ever want to do this? One reason is *Single Table Inheritance*. Sup
 Then although we would have a single `Resources` collection on the server, we could achieve `Videos` and `Images` collections on the client with the following bit of magic:
 
 ```js
-  Meteor.publish(function('videos') {
+  Meteor.publish('videos', function() {
     var sub = this;
     
     var handle = Resources.find({type: 'video'}).observe({
