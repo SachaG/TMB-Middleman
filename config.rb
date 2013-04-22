@@ -6,8 +6,8 @@
 
 activate :blog do |blog|
   # blog.prefix = "chapter"
-  blog.sources = "book/:title.html"
-  blog.permalink = ":title"
+  blog.sources = "chapters/:title.html"
+  blog.permalink = "chapters/:title"
   # blog.sources = ":year-:month-:day-:title.html"
   # blog.taglink = "tags/:tag.html"
   # blog.layout = "layout"
@@ -27,7 +27,7 @@ activate :blog do |blog|
 end
 
 page "/feed.xml", :layout => false
-page "book/*", :layout => :page_layout
+page "chapters/*", :layout => :page_layout
 
 ### 
 # Compass
