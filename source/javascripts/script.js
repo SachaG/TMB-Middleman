@@ -1,8 +1,12 @@
 $(function(){
 
   // annotator
-  $('.post-content').annotator().annotator('setupPlugins', {}, {
+  var annotator = $('.post-content').annotator().annotator('setupPlugins', {}, {
     Filter: false
+  }).data('annotator');
+
+  annotator.addPlugin('Permissions', {
+    user: 'Sacha'
   });
 
   // browser console prompt

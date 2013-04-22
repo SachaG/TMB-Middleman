@@ -6,8 +6,8 @@
 
 activate :blog do |blog|
   # blog.prefix = "chapter"
-  blog.sources = "book/:title.html"
-  blog.permalink = ":title"
+  blog.sources = "chapters/:title.html"
+  blog.permalink = "chapters/:title"
   # blog.sources = ":year-:month-:day-:title.html"
   # blog.taglink = "tags/:tag.html"
   # blog.layout = "layout"
@@ -27,7 +27,7 @@ activate :blog do |blog|
 end
 
 page "/feed.xml", :layout => false
-page "book/*", :layout => :page_layout
+page "chapters/*", :layout => :page_layout
 
 ### 
 # Compass
@@ -125,8 +125,8 @@ helpers do
   def caption(content)
     %Q{<div class="caption">#{content}</div>}
   end
-  def image(css_class, src, caption)
-    %Q{<figure class="#{css_class}"><img src="#{src}" alt="#{caption}"/><figcaption>#{caption}</figcaption></figure>}
+  def image(src, css_class)
+    %Q{<img class="#{css_class}" src="/images/#{src}"/>}
   end
   def diagram(name, caption, css_class="")
     %Q{<figure class="diagram #{css_class}"><img src="/images/diagrams/#{name}@2x.png" alt="#{caption}"/><figcaption>#{caption}</figcaption></figure>}
@@ -168,8 +168,7 @@ hull_config = {
     # values  : gumroad permalink to unlock the content & redirect to page to buy content...
     # -> you must create Products on Gumroad and give them short names
     # in the 'More Options' form -> http://gum.co/my-permalink
-    '^/test/.*' => { permalink: 'themeteorbook', redirect: '/buy' },
-    '^/01-introduction/.*' => { permalink: 'themeteorbook', redirect: '/buy' }
+    '^/chapters/.*' => { permalink: 'themeteorbook', redirect: '/buy' }
   }
 }
 
