@@ -125,8 +125,8 @@ helpers do
   def caption(content)
     %Q{<div class="caption">#{content}</div>}
   end
-  def image(css_class, src, caption)
-    %Q{<figure class="#{css_class}"><img src="#{src}" alt="#{caption}"/><figcaption>#{caption}</figcaption></figure>}
+  def image(src, css_class)
+    %Q{<img class="#{css_class}" src="/images/#{src}"/>}
   end
   def diagram(name, caption, css_class="")
     %Q{<figure class="diagram #{css_class}"><img src="/images/diagrams/#{name}@2x.png" alt="#{caption}"/><figcaption>#{caption}</figcaption></figure>}
