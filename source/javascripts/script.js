@@ -1,19 +1,19 @@
 $(function(){
 
   // annotator
-  var annotator = $('.post-content').annotator().annotator('setupPlugins', {}, {
-    Filter: false
-  }).data('annotator');
+  // var annotator = $('.post-content').annotator().annotator('setupPlugins', {}, {
+  //   Filter: false
+  // }).data('annotator');
 
-  annotator.addPlugin('Permissions', {
-    user: 'testtesttest',
-    permissions: {
-      'read':   [],
-      'update': [],
-      'delete': [],
-      'admin':  []
-    }
-  });
+  // annotator.addPlugin('Permissions', {
+  //   user: 'testtesttest',
+  //   permissions: {
+  //     'read':   [],
+  //     'update': [],
+  //     'delete': [],
+  //     'admin':  []
+  //   }
+  // });
 
   // browser console prompt
   $('span:contains("❯")').removeClass('err').addClass('browser-prompt');
