@@ -1,14 +1,14 @@
 $(function(){
 
   // annotator
-  // var annotator = $('.post-content').annotator().annotator('setupPlugins', {}, {
-  //   Filter: false
-  // }).data('annotator');
+  //   var annotator = $('.post-content').annotator().annotator('setupPlugins', {}, {
+  //     Filter: false
+  //   }).data('annotator');
 
   // annotator.addPlugin('Permissions', {
-  //   user: 'testtesttest',
+  //   user: 'Sacha',
   //   permissions: {
-  //     'read':   [],
+  //     'read':   ['testtesttest'],
   //     'update': [],
   //     'delete': [],
   //     'admin':  []
