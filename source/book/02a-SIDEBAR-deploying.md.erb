@@ -86,43 +86,60 @@ $ heroku config
 
 Up to now, we've only talked about deploying on managed platforms like Meteor.com or Heroku. But let's see how to take it one step further and configure a server from scratch to run our app on a service like [EC2](http://aws.amazon.com/ec2/) or [Digital Ocean](http://digitalocean.com). It's actually not much harder, once you know one or two handy tricks.
 
-Let's walk through deploying a Meteor app on an Ubuntu 12.10 server on EC2. You can fire an EC2 instance from your Amazon management console, then connect to it in the usual way.
+<% note do %>
+
+**Note:** We've packaged the whole following process into [Meteoric](https://github.com/julien-c/meteoric.sh), a convenient script you can install on your local environment that will let you deploy Microscope (or your own app) to EC2 with just two commands: `meteoric setup` and `meteoric deploy`!
+
+<% end %>
+
+Let's walk through deploying a Meteor app on an **Ubuntu 12.10 server** on EC2. You can fire an EC2 instance from your Amazon management console, then connect to it in the usual way.
 
 You will first need to install git and MongoDB:
 
-`sudo apt-get install git mongodb`
-
-The first trick when deploying a Meteor app to your own server is that `node` still evolves quite quickly (including some breaking API changes), and the Meteor support for the latest stable node version sometimes lags for a while. Fortunately, you can use **`nvm`** ([Node version manager](https://github.com/creationix/nvm)) which is much more exhaustive than Ubuntu's apt-get (i.e., you can use any past version of node), and is way easier to use than building your own node from source.
-
-To install `nvm`, just type (you need to install git first, or it will fail silently):
-
-```
-curl https://raw.github.com/creationix/nvm/master/install.sh | sh
+```bash
+$ sudo apt-get install git mongodb
 ```
 
-At the time of this writing, meteor requires node 0.8 (though node 0.10 has been released), so let's install the latest stable release of node 0.8.x:
+The first trick when deploying a Meteor app to your own server is that `node` still evolves quite quickly (including some breaking API changes), and the Meteor support for the latest stable node version sometimes lags for a while. At the time of this writing for instance (April 2013), meteor runs on node 0.8.x while the latest stable node is 0.10.x (support for node 0.10.x should land soon though!).
 
+An option would be to use **`nvm`** ([Node version manager](https://github.com/creationix/nvm)), but it's a bit tricky to set up robustly, in particular if you're going to run node as `root` (more on that later). 
+
+The easier way on Ubuntu is to add the `apt-get` repository for the `legacy` node release (i.e., the last stable release before the current stable release):
+
+```bash
+$ sudo add-apt-repository ppa:chris-lea/node.js-legacy
+$ sudo apt-get update
+$ sudo apt-get install nodejs npm
 ```
-nvm install 0.8
+
+You can now install meteor and meteorite:
+
+```bash
+$ curl https://install.meteor.com | /bin/sh
+$ sudo npm install -g meteorite
 ```
 
 Then, checkout your app's Git repo (for instance, `git clone https://github.com/SachaG/microscope.git`), for example in `/home/meteor`.
 
-The next step is to bundle your app, i.e. generate a fully-contained Node application in a tarball. It is certainly possible to bundle your app in your development environment and then just transmit the tarball (as opposed to our approach of checking out the actual code on the server), however, it would require rebuilding native packages like `fibers` every time you update your app, and it simply feels more tiresome in the long term.
+The next step is to bundle your app, i.e. generate a fully-contained Node application in a tarball. It is certainly possible to bundle your app in your development environment and then just transmit the tarball, but for now we'd recommend checking out the actual code on the server. This approach has a couple of advantages:
+* it is Git-based (just specify your project's repository)
+* it doesn't require you to have meteor installed locally
+* it doesn't require re-building packages like fibers (which are platform-dependent) 
+* and finally, it should allow for hot code fixes (your node server doesn't stop when deploying your app)
 
-Here's how we bundle and untar our app (it would actually be handy to be able to “bundle as a directory, not a tarball”):
+Here's how we bundle and untar our app (it would actually be handy for Meteor to be able to directly "bundle as a directory, not a tarball"):
 
-```
-cd mymeteorapp 
-meteor bundle ../bundle.tgz 
-cd ..
-tar -zxvf bundle.tgz 
+```bash
+$ cd mymeteorapp 
+$ meteor bundle ../bundle.tgz 
+$ cd ..
+$ tar -zxvf bundle.tgz 
 ```
 
 Finally, let's run the app:
 
-```
-sudo PORT=80 MONGO_URL=mongodb://localhost:27017/myapp node bundle/main.js
+```bash
+$ sudo PORT=80 MONGO_URL=mongodb://localhost:27017/myapp ROOT_URL=http://myapp.com node bundle/main.js
 ```
 
 If you're serving your app on HTTP's standard port 80, remember to run this command as root (as Node's error message is not that clear if you don't).
@@ -131,12 +148,14 @@ Also, like on Heroku, you can specify configuration options (`MAIL_URL`, `ROOT_U
 
 Finally, we'll need to make sure your app runs continuously, i.e. to have it restart automatically if it crashes. The simplest way to do that is to use `forever`:
 
-```
-npm install -g forever
-forever start bundle/main.js
+```bash
+$ npm install -g forever
+$ forever start bundle/main.js
 ```
 
-Something is still missing though: automatic startup of the app on the machine's reboot. Using Ubuntu's Upstart, you can very easily tell your OS that your meteor app should start (using `forever`) automatically. You can simply put the following snippet into e.g. `/etc/init/meteor.conf`, and type `service start meteor`. You don't need automatic respawns, as `forever` is already taking care of that!
+Forever preserves environment variables, so you just need to export them before starting the app: `export PORT=80 MONGO_URL=mongodb://localhost:27017/myapp ROOT_URL=http://myapp.com`.
+
+Something is still missing though: automatic startup of the app on the machine's reboot. Using Ubuntu's Upstart, you can very easily tell your OS that your meteor app should start (using `forever`) automatically whenever the server restarts. You can simply put the following snippet into e.g. `/etc/init/meteor.conf`, and type `service meteor start`. You don't need automatic respawns, as `forever` is already taking care of that!
 
 ```
 # /etc/init/meteor.conf
@@ -147,6 +166,7 @@ stop on shutdown
 script
 
     cd /home/ubuntu
+    export PORT=80 MONGO_URL=mongodb://localhost:27017/myapp ROOT_URL=http://myapp.com
     exec forever start bundle/main.js
 
 end script

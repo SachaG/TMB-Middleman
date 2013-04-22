@@ -338,7 +338,9 @@ Template.postSubmit.events({
 ```
 <%= caption "client/views/posts/post_submit.js" %>
 
-The `Meteor.call` function calls a method named by it's first argument. You can provide arguments to the call (in this case, the `post` object we constructed from the form), and finally attach a callback, which will execute when the server-side method is done. Here we simply alert the user if there's a problem, or redirect the user to the freshly created post's discussion page if not.
+
+The `Meteor.call` function calls a method named by its first argument. You can provide arguments to the call (in this case, the `post` object we constructed from the form), and finally attach a callback, which will execute when the server-side method is done. Here we simply alert to the user if there's a problem, or redirect the user to the freshly created post's discussion page if not.
+
 
 We'll define the method in our `collections/posts.js` file:
 

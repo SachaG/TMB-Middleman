@@ -276,7 +276,7 @@ Now, in the javascript console, insert another post. When you tab back to the in
 
 ### Connecting Collections: Publications and Subscriptions
 
-So far, we've had the `autopublish` package enabled, which, as we mentioned earlier, is not intended for production applications. Like its name indicates, this package simply says that each collection should be shared in it's entirety to each connected client. This isn't what we want anymore, so let's turn it off.
+So far, we've had the `autopublish` package enabled, which, as we mentioned earlier, is not intended for production applications. Like its name indicates, this package simply says that each collection should be shared in its entirety to each connected client. This isn't what we want anymore, so let's turn it off.
 
 Open a new terminal window, and type:
 
@@ -286,7 +286,7 @@ $ mrt remove autopublish
 
 This has an instant effect. If you look in your browser now, you'll see that all our posts have gone! This is because we were relying on `autopublish` to make sure our clientside collection of posts was a mirror of all the posts in the database. 
 
-Although eventually we'll need to only transfer the posts that the user actually needs to see (taking into account things like pagination), for now, we'll just manually setup `Posts` to be published in it's entirety. To do so, we create a simple publish function that returns a `Cursor` which references all the posts:
+Although eventually we'll need to only transfer the posts that the user actually needs to see (taking into account things like pagination), for now, we'll just manually setup `Posts` to be published in its entirety. To do so, we create a simple publish function that returns a `Cursor` which references all the posts:
 
 ```js
 Meteor.publish('posts', function() {
