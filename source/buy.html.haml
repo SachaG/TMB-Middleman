@@ -3,6 +3,14 @@ title: Learn Meteor with The Meteor Book - Getting Started Tutorials & Articles
 ---
 
 - content_for(:title, "Learn Meteor with The Meteor Book")
-%section.chapters
-  %h2 buy or log in
-  %div{'data-hull-widget' => 'identity@hull', 'data-hull-provider' => 'email' } log in
+%section
+  %h2 Sorry, it seems like you haven't bought the book yet!
+  %ol
+    %li
+      %a{:href => 'http://gum.co/themeteorbook'} buy the book
+      %span (don't worry, it's free if you put "0")
+    %li
+      log in with <a href="https://login.persona.org/">Persona</a>:
+      %div{'data-hull-widget' => 'identity@hull', 'data-hull-provider' => 'email' } log in
+    %li
+      %a{:href => "/test"} Then try again

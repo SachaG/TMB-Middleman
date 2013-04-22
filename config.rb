@@ -168,7 +168,8 @@ hull_config = {
     # values  : gumroad permalink to unlock the content & redirect to page to buy content...
     # -> you must create Products on Gumroad and give them short names
     # in the 'More Options' form -> http://gum.co/my-permalink
-    '^/chapters/.*' => { permalink: 'themeteorbook', redirect: '/buy' }
+    # '^/chapters/.*' => { permalink: 'themeteorbook', redirect: '/buy' },
+    '^/test' => { permalink: 'themeteorbook', redirect: '/buy' }
   }
 }
 
