@@ -19,7 +19,7 @@ number: 3
 
 ### Our First Template
 
-To ease into Meteor development, we'll adopt an outside-in approach. In other words we'll build a static HTML outer shell first, and then hook it up to our app's inner workings.  
+To ease into Meteor development, we'll adopt an outside-in approach. In other words we'll build a "dumb" HTML/JavaScript outer shell first, and then hook it up to our app's inner workings later on.  
 
 This means that in this chapter we'll only concern ourselves with what's happening inside the `/client` directory. 
 
@@ -52,6 +52,16 @@ At its core, a social news site is made up of posts organized in lists. So that'
 
 Let's create a `/views` directory inside `/client`. This will be where we put all our templates. And to keep things tidy we'll also create `/posts` inside `/views` just for our post-related templates. 
 
+<% note do %>
+
+### Finding Files
+
+Meteor is great at finding files. No matter where you put your code in the `/client` directory, Meteor will find it and compile it properly. This means you never need to manually write include paths for JavaScript or CSS files. 
+
+It also means you could very well put all your files in the same directory, or even all your code in the same file. But since Meteor will compile everything to a single minified file anyway, we'd rather keep things well-organized and use a cleaner file structure. 
+
+<% end %>
+
 We're finally ready to create our second template. Inside `client/views/posts`, create `posts_list.html`:
 
 ```html
@@ -80,13 +90,21 @@ And `post_item.html`:
 
 Note the `name="postsList"` attribute of the template element. This is the name that will be used by Meteor to keep track of what template goes where. 
 
-It's time to introduce Meteor's templating system, [Handlebars](http://handlebarsjs.com). Handlebars is simply HTML, with the addition of three things: *includes*, *expressions* and *block helpers*.
+It's time to introduce Meteor's templating system, [Handlebars](http://handlebarsjs.com). Handlebars is simply HTML, with the addition of three things: *partials*, *expressions* and *block helpers*.
 
-*Includes* use the `{{> templateName}}` syntax, and simply tell Meteor to replace the include with the template of the same name (in our case `postItem`).
+*Partials* use the `{{> templateName}}` syntax, and simply tell Meteor to replace the partial with the template of the same name (in our case `postItem`).
 
 *Expressions* such as `{{title}}` either call a property of the current object, or the return value of a template helper as defined in the current template's controller (more on this later). 
 
 Finally, *block helpers* are special tags that control the flow of the template, like `{{#each}}…{{/each}}` or `{{#if}}…{{/if}}`.
+
+<% note do %>
+
+### Going Further
+
+You can refer to the [official Handlebars site](http://handlebarsjs.com) or [this handy tutorial](http://javascriptissexy.com/handlebars-js-tutorial-learn-everything-about-handlebars-js-javascript-templating/) if you'd like to learn more about Handlebars. 
+
+<% end %>
 
 Armed with this knowledge, we can understand what's going on here. 
 
@@ -188,3 +206,12 @@ If you've followed along correctly, you should be seeing a list of posts in your
 
 But we'll show you how to change that in the next chapter!
 
+<% note do %>
+
+### Hot Code Reload
+
+You might've noticed that you didn't even need to manually reload your browser window whenever you changed a file. 
+
+This is because Meteor tracks all the files within your project directory, and automatically refreshes your browser for you whenever it detects a modification to one of them. 
+
+<% end %>

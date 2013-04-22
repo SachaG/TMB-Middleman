@@ -6,7 +6,7 @@ number: 2
 ---
 
 
-Due to the fact that Meteor doesn't yet have support for 3rd party packages (so you can't use other folk's code), some members of the community created [Meteorite](http://oortcloud.github.com/meteorite/), a wrapper for Meteor. Meteorite takes care of installing Meteor for you and hooking it together with any packages you might find.
+Due to the fact that Meteor doesn't yet have support for 3rd party packages (so you can't use other folk's code), Tom Coleman (one of this book's authors) and some members of the community created [Meteorite](http://oortcloud.github.com/meteorite/), a wrapper for Meteor. Meteorite takes care of installing Meteor for you and hooking it together with any packages you might find.
 
 ### Installing Meteor via Meteorite
 
@@ -73,10 +73,11 @@ $ mrt add bootstrap-updated
 
 ### A Note on Packages
 
-When speaking about packages in the context of Meteor, it pays to be specific. Meteor can use three basic types of packages:
+When speaking about packages in the context of Meteor, it pays to be specific. Meteor uses four basic types of packages:
 
-- The core Meteor smart packages are a group of about 15 packages that come bundled with Meteor. You can add them even when you're not using Meteorite, with `meteor add packagename`. 
-- Atmosphere smart packages the are third-party Meteor packages listed on [Atmosphere](http://atmosphere.meteor.com). You will need Meteorite to be able to import and use them. 
+- The Meteor core itself is split into different core packages. You will pretty much never need to worry about these.
+- The Meteor smart packages are a group of [about 15 packages](http://docs.meteor.com/#packages) (you can get the full list with `meteor list`) that come bundled with Meteor. You can add them even when you're not using Meteorite, with `meteor add packagename`. 
+- Atmosphere smart packages are third-party Meteor packages listed on [Atmosphere](http://atmosphere.meteor.com). You will need Meteorite to be able to import and use them. 
 - NPM (Node Package Manager) packages are Node.js packages. Although they don't work out of the box with Meteor, they *can* be used by the previous two types of packages. 
 
 <% end %>
@@ -85,25 +86,25 @@ When speaking about packages in the context of Meteor, it pays to be specific. M
 
 Before we can start coding, let's take a minute to set up our project properly. Open up the `microscope` directory and delete all the files. We're going to start clean! 
 
-When it comes to organizing files, Meteor has 5 main rules:
+Let's create five root directories: `/client`, `/server`, `/public`, `/lib`, and `/collections`. Some of these directories are special. When it comes to files, Meteor has a few rules:
 
 - Code in the `/server` directory only runs on the server.
 - Code in the `/client` directory only runs on the client.
 - Everything else runs on both the client and server.
-- Files in `/lib` are loaded first.
+- Files in `/lib` are loaded before anything else.
+- Any `main.*` file is loaded after everything else.
 - Your static assets (fonts, images, etc.) go in the `/public` directory. 
 
-We'll also have five root directories: `/client`, `/server`, `/public`, `/lib`, and `collections`. Go ahead and create them now. Note that `lib` is a special directory that will always be loaded first. And since it's neither `/client` or `/server`, it also means its contents will run in both environment.
+Note that although Meteor has these rules, it doesn't really force you to use any predefined file structure for your app if you don't want to. So the structure we suggest is just our way of doing things, not a rule set in stone. 
+
+We encourage you to check out the [official Meteor docs](http://docs.meteor.com/#structuringyourapp) if you want more details on this.
 
 ### No public?
 
-OK, we lied. We don't actually need the `public/` directory for the simple reason that Microscope doesn't use any static assets!
+OK, we lied. We don't actually need the `public/` directory for the simple reason that Microscope doesn't use any static assets! But since most other Meteor apps are going to include at least a couple images, we thought it was important to cover it too. 
 
-But since most other Meteor apps are going to include at least a couple images, we thought it was important to cover it too. 
+By the way, you might also notice a hidden `.meteor` directory. This is where Meteor stores its own code, and modifying  things in there is usually a very bad idea. The only exceptions to this are the `.meteor/packages` and `.meteor/release` files, which are respectively used to list your smart packages and the version of Meteor to use.
 
-You might also notice a hidden `.meteor` directory. This is where Meteor stores its own code, and modifying anything in there is a very bad idea. 
-
-Note that Meteor doesn't really impose any predefined file structure to your app. So the structure we suggest is just our way of doing things, not a rule set in stone. 
 
 <% note do %>
 
@@ -111,9 +112,9 @@ Note that Meteor doesn't really impose any predefined file structure to your app
 
 The only thing we'll say about the age-old underscore (`my_variable`) vs camelCase (`myVariable`) debate is that it doesn't really matter which one you pick as long as you stick to it. 
 
-In this book, we're using camelCase because it's the usual JavaScript way of doing thing (after all it's JavaScript, not java_script!). 
+In this book, we're using camelCase because it's the usual JavaScript way of doing things (after all, it's JavaScript, not java_script!). 
 
-The only exceptions to this rule is file names, which will use underscores, and CSS classes, which use hyphens (`my-class`). The reason for this is that in the filesystem, underscores are most common, while the CSS syntax itself already uses hyphens (`font-family`, `text-align`, etc.).
+The only exceptions to this rule are file names, which will use underscores (`my_file.js`), and CSS classes, which use hyphens (`.my-class`). The reason for this is that in the filesystem, underscores are most common, while the CSS syntax itself already uses hyphens (`font-family`, `text-align`, etc.).
 
 <% end %>
 

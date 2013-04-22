@@ -22,7 +22,7 @@ Thankfully, Meteor makes this easy too; so let's get started!
 
 ### Building the new Post page.
 
-We start by defining a route for our new page:
+Let's start by defining a route for our new page:
 
 ```js
 Meteor.Router.add({
@@ -37,8 +37,31 @@ Meteor.Router.add({
 });
 ```
 <%= caption "client/helpers/router.js" %>
+<%= highlight "9" %>
 
-This means if a user browses to the `/submit` URL, we'll display the `postSubmit` template. So we'd better write that template:
+### Adding a Link to the Header
+
+With that route defined, we can now add a link to our submit page in our header:
+
+```html
+<template name="header">
+  <header class="navbar">
+    <div class="navbar-inner">
+      <a class="brand" href="/">Microscope</a>
+      <ul class="nav">
+        <li><a href="{{postSubmitPath}}">New</a></li>
+      </ul>
+      <ul class="nav pull-right">
+        <li>{{loginButtons}}</li>
+      </ul>
+    </div>
+  </header>
+</template>
+```
+<%= caption "client/views/includes/header.html" %>
+<%= highlight "5~7" %>
+
+Setting up our route means if a user browses to the `/submit` URL, Meteor will display the `postSubmit` template. So we'd better write that template:
 
 ```html
 <template name="postSubmit">
@@ -73,7 +96,7 @@ This means if a user browses to the `/submit` URL, we'll display the `postSubmit
 </template>
 
 ```
-<%= caption "client/views/post_submit.html" %>
+<%= caption "client/views/posts/post_submit.html" %>
 
 Note: that's a lot of markup, but it simply comes from using Twitter Bootstrap. None of it is absolutely necessary except for the form elements, but it'll make our app look a little bit nicer. It should look something like this:
 
@@ -101,7 +124,7 @@ Template.postSubmit.events({
   }
 });
 ```
-<%= caption "client/views/post_submit.js" %>
+<%= caption "client/views/posts/post_submit.js" %>
 
 <%= commit "7-1", "Added a submit post page and linked to it in the header." %>
 
@@ -113,7 +136,7 @@ The net result is the user hitting submit, a post being created, and the user in
 
 ### Adding some security
 
-Creating posts is all very well, but we don't want to let any random visitor do it; we want them to be logged in to do so. Of course, we could hide the new post form for logged out users (and we will do that). Still, a user could conceivably create a post in the browser console without being logged in, and we can't have that.
+Creating posts is all very well, but we don't want to let any random visitor do it: we want them to be logged in to do so. Of course, we can start by hiding the new post form from logged out users. Still, a user could conceivably create a post in the browser console without being logged in, and we can't have that.
 
 How do we control data security in Meteor? Well, data security is baked right into Meteor collections; it's just that it's turned off by default when you create a new project. This is so you can easily get started and start doing things without having to think about it.
 
@@ -141,10 +164,11 @@ Posts.allow({
 });
 ```
 <%= caption "collections/posts.js" %>
+<%= highlight "3~8" %>
 
 <%= commit "7-2", "Removed insecure, and allowed certain writes to posts." %>
 
-We call `Posts.allow`, which tells Meteor "this is a set of circumstances under which clients are allowed to do things to the `Posts` collection". In this case, we are saying "clients are allow to insert posts as long as they have a `userId`". 
+We call `Posts.allow`, which tells Meteor "this is a set of circumstances under which clients are allowed to do things to the `Posts` collection". In this case, we are saying "clients are allowed to insert posts as long as they have a `userId`". 
 
 `allow` and `deny` calls are passed the `userId` of the user doing the modification (`null` if there is no user), which is almost always useful.
 As user accounts is tied into the core of Meteor, we can rely on `userId` always being correct. 
@@ -167,7 +191,7 @@ Let's start by not letting logged out users see the new posts form. We'll do tha
 
 A routing filter is a function that takes a routing end point and, after checking the application's state, returns a new end point. Sounds complex? Well, as we'll see in this example, it's usually pretty straightforward.
 
-What we want to do is render an access denied page rather than the `postSubmit` template if the user is not logged in (the user's logged-in-ness is that application state we were talking about). So let's modify router.js like so:
+What we want to do is render the `accessDenied` template rather than the `postSubmit` template if the user is not logged in (the user's logged-in-ness is that application state we were talking about). So let's modify router.js like so:
 
 ```js
 Meteor.Router.add({
@@ -193,6 +217,7 @@ Meteor.Router.filters({
 Meteor.Router.filter('requireLogin', {only: 'postSubmit'});
 ```
 <%= caption "client/helpers/router.js" %>
+<%= highlight "12~21" %>
 
 We also add the template for the access denied page, which is pretty simple:
 
@@ -209,9 +234,9 @@ So if you head to http://localhost:3000/submit/ without being logged in, you sho
 
 <%= screenshot "7-3", "The access denied template" %>
 
-The nice thing about routing filters is that they are _reactive_ too! So we can be declarative, and we don't need to think about callbacks when the user logs in or any such nonsense. When the 'logged-in-ness' of the user changes (for example, try logging in on the page above), the Router's page template instantly changes from `accessDenied` to `postSubmit` without us having to write any explict code to handle it. Simple huh?
+The nice thing about routing filters is that they are _reactive_ too! So we can be declarative, and we don't need to think about callbacks (or any such nonsense) when the user logs in. When the "logged-in-ness"'" of the user changes (for example, try logging in on the page above), the Router's page template instantly changes from `accessDenied` to `postSubmit` without us having to write any explict code to handle it. Simple huh?
 
-Login, then try refreshing the page. You might notice that the access denied template flashes up for a brief moment before the new post page settles in. The reason for this is that Meteor begins rendering templates as soon as possible, before it's talked to the server and checked that the user that the browser thinks you are logged in as even exists.
+Log in, then try refreshing the page. You might notice that the access denied template flashes up for a brief moment before the new post page settles in. The reason for this is that Meteor begins rendering templates as soon as possible, before it's talked to the server and checked that the user that the browser thinks you are logged in as even exists.
 
 To avoid this problem (which is a common class of problem that you'll see more of as you deal with the intricacies of latency between client and server), we'll just display a loading screen for the brief moment that we are waiting (if you think about it, as we don't know if the user will end up logged in or not, we can't show either of the `accessDenied` or `postSubmit` templates, without seeing flashing in one case).
 
@@ -244,7 +269,7 @@ Meteor.Router.filter('requireLogin', {only: 'postSubmit'});
 ```
 <%= caption "client/helpers/router.js" %>
 
-And then create the `loading` template:
+To enhance our loading template, we'll use the `spin` package which lets us include the `{{>spinner}}` template. Add it with `mrt add spin`, and then create the `loading` template like so:
 
 ```html
 <template name="loading">
@@ -255,7 +280,8 @@ And then create the `loading` template:
 
 <%= commit "7-4", "Show a loading screen while waiting to login." %>
 
-### Hiding the link in the first place.
+
+### Hiding the Link
 
 OK, so now logged out users cannot access the new post page. We needed to do that in case someone accidentally entered the wrong URL into their browser. The easiest way to stop users from reaching this page when they are logged out is to just hide the link to it from them! We can do so easily enough:
 
@@ -270,7 +296,7 @@ OK, so now logged out users cannot access the new post page. We needed to do tha
 
 The `currentUser` helper is provided to us by the `accounts` package and is the handlebars equivalent of `Meteor.user()`. Of course it is reactive, and the link will appear and disappear as you log in and out of the site.
 
-### A little more subtlety: using a method
+### Meteor Method: Better Abstraction and Security
 
 So we've managed to secure access to the new post page for logged out users, and deny such users from creating posts, even if they cheat and use the console. Still, there are a few more things we need to take care of, such as:
 
@@ -278,7 +304,7 @@ So we've managed to secure access to the new post page for logged out users, and
 - Ensure that the same URL isn't posted more than once.
 - Add details about the post author (ID, username, etc.).
 
-You might be be thinking we could do all of that in our `submit` event handler. Releastically, however, we would quickly run into a range of problems:
+You might be be thinking we could do all of that in our `submit` event handler. Realistically, however, we would quickly run into a range of problems:
 
 - We'd have to rely on the user's computer's time being correct; which is not always going to be the case.
 - Clients dont't know _all_ of the URLs ever posted to the site. They'll only know about the posts that they can see (we'll see how exactly this works later). So there's no way to enforce uniquness client side.
@@ -312,7 +338,9 @@ Template.postSubmit.events({
 ```
 <%= caption "client/views/posts/post_submit.js" %>
 
-The `Meteor.call` function calls a method named by it's first argument. You can provide arguments to the call (in this case, the `post` object we constructed from the form), and finally attach a callback, which will execute when the server-side method is done. Here we just simply alert to the user if there's a problem, or redirect the user to the freshly created post's discussion page if not.
+
+The `Meteor.call` function calls a method named by its first argument. You can provide arguments to the call (in this case, the `post` object we constructed from the form), and finally attach a callback, which will execute when the server-side method is done. Here we simply alert to the user if there's a problem, or redirect the user to the freshly created post's discussion page if not.
+
 
 We'll define the method in our `collections/posts.js` file:
 
@@ -372,7 +400,7 @@ Finally, we insert the post, and return the new post's `id` to the user.
 
 #### Sorting posts
 
-Now that we have a submitted date on all our posts, it makes sense to ensure that they are sorted using this attribute. To do so, we can just use Mongo's `sort` operator, which expects a object consiting of the keys to sort by, and a sign indicating whether they are ascending or descending.
+Now that we have a submitted date on all our posts, it makes sense to ensure that they are sorted using this attribute. To do so, we can just use Mongo's `sort` operator, which expects an object consisting of the keys to sort by, and a sign indicating whether they are ascending or descending.
 
 ```js
 Template.postsList.helpers({
@@ -382,5 +410,7 @@ Template.postsList.helpers({
 });
 ```
 <%= caption "client/views/posts/posts_list.js" %>
+<%= highlight "3" %>
+
 <%= commit "7-7", "Sort posts by submitted timestamp." %>
 

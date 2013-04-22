@@ -25,7 +25,7 @@ We are going to implement a simple system which keeps track of which errors a us
 
 What we will implement is similar to Ruby on Rails flash messages, but it's much more subtle because it's implemented client side and knows when a user has seen a message.
 
-To start off with, we create a collection to store our errors in. Given that the errors are only relevant to the current session and don't need to persistent in any way, we are going to do something new, and create a _local collection_. What this means is that the `Errors` collection will only exist in the browser, and will make no attempt to synchronize with the server.
+To start off with, we create a collection to store our errors in. Given that the errors are only relevant to the current session and don't need to be persistent in any way, we are going to do something new, and create a _local collection_. What this means is that the `Errors` collection will only exist in the browser, and will make no attempt to synchronize with the server.
 
 To achieve this, we simply create the error in a client-only file, with the collection name set to `null`. Let's also create a `throwError` method that simply inserts an error into our new local collection:
 
@@ -68,6 +68,7 @@ We are going to display the errors at the top of our main layout:
 </body>
 ```
 <%= caption "client/main.html" %>
+<%= highlight "7" %>
 
 Let's now create the `errors` and `error` templates in `errors.html`:
 
@@ -145,6 +146,7 @@ Template.postSubmit.events({
 });
 ```
 <%= caption "client/views/posts/post_submit.js" %>
+<%= highlight "14" %>
 
 <%= commit "9-2", "Actually use the error reporting." %>
 
@@ -177,6 +179,7 @@ clearErrors = function() {
 }
 ```
 <%= caption "client/helpers/errors.js" %>
+<%= highlight "5,8~10" %>
 
 Now we'll simply clear errors in the router, so that going to another page makes these annoying errors vanish forever:
 
@@ -200,6 +203,7 @@ Meteor.Router.filter('requireLogin', {only: 'postSubmit'});
 Meteor.Router.filter('clearErrors');
 ```
 <%= caption "client/helpers/router.js" %>
+<%= highlight "10~13,16~17" %>
 
 Things now mostly work like we want them to, but there's still one edge case we need to take care of. When we throw up an error and then redirect the user somewhere else (as we do when they try to post a duplicate link), the redirection happens instantly. This means that the user never has the chance to actually see the error before it's cleared. 
 
@@ -226,6 +230,7 @@ Template.error.rendered = function() {
 };
 ```
 <%= caption "client/views/includes/errors.js" %>
+<%= highlight "7~12" %>
 
 <%= commit "9-3", "Monitor which errors have been seen, and clear on routing." %>
 

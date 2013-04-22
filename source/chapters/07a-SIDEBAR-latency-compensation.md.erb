@@ -19,27 +19,30 @@ However, if Meteor executed Methods in the naive way that you might think of, th
 - *+200ms:* The server makes changes to the Mongo database.
 - *+500ms:* The client receives these changes, and updates the UI to reflect them.
 
-If this was the way Meteor operated, then there'd be a short lag between performing such actions and seeing the results (more or less noticeable depending on how close you were to the server). We can't have that in a modern web application!
+If this were the way Meteor operated, then there'd be a short lag between performing such actions and seeing the results (more or less noticeable depending on how close you were to the server). We can't have that in a modern web application!
 
 ### Latency Compensation
 
 <%= diagram "latency2", "With latency compensation", "pull-right" %>
 
-To avoid this problem, Meteor introduces a concept called **Latency Compensation**. When we defined our `post` method, we placed it within a file in the `lib/` directory. This means it is avaliable to both the server *and the client* -- and it will run on both!
+To avoid this problem, Meteor introduces a concept called **Latency Compensation**. When we defined our `post` method, we placed it within a file in the `collections/` directory. This means it is available to both the server *and the client* -- and it will run on both!
 
-When you make a method call the client sends of the call to the server, but also simultaneously *simulates* the action of the method on its local collections. So our workflow becomes:
+When you make a method call, the client sends off the call to the server, but also simultaneously *simulates* the action of the method on its local collections. So our workflow becomes:
 
 - *+0ms:* The user clicks a submit button and the browser fires a method call.
 - *+0ms:*  The client simulates the action of the method call on the local collections and changes the UI to reflect this
 - *+200ms:*  The server makes changes to the Mongo database.
 - *+500ms:*  The client receives those changes and undoes it's simulated changes, replacing them with the server's changes (which are generally the same). The UI changes to reflect this.
 
-
-So, the user sees changes instantly, and when the server returns a few moments later, there may or may not be noticable changes as the server's canonical documents come down the wire. (One thing to learn from this is that we should try to make sure we simulate the real documents as closely as we can!)
+So, the user sees the change instantly, and when the server returns a few moments later, there may or may not be noticable changes as the server's canonical documents come down the wire. (One thing to learn from this is that we should try to make sure we simulate the real documents as closely as we can!)
 
 ### Observing Latency Compensation
 
-Let's make a little change to the `post` method call so we can see this in action. To do so, we'll be doing some advanced coding with the `futures` npm package to delay the insertion of objects in our method:
+Let's make a little change to the `post` method call so we can see this in action. To do so, we'll be doing some advanced coding with the `futures` npm package to delay the insertion of objects in our method.
+
+We'll use `isSimulation` to ask Meteor if the method is currently being invoked as a stub. A [stub](http://docs.meteor.com/#methods_header) is the method simulation that Meteor runs on the client in parallel while the "real" method is being ran on the server.
+
+So we'll ask Meteor if the code is being executed on the client. If so, we'll add the string `(client)` at the end of our post's title. If not, we'll add the string `(server)`.
 
 ```js
 Meteor.methods({
@@ -71,8 +74,9 @@ Meteor.methods({
 });
 ```
 <%= caption "collections/posts.js" %>
+<%= highlight "7, 13~22" %>
 
-Exactly how futures work is outside of the scope of this book, but we've basically told Meteor to wait for 5 seconds before doing the insert on the server collection. 
+Exactly how [Futures](https://npmjs.org/package/future) work is outside of the scope of this book, but we've basically told Meteor to wait for 5 seconds before doing the insert on the server collection. 
 
 We'll also make a submit redirect directly to the post list:
 
@@ -96,13 +100,14 @@ Template.postSubmit.events({
 });
 ```
 <%= caption "client/views/posts/post_submit.js" %>
+<%= highlight "15" %>
 
 
-If we use create a post now, we see latency compensation clearly. First, a post is inserted with `(client)` in the title:
+If we create a post now, we see latency compensation clearly. First, a post is inserted with `(client)` in the title (the first post in the list, linking to GitHub):
 
 <%= screenshot "s5-1", "Our post as first stored in the client collection" %>
 
-Then, a second later, it's cleanly replaced with the real document that was inserted by the server:
+Then, five second later, it's cleanly replaced with the real document that was inserted by the server:
 
 <%= screenshot "s5-2", "Our post once the client receives the update from the server collection" %>
 
@@ -119,7 +124,7 @@ When you define a server collection called `'posts'`, you are implicitly definin
 
 If you are keeping up, you might have just realized that our `post` method is calling another method (`posts/insert`) when we insert our post! How does this work?
  
-Well, the answer is refreshingly simple. When the simulation (client-side version of the method) is being run, we run `insert`'s simulation (so we insert into our local collection), but we *do not* call the real, server side `insert`, as we assume that the server side version of `post` will do this.
+Well, the answer is refreshingly simple. When the simulation (client-side version of the method) is being run, we run `insert`'s simulation (so we insert into our local collection), but we *do not* call the real, server side `insert`, as we expect that the server side version of `post` will do this.
 
 So, indeed, when the server side `post` method calls `insert`, there's no need to worry about simulation, and the insertion goes ahead smoothly. If you think about it, the simplest way is the best!
 

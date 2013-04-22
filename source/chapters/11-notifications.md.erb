@@ -71,6 +71,7 @@ Meteor.methods({
 });
 ```
 <%= caption "collections/comments.js" %>
+<%= highlight "8~14" %>
 
 Let's also publish the notifications, and subscribe on the client:
 
@@ -82,6 +83,7 @@ Meteor.publish('notifications', function() {
 })
 ```
 <%= caption "server/publications.js" %>
+<%= highlight "3~5" %>
 
 ```js
 Meteor.subscribe('posts');
@@ -93,6 +95,7 @@ Meteor.autorun(function() {
 Meteor.subscribe('notifications');
 ```
 <%= caption "client/main.js" %>
+<%= highlight "7" %>
 
 <%= commit "11-1", "Added basic notifications collection." %>
 
@@ -119,8 +122,9 @@ Now we can go ahead and add a list of notifications to the header.
 </template>
 ```
 <%= caption "client/views/includes/header.html" %>
+<%= highlight "7~9" %>
 
-And create the `notifications` and `notification` tempaltes (they'll share a single `notifications.html` file):
+And create the `notifications` and `notification` templates (they'll share a single `notifications.html` file):
 
 ```html
 <template name="notifications">
@@ -212,6 +216,7 @@ Meteor.publish('notifications', function() {
 });
 ```
 <%= caption "server/publications.js" %>
+<%= highlight "3~5" %>
 
 <%= commit "11-3", "Only sync notifications that are relevant to the user." %>
 

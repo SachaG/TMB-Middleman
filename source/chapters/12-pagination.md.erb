@@ -78,7 +78,8 @@ Meteor.autorun(function() {
   Meteor.subscribe('comments', Session.get('currentPostId'));
 })
 
-Meteor.subscribe('notifications');```
+Meteor.subscribe('notifications');
+```
 <%= caption "client/main.js" %>
 <%= highlight "1" %>
 
@@ -248,15 +249,6 @@ Meteor.subscribe('notifications');
 <%= commit "12-4","Use a single post subscription to ensure that we can always see the right post." %>
 
 So we can see that we subscribe to *both* publications on the client side, and the correct data is loaded. The single post that we want to load is in the `currentPostId` session variable (as we've seen before), and we just need to pass it through to the `singlePost` subscription.
-
-<% note do %>
-What does `Meteor.autorun` do and why do we need to wrap our subscription in it? 
-
-Remember that the Session is a *reactive data source*. When we use the Session in template helpers, we are implicitly using them in reactive *computations* as a template contains such a context. What does this mean? It means that if the reactive source changes, the computation will know to re-run itself, with the net result of the template re-rendering itself, which is exactly what we want.
-
-Here, we want the subscription to reset itself whenever the `currentPostId` session variable changes. To do so, we need to set up a similiar reactive computation. `Meteor.autorun` does this--as the name implies, the code inside the autorun will automatically run and keep running each and every time the reactive data sources used inside it change.
-<% end %>
-
 
 
 
