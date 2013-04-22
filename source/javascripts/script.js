@@ -1,8 +1,18 @@
 $(function(){
 
   // annotator
-  $('.post-content').annotator().annotator('setupPlugins', {}, {
+  var annotator = $('.post-content').annotator().annotator('setupPlugins', {}, {
     Filter: false
+  }).data('annotator');
+
+  annotator.addPlugin('Permissions', {
+    user: 'testtesttest',
+    permissions: {
+      'read':   [],
+      'update': [],
+      'delete': [],
+      'admin':  []
+    }
   });
 
   // browser console prompt

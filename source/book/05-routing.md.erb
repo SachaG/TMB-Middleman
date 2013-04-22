@@ -17,11 +17,11 @@ number: 5
 
 Now we have a list of posts (that will eventually be submitted by users), we need a discussion page, where eventually users can talk about each post.
 
-We'd like those pages to have a permalink, so we'll need some kind of routing to enable us to look at the browser's URL bar and use what's there to affect what's on the screen.
+We'd like those pages to be accessible via a permalink (i.e. a URL of the form `http://myapp.com/posts/xyz`), so we'll need some kind of routing to enable us to look at the browser's URL bar and use what's there to affect what's on the screen.
 
 ### Adding the Router Package
 
-First off, let's install the Router package from atmosphere:
+First off, let's install the Router package from Atmosphere: 
 
 ```bash
 $ mrt add router
@@ -30,13 +30,15 @@ $ mrt add router
 
 This command downloads and installs the router package into our app, ready to use.
 
+Note that the Router is a third-party package, meaning that you'll need Meteorite to install it (`meteor add router` won't work), and that once you depend on it you won't be able to run your app on `*.meteor.com` anymore
+
 ### Routing: mapping URLs to templates
 
 So far, we've only had a static layout of templates, so although the content of what the user sees can change, the structure is always the same: a header, with a list of posts below it.
 
 The Router gives us a special template helper `{{renderPage}}`, which renders the current *page*. We place this helper within our layout, and gain a dynamic template which changes when the URL changes.
 
-What do we mean by a page here? It's the Router's concept of a page--the Router's single job is to map URLs to templates to be inserted in the `{{renderPage}}` helper.. Let's see how. We'll start by inserting the `{{renderPage}}` helper into our layout:
+What do we mean by a page here? It's the Router's concept of a page--the Router's single job is to map URLs to templates to be inserted in the `{{renderPage}}` helper. Let's see how. We'll start by inserting the `{{renderPage}}` helper into our layout:
 
 ```html
 <head>
@@ -69,7 +71,7 @@ Meteor.Router.add({
 ```
 <%= caption "client/helpers/router.js"%>
 
-If it seems straightforward, that's because is. In the router, we've simply said "if the user browses to `/`, render the template named `posts`". 
+If it seems straightforward, that's because it is. In the router, we've simply said "if the user browses to `/`, render the template named `postsList`". 
 
 ### Named Routes
 
@@ -165,7 +167,7 @@ The only complication is we can't just use it like that, as it won't know what `
 
 <%= commit "5-2", "Routing to a single post page." %>
 
-The only trick here is that we've reference the template's data context directly (rather than an attribute), by using the special `this` accessor.
+The only trick here is that we've referenced the template's data context directly (rather than an attribute), by using the special `this` accessor.
 
 Let's check if it works; browse to the post list and click on one of the 'Discuss' links. We should see:
 

@@ -25,7 +25,7 @@ In most web frameworks, adding user accounts is a familiar drag. Sure, you have 
 
 Luckily, Meteor has you covered. Thanks to the way Meteor packages can contribute code both on the server and client side, logically (in the JavaScript) and presentationally (in the HTML and CSS), we can get an accounts system almost for free. 
 
-Let's get started. We'll just use Meteor's built in UI for accounts. On the command line, we type:
+Let's get started. We'll just use Meteor's built-in UI for accounts. On the command line, we type:
 
 ```bash
 $ mrt add accounts-ui
@@ -71,9 +71,9 @@ Now, when we browse to our app, we see the accounts login buttons in the top rig
 
 <%= screenshot "6-1", "Meteor's built-in accounts UI" %>
 
-We can use these to sign up, login, request a change of password, and everything else that a simple site needs for password based accounts.
+We can use these to sign up, log in, request a change of password, and everything else that a simple site needs for password based accounts.
 
-For our app, we just want users to login via a username (which we can display throughout the application), so we should just let people sign in via one. Let's put our `Accounts.ui` config in a new `config.js` file, inside `client/helpers/`:
+For our app, we just want users to log in via a username (which we can display throughout the application), so we should just let people sign in via one. Let's put our `Accounts.ui` config in a new `config.js` file, inside `client/helpers/`:
 
 ```js
 Accounts.ui.config({
@@ -84,9 +84,9 @@ Accounts.ui.config({
 
 <%= commit "6-1", "Added accounts and added template to the header" %>
 
-### What does that give us?
+### Creating Our First User
 
-If you sign up for an account, the "Sign in" button changes to show your username. So, clearly, a user account has been created for you. Where is that data? 
+Go ahead and sign up for an account, and the "Sign in" button will change to show your username. So clearly, a user account has been created for you. Where is that data? 
 
 By adding the `accounts` package, Meteor has created a special new collection for us. We can access that collection at `Meteor.users()`. Try it now; in the console, type:
 
@@ -96,7 +96,7 @@ By adding the `accounts` package, Meteor has created a special new collection fo
 ```
 <%= caption "Browser console" %>
 
-The console should return an object representing your user object; if you take a look, you can see that your email is in there, as well as an `_id` that uniquely identifies you.
+The console should return an object representing your user object; if you take a look, you can see that your username is in there, as well as an `_id` that uniquely identifies you.
 
 You can also find the single user that is logged in with `Meteor.user()`;
 
@@ -120,7 +120,7 @@ Let's be sure, and check in the canonical data-store, the Mongo database. We'll 
 
 No, there are definitely two users. Why can we only see one in the browser?
 
-### A mystery publication!
+### A Mystery Publication!
 
 If you think back to Chapter 4, you might remember that by turning off `autopublish`, we stopped collections from automatically sending all the data from the server into each connected client's local version of the collection.  We needed to create a publication and subscripton pair to channel the data across. 
 
@@ -130,9 +130,9 @@ The answer is that the accounts package actually does "auto"-publish the current
 
 There are two interesting things about this publication though. Let's take a closer look.
 
-Firstly, clearly the publication is only publishing one user object per-logged in user (and none when you are not logged in). That's a neat trick.
+First, the publication is only publishing one user object per-logged in user (and none when you are not logged in). That's a neat trick.
 
-Secondly, the fields are different. In Mongo, a user has a lot of data in it. To see it, just try:
+Secondly, documents in our user collection don't seem to contain the same fields on the server and on the client. In Mongo, a user has a lot of data in it. To see it, just try:
 
 ```bash
 > db.users.findOne()

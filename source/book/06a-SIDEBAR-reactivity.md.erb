@@ -20,16 +20,16 @@ Posts.find().observe({
 });
 ```
 
-However, such code is going to get pretty complex pretty fast. In fact, every time we such use a dynamic attribute of our post (or a combination of such attributes) in our template, we're going to have to hook up such a observer and remember to keep it up to date. 
+However, such code is going to get pretty complex pretty fast. In fact, every time we use such a dynamic attribute of our post (or a combination of such attributes) in our template, we're going to have to hook up an observer and remember to keep it up to date. 
 
-Meteor provides us with a better way; reactivity, which is at it's core a **declarative** approach. Rather than saying "when X changes, change Y in this way", we instead say "Y is generated from X in this way", which tells the system that when X changes, it can go ahead and change Y in a sensible way. 
+Meteor provides us with a better way: reactivity, which is at it's core a **declarative** approach. Rather than saying "when X changes, change Y in this way", we instead say "Y is generated from X in this way", which tells the system that when X changes, it can go ahead and change Y in a sensible way. 
 
-This is a powerful concept, because as a realtime system is a system with many inputs that are changing at unpredictable times. Of course we could manage with an event based system where the developer is responsible for determining exactly what needs to change as the result of each event. It would quickly become very complicated however; imagine a field that depends on three or four different inputs, each of which could change at any time. Or, alternatively, when an input changes, how would you keep track of what depends on it, and what changes you need to make?
+This is a powerful concept, because a realtime system is a system with many inputs that are changing at unpredictable times. Of course we could manage with an event based system where the developer is responsible for determining exactly what needs to change as the result of each event. It would quickly become very complicated however; imagine a field that depends on three or four different inputs, each of which could change at any time. Or, alternatively, when an input changes, how would you keep track of what depends on it, and what changes you need to make?
 
 A dependency system is built to do this difficult job for you.
 
 
-### Dependency tracking in Meteor
+### Dependency Tracking in Meteor
 
 The way that dependency tracking in Meteor works is disarmingly simple.
 
@@ -45,7 +45,7 @@ Most computations are setup to simply re-evaluate when they are invalidated (and
   });
 ```
 
-Here we've setup a very simple computation that simply logs a session variable. However, remember that the session is a *reactive data source*, so in calling `Session.get`, we've added the computation to the Session's list of dependencies on the variable `a-session-value`. What this means is if the value of `a-session-value` changes, the session will tell our computation it's invalidated, and it'll auto-re-run itself:
+Here we've setup a very simple computation that simply logs a session variable. However, the session is a *reactive data source*, so in calling `Session.get`, we've added the computation to the Session's list of dependencies on the variable `a-session-value`. What this means is if the value of `a-session-value` changes, the session will tell our computation it's invalidated, and it'll auto-re-run itself:
 
 ```js
 Session.set('a-session-value', 'awesome new session value');
@@ -57,7 +57,7 @@ All in all, the net result of this is that we can write code that uses reactive 
 
 Angular is a client-side only reactive rendering library, developed by the good folks at Google. It's illustrative to compare Meteor's approach to dependency tracking to Angular's, as the approaches are quite different and that difference is quite interesting.
 
-We've seen that Meteor's model uses blocks of code, called computations, that are tracked by special 'reactive' functions that invalidate the computations when appropriate. Computations can do what they like when they are invalidated, but normally simply re-run. In this way, a fine level of control over reactivity is acheived.
+We've seen that Meteor's model uses blocks of code, called computations, that are tracked by special 'reactive' functions that invalidate the computations when appropriate. Computations can do what they like when they are invalidated, but normally simply re-run. In this way, a fine level of control over reactivity is achieved.
 
 In Angular, reactivity is mediated by the `scope` object. A scope can be thought of as plain JavaScript object with a couple of special methods. 
 

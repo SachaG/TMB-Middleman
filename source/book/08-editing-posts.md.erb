@@ -93,10 +93,6 @@ Template.postEdit.events({
 ```
 <%= caption "client/views/posts/post_edit.js" %>
 
-<%= screenshot "8-1", "Post edit form." %>
-
-<%= commit "8-1", "Added edit posts form." %>
-
 By now most of that code should be familiar. First, we have our template helper that fetches the current post and passes it on to the template. 
 
 We then have two template event callbacks: one for the form's `submit` event, and one for the delete link's `click` event. 
@@ -107,11 +103,73 @@ The update callback is a little longer, but not much more complicated. After sup
 
 We then pass this object to Meteor's `Collection.update()` method, and with a callback that either displays an error (if the update failed) or sends the user back to the post's page (if the update succeeded). 
 
+Let's also hook up our router so that we have a way to access our new tempalte:
+
+```js
+Meteor.Router.add({
+  '/': 'postsList',
+  
+  '/posts/:_id': {
+    to: 'postPage', 
+    and: function(id) { Session.set('currentPostId', id); }
+  },
+  
+  '/posts/:_id/edit': {
+    to: 'postEdit', 
+    and: function(id) { Session.set('currentPostId', id); }    
+  },
+  
+  '/submit': 'postSubmit'
+});
+```
+<%= caption "client/helpers/router.js" %>
+<%= highlight "9~12" %>
+
+And add edit links on our posts too:
+
+```html
+<template name="postItem">
+  <div class="post">
+    <div class="post-content">
+      <h3><a href="{{url}}">{{title}}</a><span>{{domain}}</span></h3>
+      <p>
+        submitted by {{author}}
+        {{#if ownPost}}<a href="{{postEditPath this}}">Edit</a>{{/if}}
+      </p>
+    </div>
+    <a href="{{postPagePath this}}" class="discuss btn">Discuss</a>
+  </div>
+</template>
+```
+<%= caption "client/views/posts/post_item.js" %>
+<%= highlight "5~8" %>
+
+Of course we don't want to show you an edit link to somebody else's form, which is where the `ownPost` helper comes in:
+
+```js
+Template.postItem.helpers({
+  ownPost: function() {
+    return this.userId == Meteor.userId();
+  },
+  domain: function() {
+    var a = document.createElement('a');
+    a.href = this.url;
+    return a.hostname;
+  }
+});
+```
+<%= caption "client/views/posts/post_item.js" %>
+<%= highlight "2~4" %>
+
+<%= screenshot "8-1", "Post edit form." %>
+
+<%= commit "8-1", "Added edit posts form." %>
+
 ### Limiting Permissions
 
 This will be the extent of our client-side code, and it works well.
 
-There's just one problem: nothing is preventing users from modifying or even deleting other people's posts.
+There's just one problem: nothing is preventing users from modifying or even deleting other people's posts (sure, we're hiding the edit links, but that won't stop a really determined l33t haxx0r).
 
 We can't have that, so we'll set up some more ground rules. First, create a new `permissions.js` file inside `lib` (so that our permissions logic is loaded first, and available in both environments):
 
@@ -123,7 +181,9 @@ ownsDocument = function(userId, doc) {
 ```
 <%= caption "lib/permissions.js" %>
 
-Now let's go back to our `allow()` method inside `posts.js` and add this `allow()` block:
+A while back, we got rid of the `allow()` methods because we were only inserting new posts via a server method (which bypasses `allow()` anyway). 
+
+But now that we're editing and deleting posts from the client, let's go back to `posts.js` and add this `allow()` block:
 
 ```js
 Posts = new Meteor.Collection('posts');
@@ -138,6 +198,7 @@ Meteor.methods({
   ...
 ```
 <%= caption "collections/posts.js" %>
+<%= highlight "3~6" %>
 
 <%= commit "8-2", "Added basic permission to check the post's owner." %>
 
@@ -163,6 +224,7 @@ Posts.deny({
 });
 ```
 <%= caption "collections/posts.js" %>
+<%= highlight "8~13" %>
 
 <%= commit "8-3", "Only allow changing certain fields of posts." %>
 
@@ -171,8 +233,11 @@ We're taking the `fieldNames` array that contains a list of the fields being mod
 <% note do %>
 #### Method calls vs direct database manipulation client side
 
-To create posts, we are using a `post` method, whereas to edit them, whereas to edit and delete them, we are calling `update` and `remove` directly on the client, and limiting access via `allow` and `deny`. When it is appropriate to do one and not the other?
+To create posts, we are using a `post` method, whereas to edit and delete them, we are calling `update` and `remove` directly on the client, and limiting access via `allow` and `deny`. When it is appropriate to do one and not the other?
 
-The answer is that it's when things are relatively straightforward and you can adequately express your rules via `allow` and `deny`, it's usually simpler to do things directly. However, as soon as you start relying on your client side code to do the right thing (for example timestamp the new post), it's probably time to start thinking about a method!
+When things are relatively straightforward and you can adequately express your rules via `allow` and `deny`, it's usually simpler to do things directly from the client. 
+
+However, as soon as you start needing to do things that should be outside the user's control (such as timestamping a new post or assigning it to the correct user), it's probably better to use a method.
+
 <% end %>
 

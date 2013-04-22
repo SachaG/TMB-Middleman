@@ -12,11 +12,11 @@ We've already encountered Meteor's Session. As a user browses around the app, th
 
 The Session is a global reactive store of data. It's global in the sense of a global singleton object--there's one session, and it's accessible everywhere. Global variables are usually seen as a bad thing, but in this case the session is used as a central communication bus for different parts of the application. 
 
-When the router sets `currentPostId`, our templates know that they should render the current post and our subscriptions know that the should load the current post up from the server. The fact that the Session is reactive means that this happens transparently to the developer, and the session is one source of coupling between those three components.
+When the router sets `currentPostId`, our templates know that they should render the current post and our subscriptions know that they should load the current post up from the server. The fact that the Session is reactive means that this happens transparently to the developer, and the session is one source of coupling between those three components.
 
-### Changing the session
+### Changing the Session
 
-Now, although that Session variable has been set by the browser, it is an independent reactive data source. So, we can freely play with it in the javascript console.
+Now, although that Session variable has been set by the browser, it is an independent reactive data source. So, we can freely play with it in the JavaScript console.
 
 For instance, if we want to change the displayed post, we can simply do:
 
@@ -32,17 +32,17 @@ If we refresh the page, the router will re-run, overriding this variable, but ot
 
 <% note do %>
 
-### Plus ça change…
+### Identical Changes
 
-If you modify a Session variable with `Session.set()` but set it to an identical value, Meteor is smart enough to to bypass the reactive chain, and avoid superfluous method calls. 
+If you modify a Session variable with `Session.set()` but set it to an identical value, Meteor is smart enough to bypass the reactive chain, and avoid superfluous method calls. 
 
 <% end %>
 
 ### Hot code reload
 
-During our development of Miniscope, we've been taking advantage of one of Meteor's time saving features, hot-code-reload. When we save one of our source code files, Meteor detects the changes, and transparently restarts the running Meteor server, informing each client to reload the page.
+During our development of Microscope, we've been taking advantage of one of Meteor's time saving features, hot-code-reload. When we save one of our source code files, Meteor detects the changes, and transparently restarts the running Meteor server, informing each client to reload the page.
 
-It's kind of like a automatic reload of the page, but there is an important difference, which we'll demonstrate. 
+It's kind of like an automatic reload of the page, but there is an important difference, which we'll demonstrate. 
 
 First, set a session variable on the page:
 
@@ -73,7 +73,7 @@ null
 ```
 <%= caption "Browser console" %>
 
-What's happened is that we've lost the session when we reloaded the page. On a HCR, Meteor saves the session to local storage in your browser and brings it out again after the reload. The alternate behaviour on explicit reload makes sense however; if a user reloads the page, it's like they've browsed to the same URL again, and they should be reset to the starting state that any user would see when they visit that URL.
+What's happened is that we've lost the session when we reloaded the page. On a HCR, Meteor saves the session to local storage in your browser and loads it in again after the reload. The alternate behaviour on explicit reload makes sense however; if a user reloads the page, it's like they've browsed to the same URL again, and they should be reset to the starting state that any user would see when they visit that URL.
 
 So the important lessons in all this are:
 

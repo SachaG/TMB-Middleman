@@ -40,15 +40,15 @@ Posts = new Meteor.Collection('posts');
 
 <%= commit "4-1", "Added a posts collection" %>
 
-Code inside folders that are not `client/` or `server/` which will run in *both* contexts. So the `Posts` collection is avaliable to both client and server. However, what the collection does on either side is very different.
+Code inside folders that are not `client/` or `server/` which will run in *both* contexts. So the `Posts` collection is available to both client and server. However, what the collection does on either side is very different.
 
 On the server, the collection has the job of talking to the Mongo database, and reading and writing any changes. In this sense, it can be compared to a standard database library. On the client however, the collection is a *secure* copy of a *subset* of the real, canonical collection. The client-side collection is constantly and (mostly) transparently kept up to date with the that subset in realtime.
 
-### What a collection does on the server
+### Server-side Collections
 
 On the server, the collection acts as an API into to your Mongo database. So in your server-side code, you can write Mongo commands like `Posts.insert()` or `Posts.update()`, and they will, as you might expect, make changes to the `posts` collection stored inside the Mongo database.
 
-You can take a look inside the Mongo database easily enough. Open up a second terminal window (while `mrt` is still running in your first), go to your app's directory, and run the command `mrt Mongo`. This will initiate a Mongo shell, into which you can type standard Mongo commands:
+You can take a look inside the Mongo database easily enough. Open up a second terminal window (while `mrt` is still running in your first), go to your app's directory, and run the command `mrt mongo`. This will initiate a Mongo shell, into which you can type standard Mongo commands. For example, let's insert a new document:
 
 ```js
 > db.posts.insert({title: "A new post"});
@@ -56,29 +56,40 @@ You can take a look inside the Mongo database easily enough. Open up a second te
 > db.posts.find();
 {title: "A new post", _id: 'xxx'};
 ```
+
+<% note do %>
+
+### Mongo on Meteor.com
+
+Note that when hosting your app on meteor.com, you can also access your deployed app's Mongo console with `meteor mongo myApp`. 
+
+And while we're at it, you can also get your app's logs by typing `meteor logs myApp`.
+
+<% end %>
+
 <% caption "the Mongo console" %>
 
 Mongo's syntax is familiar, as it uses a JavaScript interface. We won't be doing any data manipulation in the Mongo console, but we might take a peek inside from time to time just to make sure what's in there.
 
-### What a collection does on the client
+### Client-side Collections
 
 Collections get more interesting client-side. When you declare `Posts = new Meteor.Collection('posts');` on the client, what you are creating is a _local, in-browser cache_ of the real Mongo collection. When we say cache here, we mean in the sense that it contains a *subset* of the data, and that it's very *quick* to access data.
 
-It's important to understand this point as it's fundamental to the way Meteor works. So to be clear: in general, a client side collection consists of some portion of all the documents stored in the Mongo collection. Secondly, those documents are stored *in browser memory*, which means that accessing them is basically instant.
+It's important to understand this point as it's fundamental to the way Meteor works. So to be clear: in general, a client side collection consists of a subset of all the documents stored in the Mongo collection (after all, we generally don't want to send our *whole* our database to the client). Secondly, those documents are stored *in browser memory*, which means that accessing them is basically instant.
 
 There are no slow trips to the server or the database to fetch the data when you call `posts.find()` on the client, as the data is already pre-loaded.
 
 <% note do %>
-### Collections vs Caches
 
-The comparison of a collection to a cache is useful to illustrate how fast it is to access, but don't take the analogy too far!
+### Introducing MiniMongo
 
-Where a client-side collection differs from a cache is in the fact that the data loaded into it is fixed and decided by your application. It can be changed as a user browses around, but if you try to find a document that hasn't been sent to the browser there is no "cache-miss", or subsequent server access. It just appears as if the document *does not exist*.
+Meteor's client-side Mongo implementation is called MiniMongo. It's not a perfect implementation yet, and from time to time you might come across Mongo features that don't work in MiniMongo yet. 
 
-You explicitly decide, through publications, which data will be loaded into each collection. We'll learn more about this mechanism soon.
+Thankfully, all the features we cover in this book work similarly in Mongo and MiniMongo.
+
 <% end %>
 
-### How they communicate
+### Client-Server Communication
 
 The key piece of all this is how the client-side collection sychronizes its data with the server side collection of the same name (`'posts'` in our case).
 
@@ -98,7 +109,7 @@ Start by opening up two browser windows, and accessing the console in each one. 
 ```
 <%= caption "Browser console" %>
 
-Now, let's create a new post--in one of our browser windows, run an insert command:
+Now, let's create a new post. In one of our browser windows, run an insert command:
 
 ```js
 ❯ Posts.find().count();
@@ -135,17 +146,29 @@ What's happened is that our server side collection has been informed by a client
 
 Still, fetching posts on the browser console isn't that useful. Let's learn how to wire that data into our templates, and in the process turn our simple HTML prototype into a real, functioning realtime web application.
 
+<% note do %>
+### Collections vs Caches
+
+The comparison of a collection to a cache is useful to illustrate how fast it is to access, but don't take the analogy too far!
+
+Where a client-side collection differs from a cache is in the fact that the data loaded into it is fixed and decided by your application. It can be changed as a user browses around, but if you try to find a document that hasn't been sent to the browser there is no "cache-miss", or subsequent server access. It just appears as if the document *does not exist*.
+
+You explicitly decide, through publications, which data will be loaded into each collection. We'll learn more about this mechanism soon.
+<% end %>
+
 ### Keeping it Realtime
 
 It's all very well looking at the contents of our Collections on the browser console, but what we'd really like to do is display the data, and the changes to that data, on the screen. In doing so we'll turn our app from a simple web *page* displaying static data, to a realtime web *application* with dynamic, changing data.
 
 Let's find out how.
 
-### Populating the database
+### Populating the Database
 
 The first thing we'll do is put some data into the database. We'll do so with a fixture file that loads a set of structured data into the `Posts` collection when the server first starts up. 
 
-First, let's make sure there's nothing in the database. Stop the Meteor server (by pressing `ctrl-c`) and then, on the command line, run:
+First, let's make sure there's nothing in the database. We'll use `mrt reset`, which does the same thing as `meteor reset`, namely erase your database and reset your project. Of course, you'll want to be very careful with this command once you start working on real-world projects. 
+
+Stop the Meteor server (by pressing `ctrl-c`) and then, on the command line, run:
 
 ```bash
 $ mrt reset
@@ -178,7 +201,7 @@ if (Posts.find().count() === 0) {
 
 <%= commit "4-2", "Added data to the posts collection." %>
 
-We've placed this file in the `server/` directory, so it will never get loaded on any user's browser. The code will run immediately when the server starts, and make `insert` calls on the database to add three simple posts in our `Posts` collection. As we haven't built any data security yet, there's no real difference between doing this in a file run on the server or in the browser. If we did have security though, the fact that this is running on the server would bypass such security; so it pays to be careful.
+We've placed this file in the `server/` directory, so it will never get loaded on any user's browser. The code will run immediately when the server starts, and make `insert` calls on the database to add three simple posts in our `Posts` collection. As we haven't built any data security yet, there's no real difference between doing this in a file run on the server or in the browser. 
 
 Now run your server again with `mrt`, and behind the scenes these three posts will get loaded into the database.
 
@@ -208,11 +231,21 @@ Template.postsList.helpers({
 
 <%= commit "4-3", "Wired collection into `postsList` template." %>
 
+<% note do %>
+
+### Find & Fetch
+
+In Meteor, `find()` returns a *cursor*, which is a [reactive data source](http://docs.meteor.com/#find). When we want to log its contents, we can then use `fetch()` on that cursor to transform it into an array . 
+
+The reason why you usually don't see `fetch()` that often in actual Meteor code (and why we didn't use it in the above example) is that within an app, Meteor is smart enough to know how to iterate over cursors without having to explicitely convert them into arrays first. 
+
+<% end %>
+
 Now, rather than pulling a list of posts as a static array from a variable, we return a `Cursor` to our `posts` helper. But what does this do? If we go back to our browser, we see:
 
 <%= screenshot "4-3", "Using live data" %>
 
-So can clearly that our `{{#each}}` helper has iterated over all of our `Posts`, and displayed them all on the screen. So the server-side collection is pulling the posts from Mongo, passing them over the wire to our client-side collection, and our handlebars helper is passing them into the template. 
+So we can clearly see that our `{{#each}}` helper has iterated over all of our `Posts`, and displayed them all on the screen. So the server-side collection is pulling the posts from Mongo, passing them over the wire to our client-side collection, and our handlebars helper is passing them into the template. 
 
 Now, let's see things get cool. We'll add another post via the console:
 
@@ -235,21 +268,23 @@ How has this happened? Has the browser reloaded itself? No. In fact, we've just 
 
 ### Inspecting DOM Changes
 
-In this case, the simplest change possible was to add another `<li>` to our `<ul>`. If you want to prove to yourself that this is what's happened, here's a neat trick. In the DOM inspector, select the `<li>` corresponding to one of the existing posts. 
+In this case, the simplest change possible was to add another `<div class="post">...</div>`. If you want to prove to yourself that this is what's happened, here's a neat trick. In the DOM inspector, select the `<div>` corresponding to one of the existing posts. 
 
-Now, in the javascript console, insert another post. When you tab back to the inspector, you'll see an extra `<li>`, corresponding to the new post, but you will still have the *same* existing `<li>` selected. This simple trick is a useful way to tell when elements have been re-rendered and when they have been left alone; something that may prove useful to you in the future.
+Now, in the javascript console, insert another post. When you tab back to the inspector, you'll see an extra `<div>`, corresponding to the new post, but you will still have the *same* existing `<div>` selected. This simple trick is a useful way to tell when elements have been re-rendered and when they have been left alone; something that may prove useful to you in the future.
 
 <% end %>
 
-### Connecting collections: publications and subscriptions
+### Connecting Collections: Publications and Subscriptions
 
 So far, we've had the `autopublish` package enabled, which, as we mentioned earlier, is not intended for production applications. Like its name indicates, this package simply says that each collection should be shared in it's entirety to each connected client. This isn't what we want anymore, so let's turn it off.
+
+Open a new terminal window, and type:
 
 ```bash
 $ mrt remove autopublish
 ```
 
-This has an instant effect. If you look in your browser now, you'll see that all our posts have gone! This because we were relying on `autopublish` to make sure our clientside collection of posts was a mirror of all the posts in the database. 
+This has an instant effect. If you look in your browser now, you'll see that all our posts have gone! This is because we were relying on `autopublish` to make sure our clientside collection of posts was a mirror of all the posts in the database. 
 
 Although eventually we'll need to only transfer the posts that the user actually needs to see (taking into account things like pagination), for now, we'll just manually setup `Posts` to be published in it's entirety. To do so, we create a simple publish function that returns a `Cursor` which references all the posts:
 
@@ -273,7 +308,7 @@ If we check the browser again, our posts are back. Phew!
 
 ### Conclusion
 
-So what have we achieved? Well, although we don't have a user interface for it yet, what we have now is a functional web application. We could deploy this application to the internet and (admittedly only via the browser console), start posting new stories and see them appear on in other user's browsers across the other side of the world. 
+So what have we achieved? Well, although we don't have a user interface yet, what we have now is a functional web application. We could deploy this application to the internet and (admittedly only via the browser console), start posting new stories and see them appear in other user's browsers across the other side of the world. 
 
 All with very little plumbing on our behalf. Things are going well.
 

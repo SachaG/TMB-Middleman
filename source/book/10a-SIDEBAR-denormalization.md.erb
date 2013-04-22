@@ -9,7 +9,7 @@ sidebar: true
 
 *Denormalizing* data means not storing that data in a "normal form", in other words having multiple copies of the same piece of data hanging about. 
 
-In the last chapter, we denormalized the count of the number of comments into the post object in order to avoid having to have the comments loaded all the time. In a data modelling sense, this is redundant, as (if we weren't considering performance), we could instead just count the correct set of comments at any time to find that value out.
+In the last chapter, we denormalized the count of the number of comments into the post object in order to avoid having to load all the comments all the time. In a data modelling sense, this is redundant, as (if we weren't considering performance), we could instead just count the correct set of comments at any time to find that value out.
 
 Denormalizing often means extra work involved for the developer. In our example, every time we add or remove a comment we'll need to remember to update the relevant post to ensure the field stays consistent. This is why relational database in particular (such as MySQL) frown upon this approach.
 

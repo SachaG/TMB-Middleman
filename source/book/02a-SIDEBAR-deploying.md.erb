@@ -84,7 +84,7 @@ $ heroku config
 
 ### Deploying On Your Own Server
 
-Up to now, we've only talked about deploying on managed platforms like Meteor.com or Heroku. But let's see how to take it one step further and configure a server from scratch to run our app on a service like [EC2](http://aws.amazon.com/ec2/) or [Digital Ocean](digitalocean.com). It's actually not much harder, once you know one or two handy tricks.
+Up to now, we've only talked about deploying on managed platforms like Meteor.com or Heroku. But let's see how to take it one step further and configure a server from scratch to run our app on a service like [EC2](http://aws.amazon.com/ec2/) or [Digital Ocean](http://digitalocean.com). It's actually not much harder, once you know one or two handy tricks.
 
 Let's walk through deploying a Meteor app on an Ubuntu 12.10 server on EC2. You can fire an EC2 instance from your Amazon management console, then connect to it in the usual way.
 
@@ -146,7 +146,7 @@ stop on shutdown
 
 script
 
-    cd /home/meteor
+    cd /home/ubuntu
     exec forever start bundle/main.js
 
 end script
