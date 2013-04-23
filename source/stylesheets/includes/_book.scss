@@ -108,12 +108,6 @@
 		}
 	}
 }
-.post-nav{
-	margin:20px 0;
-	a{
-		white-space:nowrap;
-	}
-}
 .post-author{
 	border-top:1px solid $light-bg;
 	border-bottom:1px solid $light-bg;
@@ -122,8 +116,14 @@
 	margin-bottom:40px;
 }
 .post-nav{
-	border-top:1px solid $light-bg;
-	padding-top:40px;
+	margin:20px 0;
+	a{
+		white-space:nowrap;
+	}	
+	.bottom-nav &{
+		border-top:1px solid $light-bg;
+		padding-top:40px;
+	}
 	margin-bottom:40px;
 	@include cf;
 	.prev{

@@ -6,7 +6,8 @@
   
   =partial "partials/toc"
   .post
-    =partial "partials/nav"
+    .top-nav
+      =partial "partials/nav"
 
     .post-content
       %h2
@@ -15,6 +16,7 @@
       =find_and_preserve do
         =yield
 
-    =partial "partials/nav"
+    .bottom-nav
+      =partial "partials/nav"
 
   =partial "partials/comments"
