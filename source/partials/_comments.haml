@@ -1,5 +1,5 @@
 .comments.sidebar
-  %a.toggle{:href => "#disqus_thread"}
+  %a.toggle{:href => "#disqus_thread", "data-disqus-identifier" => current_article.title.downcase.sub(' ','-')}
   :plain
     <div id="disqus_thread"></div>
     <script type="text/javascript">
