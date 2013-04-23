@@ -15,16 +15,20 @@ $(function(){
   //   }
   // });
 
-
   // browser console prompt
   $('span:contains("❯")').removeClass('err').addClass('browser-prompt');
 
-  // sidebar
-  $('.toggle').click(function(event){
+  // sidebars
+  $('.toc .toggle').click(function(event){
     event.preventDefault();
-    $('body').toggleClass('sidebar-open')
+    $('body').toggleClass('toc-open sidebar-open')
   })
-  $('.sidebar a').each(function(){
+  $('.comments .toggle').click(function(event){
+    event.preventDefault();
+    $('body').toggleClass('comments-open sidebar-open')
+  })
+
+  $('.toc a').each(function(){
     if($(this).attr('href') == window.location.pathname)
       $(this).parent().addClass('active');
   })

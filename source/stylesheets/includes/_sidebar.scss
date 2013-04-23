@@ -95,16 +95,47 @@
 }
 .sidebar-chapter{
 	// font-style:italic;
-	
 }
-.sidebar-open{
-	.sidebar{
+.toc-open{
+	.toc{
 		left:0px;
+		z-index:1000;
 		.toggle{
 			background-color:#161124;			
 		}
 	}
 	.row{
 		left:150px;	
+	}
+}
+
+// comments
+
+.comments{
+	width:370px;
+	left:-370px;
+	z-index:110;
+	background:$light-bg;
+	#disqus_thread{
+		padding:20px;
+	}
+	.toggle{
+		top:40px;
+		background:fade-out(#161124, 0.8) url('../images/comment.svg') center center no-repeat;
+		background-size:24px 24px;
+
+	}
+}
+
+.comments-open{
+	.comments{
+		left:0px;
+		z-index:1000;
+		.toggle{
+			background-color:$light-bg;			
+		}
+	}
+	.row{
+		left:200px;	
 	}
 }

@@ -122,6 +122,8 @@
 	margin-bottom:40px;
 }
 .post-nav{
+	border-top:1px solid $light-bg;
+	padding-top:40px;
 	margin-bottom:40px;
 	@include cf;
 	.prev{
