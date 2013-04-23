@@ -19,7 +19,7 @@ The client side collection is a in-memory data store offering a Mongo-like API. 
  
 #### Document
 
-Mongo is a document based data-store, so the objects that come out of collections are called "documents". They are plain javascript objects with a single special property, the `_id`, which Meteor uses to track their properties over DDP.
+Mongo is a document based data-store, so the objects that come out of collections are called "documents". They are plain JavaScript objects (although they can't contain functions) with a single special property, the `_id`, which Meteor uses to track their properties over DDP.
 
 #### DDP
 
@@ -57,13 +57,9 @@ When a template needs to render something more complex, it can call a helper, wh
 
 Although they are not explicitly named so, the combination of Template helpers and event handlers form what's traditionally known as a "Controller" in a Model View Controller (MVC) pattern.
 
-#### Model
-
-Don't know if this really get's mentioned much?
-
 #### Session
 
-The Session in Meteor refers to a client-side data store that's used by your application to track the state that the user's in. As we'll learn, it's an extremely useful construct.
+The Session in Meteor refers to a client-side reactive data source that's used by your application to track the state that the user's in. 
 
 #### Publication
 

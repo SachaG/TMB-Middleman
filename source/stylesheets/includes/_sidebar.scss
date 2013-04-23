@@ -12,11 +12,9 @@
 	left:-270px;
 	z-index:100;
 	@include animate;
-	ul, #disqus_thread{
+	.inner{
 		height:100%;
-		list-style-type:none;
-		margin:0;
-		padding:20px;
+
 		overflow-y:auto;
 
 		/* Let's get this party started */
@@ -39,6 +37,11 @@
 		}
 		&::-webkit-scrollbar-thumb:window-inactive {
 			background: fade-out(#5e5774,0.3); 
+		}
+		ul{
+			list-style-type:none;
+			margin:0;
+			padding:20px;
 		}
 		li{
 			margin:0;
