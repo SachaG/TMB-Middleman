@@ -46,7 +46,7 @@ createCommentNotification = function(comment) {
 ```
 <%= caption "collections/notifications.js" %>
 
-We've created a `notifications` collection, which will sync client and server. We'll need to update notifications once a user has seen them, so we also enable updates (but as usual, we restrict update persmissions to a user's own data).
+We've created a `notifications` collection, which will sync client and server. We'll need to update notifications once a user has seen them, so we also enable updates (but as usual, we restrict update permissions to a user's own data).
 
 We've also created a simple function that looks at the post that the user is commenting on, discovers who should be notified from there, and inserts a new notification. 
 

@@ -42,6 +42,14 @@ Posts = new Meteor.Collection('posts');
 
 Code inside folders that are not `client/` or `server/` which will run in *both* contexts. So the `Posts` collection is available to both client and server. However, what the collection does on either side is very different.
 
+<% note do %>
+
+### To Var Or Not To Var?
+
+In Meteor, the `var` keyword limits the scope of an object to the current file. We want to make the `Posts` collection available to our whole app, which is why we're omitting that keyword on purpose here. 
+
+<% end %>
+
 On the server, the collection has the job of talking to the Mongo database, and reading and writing any changes. In this sense, it can be compared to a standard database library. On the client however, the collection is a *secure* copy of a *subset* of the real, canonical collection. The client-side collection is constantly and (mostly) transparently kept up to date with the that subset in realtime.
 
 ### Server-side Collections

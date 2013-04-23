@@ -12,7 +12,7 @@
 	left:-270px;
 	z-index:100;
 	@include animate;
-	ul{
+	ul, #disqus_thread{
 		height:100%;
 		list-style-type:none;
 		margin:0;
