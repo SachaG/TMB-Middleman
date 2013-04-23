@@ -271,6 +271,26 @@ Meteor.Router.filter('requireLogin', {only: 'postSubmit'});
 
 To enhance our loading template, we'll use the `spin` package which lets us include the `{{>spinner}}` template. Add it with `mrt add spin`, and then create the `loading` template like so:
 
+<% note do %>
+
+### NOTE
+
+Because of a temporary bug, once you've added the spin package please go into your `smart.json` file and replace this:
+
+```js
+"spin":{},
+```
+
+by this:
+
+```js
+"spin": {
+  "git": "git@github.com:SachaG/meteor-spin.git" 
+  },
+```
+
+<% end %>
+
 ```html
 <template name="loading">
   {{>spinner}}
