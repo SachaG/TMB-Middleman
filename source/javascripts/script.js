@@ -22,16 +22,16 @@ $(function(){
   $('.toc .toggle').click(function(event){
     event.preventDefault();
     $('body').toggleClass('toc-open sidebar-open')
-  })
+  });
   $('.comments .toggle').click(function(event){
     event.preventDefault();
     $('body').toggleClass('comments-open sidebar-open')
-  })
+  });
 
   $('.toc a').each(function(){
     if($(this).attr('href') == window.location.pathname)
       $(this).parent().addClass('active');
-  })
+  });
 
   // pre
   $('pre').addClass('all-new');

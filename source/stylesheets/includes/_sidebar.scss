@@ -85,7 +85,6 @@
 		right:-40px;
 		top:0px;
 		@include animate;
-		@include hide-text;
 		background:fade-out(#161124, 0.8) url('../images/menu.svg') center center no-repeat;
 		background-size:24px 24px;
 		&:hover{
@@ -95,6 +94,11 @@
 }
 .sidebar-chapter{
 	// font-style:italic;
+}
+.toc{
+	.toggle{
+		@include hide-text;
+	}
 }
 .toc-open{
 	.toc{
@@ -123,7 +127,14 @@
 		top:40px;
 		background:fade-out(#161124, 0.8) url('../images/comment.svg') center center no-repeat;
 		background-size:24px 24px;
-
+		color:white;
+		text-align:center;
+		text-overflow:clip;
+		font-size:11px;
+		line-height:36px;
+		padding:0 15px;
+		width:10px;
+		overflow:hidden;
 	}
 }
 
