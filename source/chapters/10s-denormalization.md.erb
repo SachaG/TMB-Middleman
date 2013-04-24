@@ -36,7 +36,7 @@ Well, it turns out that many of the tools Meteor gives us work a lot better when
 
 The reason that Mongo suggests embedding documents is to reduce the number of expensive queries to fetch documents. However, this is less of an issue when we remember Meteor's architecture -- most of the time we are querying comments on the *client*, where database access is essentially free.
 
-Of course, there's an added complexity in publishing documents (as we mentioned above)-- for instance we've see that publishing only the comments of the limited set of posts the user is looking at can be difficult. However there *are* ways to do it--the `publish-with-relations` atmosphere package in particular is very helpful if you want to take this approach.
+Of course, there's an added complexity in publishing documents (as we mentioned above)-- for instance we've seen that publishing only the comments of the limited set of posts the user is looking at can be difficult. However there *are* ways to do it--the `publish-with-relations` atmosphere package in particular is very helpful if you want to take this approach.
 
 If, however you are doing a lot of queries on the server, or your publications become too complex, it may be better to embed comments or other sub documents. Certainly, there's no wrong way to do it, but it's good to go into it with all the information.
 

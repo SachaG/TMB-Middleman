@@ -178,9 +178,9 @@ Working out if the current list of posts are ready is easy enough, as we can jus
 
 You'll notice also that we changed the `posts` function to return the posts in the correct order, and limited it to show only as many we are currently supposed to show, according to the handle. This is because there may be other posts in the collection, as we'll see later.
 
-### Hooking up the "Show more" button
+### Hooking up the "Load More" button
 
-Finally, we need to make the show more button work. Luckily, the paginated subscription makes this easy for us. It provides a `handle.loadNextPage()` function which does exactly that. So we just need to call it:
+Finally, we need to make the load more button work. Luckily, the paginated subscription makes this easy for us. It provides a `handle.loadNextPage()` function which does exactly that. So we just need to call it:
 
 ```js
 Template.postsList.events({

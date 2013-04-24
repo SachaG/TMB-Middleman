@@ -15,7 +15,7 @@ So, let's install Meteorite. To begin with, you'll need to ensure node and git a
 - [Node download site](http://nodejs.org/download/)
 - [Git download site](http://git-scm.com/downloads)
 
-Now, let's install Meteorite. It's a npm executable, so we install it with
+Now, let's install Meteorite. It's a [npm](https://npmjs.org/) executable (Node Packaged Module, Node's standard module format), so we install it with
 
 ```bash
 $ npm install -g meteorite
@@ -86,7 +86,7 @@ When speaking about packages in the context of Meteor, it pays to be specific. M
 
 Before we can start coding, let's take a minute to set up our project properly. Open up the `microscope` directory and delete all the files. We're going to start clean! 
 
-Let's create five root directories: `/client`, `/server`, `/public`, `/lib`, and `/collections`. Some of these directories are special. When it comes to files, Meteor has a few rules:
+Let's create five root directories inside `/microscope`: `/client`, `/server`, `/public`, `/lib`, and `/collections`. Some of these directories are special. When it comes to files, Meteor has a few rules:
 
 - Code in the `/server` directory only runs on the server.
 - Code in the `/client` directory only runs on the client.
@@ -226,7 +226,7 @@ body {
 
 <% note do %>
 
-### A Note on CoffessScript
+### A Note on CoffeeScript
 
 In this book we'll be writing in pure JavaScript. But if you prefer CoffeeScript, Meteor has you covered. Simply add the CoffeeScript package and you'll be good to go:
 
