@@ -88,7 +88,7 @@
 		right:-40px;
 		top:0px;
 		@include animate;
-		background:fade-out(#161124, 0.8) url('../images/menu.svg') center center no-repeat;
+		background:fade-out(#161124, 0.8) url('/images/menu.svg') center center no-repeat;
 		background-size:24px 24px;
 		&:hover{
 			background-color:fade-out(#161124, 0.5);
@@ -128,7 +128,7 @@
 	}
 	.toggle{
 		top:40px;
-		background:fade-out(#161124, 0.8) url('../images/comment.svg') center center no-repeat;
+		background:fade-out(#161124, 0.8) url('/images/comment.svg') center center no-repeat;
 		background-size:24px 24px;
 		color:white;
 		text-align:center;

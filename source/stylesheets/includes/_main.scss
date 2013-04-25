@@ -173,3 +173,18 @@ h4{
 		}
 	}
 }
+.last-position-link{
+	@include border-radius(3px);
+	background:$light-bg;
+	padding:5px 10px;
+	display:block;
+	text-align:center;
+	margin:20px 0;
+	&:visited{
+		color:$link;
+	}	
+	&:hover{
+		background:$medium-bg;
+		color:$link;
+	}
+}

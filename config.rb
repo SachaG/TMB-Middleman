@@ -135,7 +135,7 @@ helpers do
     %Q{<figure class="screenshot #{css_class}"><img src="/images/screenshots/#{name}.png" alt="#{caption}"/><figcaption>#{caption}</figcaption></figure>}
   end    
   def commit(name, caption)
-    %Q{<div class="commit"><img src="/images/code.svg"/><div class="message"><h4>Commit #{name}</h4><p>#{caption}</p></div><div class="actions"><a class="commit-link" href="https://github.com/SachaG/Microscope/commit/chapter#{name}" target="_blank">View on GitHub</a><a class="instance-link" href="http://meteor-book-chapter#{name}.meteor.com" target="_blank" class="live-instance">Launch Instance</a></div></div>}
+    %Q{<div class="commit"><img src="/images/code.svg"/><div class="message"><h4>Commit #{name}</h4><p>#{caption}</p></div><div class="actions"><a class="commit-link" href="https://github.com/SachaG/Microscope/commits/chapter#{name}" target="_blank">View on GitHub</a><a class="instance-link" href="http://meteor-book-chapter#{name}.meteor.com" target="_blank" class="live-instance">Launch Instance</a></div></div>}
   end  
   def highlight(lines, css_class="added")
     %Q{<div class="lines-highlight" data-lines="#{lines}" data-class="#{css_class}"></div>}
