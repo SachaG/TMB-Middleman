@@ -82,7 +82,7 @@ Mongo's syntax is familiar, as it uses a JavaScript interface. We won't be doing
 
 Collections get more interesting client-side. When you declare `Posts = new Meteor.Collection('posts');` on the client, what you are creating is a _local, in-browser cache_ of the real Mongo collection. When we say cache here, we mean in the sense that it contains a *subset* of the data, and that it's very *quick* to access data.
 
-It's important to understand this point as it's fundamental to the way Meteor works. So to be clear: in general, a client side collection consists of a subset of all the documents stored in the Mongo collection (after all, we generally don't want to send our *whole* our database to the client). Secondly, those documents are stored *in browser memory*, which means that accessing them is basically instant.
+It's important to understand this point as it's fundamental to the way Meteor works. So to be clear: in general, a client side collection consists of a subset of all the documents stored in the Mongo collection (after all, we generally don't want to send our *whole* database to the client). Secondly, those documents are stored *in browser memory*, which means that accessing them is basically instant.
 
 There are no slow trips to the server or the database to fetch the data when you call `posts.find()` on the client, as the data is already pre-loaded.
 
