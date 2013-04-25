@@ -139,17 +139,17 @@ We can use the combination of those three helpers to manufacture our "load more"
     {{/each}}
     
     {{#if postsReady}}
-      <div class="grid more-button {{#if allPostsLoaded}} hidden {{/if}}">
-        <a class="more-link" href="#">Load more</a>
-      </div>
+      {{#unless allPostsLoaded}}
+        <a class="load-more" href="#">Load more</a>
+      {{/unless}}
     {{else}}
-      <div>Loading...</div>
+      <div>{{> spinner}}</div>
     {{/if}}
   </div>
 </template>
 ```
 <%= caption "client/views/posts/posts_list.html" %>
-<%= highlight "6~13" %>
+<%= highlight "7~13" %>
 
 We've added at the bottom of our list either a button saying "Load more", or a spinner indicating if we are waiting on the server to do so.
 
